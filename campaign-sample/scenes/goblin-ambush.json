@@ -3,23 +3,35 @@
   "name": "Goblin Ambush — Old Forest Road",
   "dmNotes": "Krag flees at half HP. Stealth DC 13 to spot the snare line before it springs.",
   "music": [
-    { "id": "travel", "label": "Uneasy travel", "file": "music/travel.wav", "volume": 0.6, "default": true },
-    { "id": "combat", "label": "Ambush!", "file": "music/combat.wav", "volume": 0.7 },
-    { "id": "aftermath", "label": "Aftermath", "file": "music/aftermath.wav", "volume": 0.5 }
+    { "id": "travel", "label": "Uneasy travel", "file": "music/town.mp3", "volume": 0.6, "default": true },
+    { "id": "ambush", "label": "Ambush!", "file": "music/battle.mp3", "volume": 0.7 },
+    { "id": "regroup", "label": "Regroup", "file": "music/market.mp3", "volume": 0.5 }
   ],
   "ambience": [
-    { "file": "ambience/forest.wav", "volume": 0.4 },
-    { "file": "ambience/wind.wav", "volume": 0.25 }
+    { "file": "ambience/forest.mp3", "volume": 0.4 }
   ],
   "sfx": [
-    { "id": "shriek", "label": "Goblin shriek", "file": "sfx/shriek.wav", "hotkey": "1", "duckMusic": true },
-    { "id": "snare", "label": "Snare springs", "file": "sfx/snare.wav", "hotkey": "2", "duckMusic": true },
-    { "id": "sword", "label": "Blade clash", "file": "sfx/sword.wav", "hotkey": "3", "duckMusic": true }
+    { "id": "snarl", "label": "Goblin snarl", "file": "sfx/goblin-snarl.ogg", "hotkey": "1", "duckMusic": true },
+    { "id": "blade", "label": "Blade clash", "file": "sfx/sword-clash.ogg", "hotkey": "2", "duckMusic": true },
+    { "id": "roar", "label": "Worg roar", "file": "sfx/monster-roar.ogg", "hotkey": "3", "duckMusic": true },
+    { "id": "hurt", "label": "Creature hurt", "file": "sfx/creature-hurt.ogg", "hotkey": "4", "duckMusic": true }
   ],
   "images": [
     { "file": "art/forest-road.svg", "caption": "The Old Forest Road", "playerFacing": true },
     { "file": "art/krag.svg", "caption": "Krag the Vile", "playerFacing": true }
   ],
-  "scriptText": "The road narrows beneath ancient oaks, their branches knitting out the last of the daylight. Birdsong thins, then stops entirely. {{music:combat}} Shapes drop from the canopy — {{sfx:shriek}} — and a snarling voice cries out from the brush: \"Take the fat one alive!\" {{image:art/krag.svg}} Steel rings against steel as the first goblin lunges. {{sfx:sword}}",
+  "scriptText": "The road narrows beneath ancient oaks, their branches knitting out the last of the daylight. Birdsong thins, then stops entirely. {{music:ambush}} Shapes drop from the canopy — {{sfx:snarl}} — and a snarling voice barks from the brush: \"Take the fat one alive!\" {{image:art/krag.svg}} Steel rings out as the first goblin lunges. {{sfx:blade}}",
+  "ideas": [
+    { "id": "idea-flee", "text": "Have one goblin break and flee toward the warren to raise the alarm", "done": false },
+    { "id": "idea-worg", "text": "If the fight is too easy, Krag whistles up a worg from the treeline", "done": false },
+    { "id": "idea-prisoner", "text": "A downed goblin can be questioned — it knows the warren's back entrance", "done": false }
+  ],
+  "entities": [
+    { "id": "ent-krag", "type": "npc", "name": "Krag the Vile", "note": "Goblin boss. Flees at half HP toward the warren.", "status": "present", "used": false },
+    { "id": "ent-goblins", "type": "monster", "name": "Goblins (x4)", "note": "Ambush from the canopy and brush", "status": "present", "used": false },
+    { "id": "ent-worg", "type": "monster", "name": "Worg", "note": "Optional reinforcement if the party is winning easily", "status": "optional", "used": false },
+    { "id": "ent-key", "type": "item", "name": "Krag's iron key", "note": "Opens the warren's front gate", "status": "present", "used": false },
+    { "id": "ent-snare", "type": "hook", "name": "Snare line across the road", "note": "Stealth DC 13 to notice; drops a net if triggered", "status": "present", "used": false }
+  ],
   "transition": { "crossfadeMs": 2500 }
 }

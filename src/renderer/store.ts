@@ -29,6 +29,8 @@ interface AppState {
   clearImage: () => void
   stopAll: () => void
 
+  updateScene: (sceneId: string, mutate: (s: Scene) => Scene) => Promise<void>
+
   chooseCampaign: () => Promise<void>
   importAssets: (kind: 'music' | 'ambience' | 'sfx') => Promise<void>
   revealCampaign: () => void
@@ -102,6 +104,25 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   stopAll: () => engine.stopAll(),
+
+  updateScene: async (sceneId, mutate) => {
+    const scene = get().campaign.scenes.find((s) => s.id === sceneId)
+    if (!scene) return
+    const updated = mutate(scene)
+    // Optimistic: reflect immediately, then persist to disk.
+    set((state) => ({
+      campaign: {
+        ...state.campaign,
+        scenes: state.campaign.scenes.map((s) => (s.id === sceneId ? updated : s))
+      }
+    }))
+    try {
+      const fresh = await window.hearth.saveScene(updated)
+      get().setCampaign(fresh)
+    } catch (err) {
+      console.error('saveScene failed', err)
+    }
+  },
 
   chooseCampaign: async () => {
     const c = await window.hearth.chooseCampaign()

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import type { Scene } from '../../shared/types'
 import { useStore } from '../store'
 import TopBar from './TopBar'
 import SceneList from './SceneList'
@@ -5,9 +7,11 @@ import MusicPalette from './MusicPalette'
 import SfxGrid from './SfxGrid'
 import ScriptPanel from './ScriptPanel'
 import ImageStrip from './ImageStrip'
+import IdeasPanel from './IdeasPanel'
+import CastPanel from './CastPanel'
 
 export default function ControlBoard() {
-  const { campaign, currentSceneId, status } = useStore()
+  const { campaign, currentSceneId } = useStore()
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
 
   return (
@@ -30,18 +34,57 @@ export default function ControlBoard() {
                 )}
               </div>
               <MusicPalette scene={scene} />
-              <ScriptPanel scene={scene} />
+              <ScriptPanel key={scene.id} scene={scene} />
               <SfxGrid scene={scene} />
             </>
           )}
         </main>
 
-        <aside className="w-72 space-y-5 overflow-y-auto border-l border-hearth-border bg-hearth-panel/40 p-4">
-          {scene && <ImageStrip scene={scene} />}
-          <AmbienceIndicator />
-        </aside>
+        {scene && <RightPanel scene={scene} />}
       </div>
     </div>
+  )
+}
+
+type Tab = 'images' | 'ideas' | 'cast'
+
+function RightPanel({ scene }: { scene: Scene }) {
+  const [tab, setTab] = useState<Tab>('images')
+  const ideaCount = scene.ideas?.length ?? 0
+  const castCount = scene.entities?.length ?? 0
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'images', label: 'Images' },
+    { id: 'ideas', label: `Ideas${ideaCount ? ` ${ideaCount}` : ''}` },
+    { id: 'cast', label: `Cast & Loot${castCount ? ` ${castCount}` : ''}` }
+  ]
+
+  return (
+    <aside className="flex w-80 flex-col border-l border-hearth-border bg-hearth-panel/40">
+      <div className="flex border-b border-hearth-border">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 border-b-2 px-2 py-2 text-xs transition-colors ${
+              tab === t.id
+                ? 'border-hearth-ember text-hearth-ember'
+                : 'border-transparent text-hearth-muted hover:text-hearth-text'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        {tab === 'images' && <ImageStrip scene={scene} />}
+        {tab === 'ideas' && <IdeasPanel scene={scene} />}
+        {tab === 'cast' && <CastPanel scene={scene} />}
+      </div>
+
+      <AmbienceIndicator />
+    </aside>
   )
 }
 
@@ -49,8 +92,8 @@ function AmbienceIndicator() {
   const ambienceFiles = useStore((s) => s.status.ambienceFiles)
   if (ambienceFiles.length === 0) return null
   return (
-    <section>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-hearth-muted">
+    <section className="border-t border-hearth-border p-3">
+      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-hearth-muted">
         Ambience (looping)
       </h3>
       <ul className="space-y-1">

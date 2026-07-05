@@ -2,7 +2,7 @@ import { app, BrowserWindow, protocol, ipcMain, shell } from 'electron'
 import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
-import type { AssetKind } from '../shared/types'
+import type { AssetKind, Scene } from '../shared/types'
 
 const MIME: Record<string, string> = {
   '.mp3': 'audio/mpeg',
@@ -117,6 +117,11 @@ function registerIpc(): void {
   })
   ipcMain.handle('campaign:import', async (_e, kind: AssetKind) => {
     const state = await campaign.importAssets(kind)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('scene:save', async (_e, scene: Scene) => {
+    const state = await campaign.saveScene(scene)
     broadcast('campaign:changed', state)
     return state
   })

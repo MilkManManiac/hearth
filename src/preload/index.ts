@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AssetKind, CampaignState } from '../shared/types'
+import type { AssetKind, CampaignState, Scene } from '../shared/types'
 
 export interface PresenterPayload {
   file: string | null
@@ -11,6 +11,7 @@ const api = {
   reloadCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:reload'),
   chooseCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:choose'),
   importAssets: (kind: AssetKind): Promise<CampaignState> => ipcRenderer.invoke('campaign:import', kind),
+  saveScene: (scene: Scene): Promise<CampaignState> => ipcRenderer.invoke('scene:save', scene),
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),

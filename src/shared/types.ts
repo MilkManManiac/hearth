@@ -57,6 +57,31 @@ export type ScriptNode =
   | { type: 'text'; text: string }
   | { type: 'cue'; kind: 'music' | 'sfx' | 'image'; ref: string; label?: string }
 
+/** A note/idea in the scene's brainstorm list; check off as used. */
+export interface SceneIdea {
+  id: string
+  text: string
+  done?: boolean
+}
+
+export type EntityType = 'npc' | 'monster' | 'item' | 'location' | 'hook'
+
+/**
+ * Something in (or available to) the scene: an NPC, monster, findable item,
+ * location, or plot hook. `status` distinguishes what's definitely present from
+ * what could be dropped in; `used` is the DM's live "we did this" checkbox.
+ */
+export interface SceneEntity {
+  id: string
+  type: EntityType
+  name: string
+  note?: string
+  /** Optional link — stat block, wiki page, image, etc. */
+  ref?: string
+  status?: 'present' | 'optional'
+  used?: boolean
+}
+
 export interface Scene {
   id: string
   name: string
@@ -71,8 +96,13 @@ export interface Scene {
    * Read-aloud prose with inline cue markers, e.g.
    * "Shapes drop from the branches {{sfx:shriek}} and a voice cries out."
    * Compiled into `script` at load time. Easiest path for Claude-authored scenes.
+   * Once a scene is edited in-app, it is persisted as structured `script` instead.
    */
   scriptText?: string
+  /** Brainstorm list — things you might do in this scene. */
+  ideas?: SceneIdea[]
+  /** Cast & loot — NPCs, monsters, findable items, hooks. */
+  entities?: SceneEntity[]
   transition?: { crossfadeMs?: number }
   /** Populated by the loader: relative path of the source file within the campaign. */
   _sourceFile?: string

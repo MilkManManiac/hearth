@@ -155,6 +155,23 @@ export class CampaignManager {
     return this.load()
   }
 
+  /** Persist an edited scene back to its JSON file. Writes structured `script`. */
+  async saveScene(scene: Scene): Promise<CampaignState> {
+    const rel = scene._sourceFile
+    if (!rel) throw new Error('scene has no source file to save to')
+    // Strip runtime-only fields; scriptText is dropped in favour of structured script.
+    const { _sourceFile, scriptText, ...rest } = scene
+    void _sourceFile
+    void scriptText
+    const dest = path.join(this.campaignPath, rel)
+    const root = path.resolve(this.campaignPath)
+    if (!path.resolve(dest).startsWith(root + path.sep)) {
+      throw new Error('refusing to write outside campaign folder')
+    }
+    await fs.writeFile(dest, JSON.stringify(rest, null, 2))
+    return this.load()
+  }
+
   /** Copy user-picked files into the campaign's <kind> folder and index them. */
   async importAssets(kind: AssetKind): Promise<CampaignState> {
     const res = await dialog.showOpenDialog({

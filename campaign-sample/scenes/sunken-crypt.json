@@ -1,0 +1,39 @@
+{
+  "id": "sunken-crypt",
+  "name": "The Sunken Crypt",
+  "dmNotes": "Water is ankle-deep and rising. The altar's gem is the phylactery — smashing it ends the wight for good.",
+  "music": [
+    { "id": "held", "label": "Held breath", "file": "music/market.mp3", "volume": 0.45, "default": true },
+    { "id": "rise", "label": "The dead rise", "file": "music/battle.mp3", "volume": 0.7 }
+  ],
+  "ambience": [
+    { "file": "ambience/dungeon.ogg", "volume": 0.5 }
+  ],
+  "sfx": [
+    { "id": "cast", "label": "Arcane cast", "file": "sfx/spell-cast.ogg", "hotkey": "1", "duckMusic": true },
+    { "id": "fire", "label": "Fire spell", "file": "sfx/spell-fire.ogg", "hotkey": "2", "duckMusic": true },
+    { "id": "wight", "label": "Wight rises", "file": "sfx/monster-roar.ogg", "hotkey": "3", "duckMusic": true },
+    { "id": "lock", "label": "Lock clicks", "file": "sfx/lock-click.ogg", "hotkey": "4", "duckMusic": false },
+    { "id": "coins", "label": "Coins spill", "file": "sfx/coins.ogg", "hotkey": "5", "duckMusic": false },
+    { "id": "gem", "label": "Gem chimes", "file": "sfx/gem.ogg", "hotkey": "6", "duckMusic": false }
+  ],
+  "images": [
+    { "file": "art/crypt.svg", "caption": "The Sunken Crypt", "playerFacing": true },
+    { "file": "art/altar.svg", "caption": "The Bone Altar", "playerFacing": true }
+  ],
+  "scriptText": "Your torchlight gutters against black water as you descend the last step. The air is cold and still, and something drips, far off in the dark. {{image:art/crypt.svg}} At the chamber's heart, a bone altar cradles a single violet gem that pulses like a slow heartbeat. {{image:art/altar.svg}} As the first boot touches the water, the pulse quickens — and the dead sit up in their alcoves. {{music:rise}} {{sfx:wight}}",
+  "ideas": [
+    { "id": "idea-water", "text": "Rising water: after 3 rounds it's difficult terrain; after 6 the exit stairs flood", "done": false },
+    { "id": "idea-gem", "text": "A character who studies the gem (Arcana DC 15) realizes it's the wight's phylactery", "done": false },
+    { "id": "idea-parley", "text": "The wight can speak — it will bargain for its freedom before attacking", "done": false }
+  ],
+  "entities": [
+    { "id": "ent-wight", "type": "monster", "name": "Barrow Wight", "note": "Bound to the gem; can't be truly killed until it shatters", "status": "present", "used": false },
+    { "id": "ent-skeletons", "type": "monster", "name": "Skeletons (x6)", "note": "Rise from the alcoves on round 1", "status": "present", "used": false },
+    { "id": "ent-ghost", "type": "npc", "name": "The Interred King", "note": "Optional: a mournful spirit who guides the party if freed", "status": "optional", "used": false },
+    { "id": "ent-phylactery", "type": "item", "name": "Violet phylactery gem", "note": "Smash to end the wight; worth 500gp intact but cursed", "status": "present", "used": false },
+    { "id": "ent-hoard", "type": "item", "name": "Grave hoard", "note": "240 gp, a silvered dagger, a scroll of Feather Fall", "status": "present", "used": false },
+    { "id": "ent-trap", "type": "hook", "name": "Flooding mechanism", "note": "The altar is a pressure plate — lifting the gem opens the sluices", "status": "present", "used": false }
+  ],
+  "transition": { "crossfadeMs": 2000 }
+}

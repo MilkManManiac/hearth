@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720">
+  <defs><radialGradient id="g" cx="0.5" cy="0.45" r="0.7">
+    <stop offset="0" stop-color="#3a2f4a"/><stop offset="1" stop-color="#0a0710"/>
+  </radialGradient></defs>
+  <rect width="1280" height="720" fill="url(#g)"/>
+  <text x="640" y="370" font-family="Georgia, serif" font-size="58" fill="#e6d8f0" text-anchor="middle" opacity="0.9">The Bone Altar</text>
+  <text x="640" y="430" font-family="system-ui" font-size="22" fill="#e6d8f0" text-anchor="middle" opacity="0.5">placeholder art</text>
+</svg>

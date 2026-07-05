@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1a2230"/><stop offset="1" stop-color="#070a0f"/>
+  </linearGradient></defs>
+  <rect width="1280" height="720" fill="url(#g)"/>
+  <text x="640" y="370" font-family="Georgia, serif" font-size="60" fill="#cdd6e6" text-anchor="middle" opacity="0.9">The Sunken Crypt</text>
+  <text x="640" y="430" font-family="system-ui" font-size="22" fill="#cdd6e6" text-anchor="middle" opacity="0.5">placeholder art</text>
+</svg>

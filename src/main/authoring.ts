@@ -77,6 +77,35 @@ dramatic timing. (You may instead provide a structured \`script\` array, but
 - sfx \`volume\` 0.9, \`duckMusic\` true (music dips ~8 dB while it plays)
 - \`transition.crossfadeMs\` 2500
 
+> Note: the app can edit the read-aloud script in place (drag sound/image chips
+> into the words). Once a scene is edited in-app it is saved with a structured
+> \`script\` array instead of \`scriptText\` — both are valid on load.
+
+### Ideas & Cast (\`ideas\`, \`entities\`)
+
+Two optional lists power the side panels the DM checks off during play:
+
+\`\`\`jsonc
+{
+  "ideas": [
+    { "id": "idea-flee", "text": "A goblin flees to raise the alarm", "done": false }
+  ],
+  "entities": [
+    { "id": "ent-krag", "type": "npc",     "name": "Krag the Vile", "note": "Flees at half HP", "status": "present",  "used": false },
+    { "id": "ent-worg", "type": "monster", "name": "Worg",          "note": "If fight too easy", "status": "optional", "used": false },
+    { "id": "ent-key",  "type": "item",    "name": "Iron key",      "note": "Opens the gate",    "status": "present",  "used": false }
+  ]
+}
+\`\`\`
+
+- \`entities.type\`: \`npc\` | \`monster\` | \`item\` | \`location\` | \`hook\`
+- \`status\`: \`present\` (definitely here) or \`optional\` (could be dropped in)
+- \`used\`: the DM's live checkbox — false when you author it
+- Give every idea/entity a stable \`id\` (any unique string).
+
+When drafting a scene, populate these: likely NPCs/monsters, findable loot, and
+2–4 "what might happen here" ideas. It turns the scene into a live checklist.
+
 ## library.json
 
 Every asset gets an entry with descriptive **tags** — this is what lets a scene

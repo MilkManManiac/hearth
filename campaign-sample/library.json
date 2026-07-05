@@ -1,12 +1,22 @@
 {
   "assets": [
-    { "file": "music/travel.wav", "kind": "music", "tags": ["exploration", "calm", "travel", "pad"], "source": "generated", "license": "placeholder" },
-    { "file": "music/combat.wav", "kind": "music", "tags": ["combat", "urgent", "driving", "battle"], "source": "generated", "license": "placeholder" },
-    { "file": "music/aftermath.wav", "kind": "music", "tags": ["somber", "aftermath", "melancholy", "calm"], "source": "generated", "license": "placeholder" },
-    { "file": "ambience/forest.wav", "kind": "ambience", "tags": ["forest", "birds", "outdoor", "nature"], "source": "generated", "license": "placeholder" },
-    { "file": "ambience/wind.wav", "kind": "ambience", "tags": ["wind", "outdoor", "cold", "drone"], "source": "generated", "license": "placeholder" },
-    { "file": "sfx/shriek.wav", "kind": "sfx", "tags": ["creature", "shriek", "goblin", "scream"], "source": "generated", "license": "placeholder" },
-    { "file": "sfx/snare.wav", "kind": "sfx", "tags": ["impact", "hit", "thud", "snare"], "source": "generated", "license": "placeholder" },
-    { "file": "sfx/sword.wav", "kind": "sfx", "tags": ["sword", "blade", "metal", "clash"], "source": "generated", "license": "placeholder" }
+    { "file": "music/town.mp3", "kind": "music", "tags": ["town", "calm", "exploration", "travel", "wander"], "source": "OpenGameArt / Geomancer", "license": "CC0" },
+    { "file": "music/market.mp3", "kind": "music", "tags": ["market", "calm", "quiet", "eerie", "held-breath"], "source": "OpenGameArt / Geomancer", "license": "CC0" },
+    { "file": "music/battle.mp3", "kind": "music", "tags": ["combat", "battle", "orchestral", "urgent", "boss"], "source": "OpenGameArt / Wolfgang_", "license": "CC0" },
+    { "file": "ambience/forest.mp3", "kind": "ambience", "tags": ["forest", "woods", "birds", "outdoor", "calm"], "source": "OpenGameArt / TinyWorlds", "license": "CC0" },
+    { "file": "ambience/dungeon.ogg", "kind": "ambience", "tags": ["dungeon", "cave", "crypt", "wind", "water-drips", "underground"], "source": "OpenGameArt", "license": "CC0" },
+    { "file": "sfx/sword-clash.ogg", "kind": "sfx", "tags": ["sword", "blade", "clash", "metal", "combat"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/metal-clang.ogg", "kind": "sfx", "tags": ["metal", "clang", "impact"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/goblin-snarl.ogg", "kind": "sfx", "tags": ["goblin", "creature", "snarl", "monster"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/monster-roar.ogg", "kind": "sfx", "tags": ["monster", "roar", "creature", "beast"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/creature-hurt.ogg", "kind": "sfx", "tags": ["creature", "hurt", "pain", "monster"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/creature-die.ogg", "kind": "sfx", "tags": ["creature", "die", "death", "monster"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/spell-cast.ogg", "kind": "sfx", "tags": ["spell", "magic", "cast", "arcane"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/spell-fire.ogg", "kind": "sfx", "tags": ["spell", "fire", "magic", "flame"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/coins.ogg", "kind": "sfx", "tags": ["coins", "gold", "loot", "treasure"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/gem.ogg", "kind": "sfx", "tags": ["gem", "jewel", "loot", "treasure"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/lock-click.ogg", "kind": "sfx", "tags": ["lock", "click", "door", "chest"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/wood-thunk.ogg", "kind": "sfx", "tags": ["wood", "thunk", "door", "impact"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" },
+    { "file": "sfx/book-flip.ogg", "kind": "sfx", "tags": ["book", "page", "flip", "paper"], "source": "OpenGameArt / 80 CC0 RPG SFX", "license": "CC0" }
   ]
 }
