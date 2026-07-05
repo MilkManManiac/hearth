@@ -1,0 +1,25 @@
+{
+  "id": "goblin-ambush",
+  "name": "Goblin Ambush — Old Forest Road",
+  "dmNotes": "Krag flees at half HP. Stealth DC 13 to spot the snare line before it springs.",
+  "music": [
+    { "id": "travel", "label": "Uneasy travel", "file": "music/travel.wav", "volume": 0.6, "default": true },
+    { "id": "combat", "label": "Ambush!", "file": "music/combat.wav", "volume": 0.7 },
+    { "id": "aftermath", "label": "Aftermath", "file": "music/aftermath.wav", "volume": 0.5 }
+  ],
+  "ambience": [
+    { "file": "ambience/forest.wav", "volume": 0.4 },
+    { "file": "ambience/wind.wav", "volume": 0.25 }
+  ],
+  "sfx": [
+    { "id": "shriek", "label": "Goblin shriek", "file": "sfx/shriek.wav", "hotkey": "1", "duckMusic": true },
+    { "id": "snare", "label": "Snare springs", "file": "sfx/snare.wav", "hotkey": "2", "duckMusic": true },
+    { "id": "sword", "label": "Blade clash", "file": "sfx/sword.wav", "hotkey": "3", "duckMusic": true }
+  ],
+  "images": [
+    { "file": "art/forest-road.svg", "caption": "The Old Forest Road", "playerFacing": true },
+    { "file": "art/krag.svg", "caption": "Krag the Vile", "playerFacing": true }
+  ],
+  "scriptText": "The road narrows beneath ancient oaks, their branches knitting out the last of the daylight. Birdsong thins, then stops entirely. {{music:combat}} Shapes drop from the canopy — {{sfx:shriek}} — and a snarling voice cries out from the brush: \"Take the fat one alive!\" {{image:art/krag.svg}} Steel rings against steel as the first goblin lunges. {{sfx:sword}}",
+  "transition": { "crossfadeMs": 2500 }
+}

@@ -1,0 +1,12 @@
+{
+  "assets": [
+    { "file": "music/travel.wav", "kind": "music", "tags": ["exploration", "calm", "travel", "pad"], "source": "generated", "license": "placeholder" },
+    { "file": "music/combat.wav", "kind": "music", "tags": ["combat", "urgent", "driving", "battle"], "source": "generated", "license": "placeholder" },
+    { "file": "music/aftermath.wav", "kind": "music", "tags": ["somber", "aftermath", "melancholy", "calm"], "source": "generated", "license": "placeholder" },
+    { "file": "ambience/forest.wav", "kind": "ambience", "tags": ["forest", "birds", "outdoor", "nature"], "source": "generated", "license": "placeholder" },
+    { "file": "ambience/wind.wav", "kind": "ambience", "tags": ["wind", "outdoor", "cold", "drone"], "source": "generated", "license": "placeholder" },
+    { "file": "sfx/shriek.wav", "kind": "sfx", "tags": ["creature", "shriek", "goblin", "scream"], "source": "generated", "license": "placeholder" },
+    { "file": "sfx/snare.wav", "kind": "sfx", "tags": ["impact", "hit", "thud", "snare"], "source": "generated", "license": "placeholder" },
+    { "file": "sfx/sword.wav", "kind": "sfx", "tags": ["sword", "blade", "metal", "clash"], "source": "generated", "license": "placeholder" }
+  ]
+}
