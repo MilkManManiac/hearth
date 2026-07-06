@@ -7,7 +7,7 @@
       "id": "travel",
       "label": "Uneasy travel",
       "file": "music/town.mp3",
-      "volume": 0.6,
+      "volume": 0.9,
       "default": true
     },
     {
@@ -26,7 +26,8 @@
   "ambience": [
     {
       "file": "ambience/forest.mp3",
-      "volume": 0.4
+      "volume": 0.93,
+      "loop": false
     }
   ],
   "sfx": [
@@ -35,7 +36,8 @@
       "label": "Goblin snarl",
       "file": "sfx/goblin-snarl.ogg",
       "hotkey": "1",
-      "duckMusic": true
+      "duckMusic": true,
+      "volume": 0.61
     },
     {
       "id": "blade",
@@ -57,6 +59,11 @@
       "file": "sfx/creature-hurt.ogg",
       "hotkey": "4",
       "duckMusic": true
+    },
+    {
+      "id": "lib-metal-clang",
+      "label": "metal-clang",
+      "file": "sfx/metal-clang.ogg"
     }
   ],
   "images": [
@@ -135,54 +142,69 @@
   },
   "script": [
     {
-      "type": "text",
-      "text": "The road narrow s b eneath ancient o aks, their branches knitting out the last of the daylight. Bird son g th   ins,  then stops entirely. "
-    },
-    {
-      "type": "cue",
-      "kind": "music",
-      "ref": "ambush",
-      "label": "▶ ambush"
-    },
-    {
-      "type": "text",
-      "text": " Shapes drop from the canopy — "
-    },
-    {
-      "type": "cue",
-      "kind": "sfx",
-      "ref": "snarl",
-      "label": "🔊 snarl"
-    },
-    {
-      "type": "text",
-      "text": " — and a snarling voice barks from th"
-    },
-    {
-      "type": "cue",
-      "kind": "image",
-      "ref": "art/forest-road.svg",
-      "label": "🖼 The Old Forest Road"
-    },
-    {
-      "type": "text",
-      "text": " e brush: \"Take the fat one alive!\" "
-    },
-    {
-      "type": "cue",
-      "kind": "image",
-      "ref": "art/krag.svg",
-      "label": "🖼 art/krag.svg"
-    },
-    {
-      "type": "text",
-      "text": " Steel rings out as the first goblin lunges. "
-    },
-    {
-      "type": "cue",
-      "kind": "sfx",
-      "ref": "blade",
-      "label": "🔊 blade"
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The road narrow s b eneath ancient o aks, their branches knitting out the last of the daylight. Bird son g th   ins, "
+        },
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "ambush",
+          "label": "▶ ambush"
+        },
+        {
+          "type": "text",
+          "text": " then stops entirely.  Shapes drop from the canopy — "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "snarl",
+          "label": "🔊 snarl"
+        },
+        {
+          "type": "text",
+          "text": " — and a snarling voice barks from th"
+        },
+        {
+          "type": "cue",
+          "kind": "image",
+          "ref": "art/forest-road.svg",
+          "label": "🖼 The Old Forest Road"
+        },
+        {
+          "type": "text",
+          "text": " e brush: \"Take the fat one alive!\" "
+        },
+        {
+          "type": "cue",
+          "kind": "image",
+          "ref": "art/krag.svg",
+          "label": "🖼 art/krag.svg"
+        },
+        {
+          "type": "text",
+          "text": " Steel rings out "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "lib-metal-clang",
+          "label": "🔊 metal-clang"
+        },
+        {
+          "type": "text",
+          "text": "as the first goblin lunges. "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "blade",
+          "label": "🔊 blade"
+        }
+      ]
     }
   ]
 }

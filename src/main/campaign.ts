@@ -4,7 +4,7 @@ import * as fsSync from 'fs'
 import * as path from 'path'
 import chokidar, { type FSWatcher } from 'chokidar'
 import type { AssetKind, CampaignState, Library, Scene } from '../shared/types'
-import { compileScriptText } from '../shared/scriptCompile'
+import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import { AUTHORING_MD } from './authoring'
 
 const CONFIG_FILE = () => path.join(app.getPath('userData'), 'hearth-config.json')
@@ -90,7 +90,10 @@ export class CampaignManager {
         const raw = await fs.readFile(path.join(dir, file), 'utf-8')
         const scene = JSON.parse(raw) as Scene
         scene._sourceFile = `scenes/${file}`
-        if (!scene.script && scene.scriptText) {
+        if (scene.script) {
+          // Migrate any legacy flat script on disk into the block tree.
+          scene.script = normalizeScript(scene.script)
+        } else if (scene.scriptText) {
           scene.script = compileScriptText(scene.scriptText)
         }
         if (!scene.id) scene.id = file.replace(/\.json$/i, '')

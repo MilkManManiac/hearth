@@ -57,6 +57,8 @@ interface ActiveAmbience {
 export interface EngineStatus {
   activeMusicId: string | null
   ambienceFiles: string[]
+  /** Ids of SFX currently sustained as a loop. */
+  loopingSfxIds: string[]
   masterVolume: number
   musicVolume: number
   ambienceVolume: number
@@ -88,6 +90,8 @@ export class AudioEngine {
   private buffers = new Map<string, Promise<AudioBuffer>>()
   private activeMusic: ActiveMusic | null = null
   private activeAmbience: ActiveAmbience[] = []
+  /** Sustained looping SFX, keyed by sfx id (tap to start, tap to stop). */
+  private activeSfxLoops = new Map<string, { source: AudioBufferSourceNode; gain: GainNode }>()
   private duckCount = 0
 
   // Monotonic "intent" counters. Any operation that changes what music /
@@ -319,7 +323,7 @@ export class AudioEngine {
       gain.gain.linearRampToValueAtTime(target, t + fade)
       const source = this.ctx.createBufferSource()
       source.buffer = buffer
-      source.loop = true
+      source.loop = layer.loop !== false
       source.connect(gain)
       gain.connect(this.ambienceBus)
       source.start()
@@ -330,6 +334,11 @@ export class AudioEngine {
 
   async playSfx(sfx: SfxItem): Promise<void> {
     await this.resume()
+    // Looping SFX toggle: a second tap on a playing loop stops it.
+    if (sfx.loop && this.activeSfxLoops.has(sfx.id)) {
+      this.stopSfxLoop(sfx.id)
+      return
+    }
     let buffer: AudioBuffer
     try {
       buffer = await this.getBuffer(sfx.file)
@@ -339,12 +348,25 @@ export class AudioEngine {
     }
     const target = sfx.volume ?? DEFAULT_SFX_VOL
     const gain = this.ctx.createGain()
-    gain.gain.value = target
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.connect(gain)
     gain.connect(this.sfxBus)
 
+    if (sfx.loop) {
+      // Sustained loop: fade in a touch, never duck (it would hold the music
+      // down indefinitely), track it so it can be stopped / re-mixed live.
+      const t = this.now
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(target, t + 0.08)
+      source.loop = true
+      source.start()
+      this.activeSfxLoops.set(sfx.id, { source, gain })
+      this.emit()
+      return
+    }
+
+    gain.gain.value = target
     const duck = sfx.duckMusic !== false
     if (duck) this.duckDown()
     source.start()
@@ -357,6 +379,34 @@ export class AudioEngine {
       }
       if (duck) this.duckUp()
     }
+  }
+
+  /** Stop a sustained looping SFX with a short fade. */
+  stopSfxLoop(id: string, fadeSec = 0.15): void {
+    const node = this.activeSfxLoops.get(id)
+    if (!node) return
+    this.activeSfxLoops.delete(id)
+    const t = this.now
+    const g = node.gain.gain
+    g.cancelScheduledValues(t)
+    g.setValueAtTime(g.value, t)
+    g.linearRampToValueAtTime(0, t + fadeSec)
+    window.setTimeout(() => {
+      try {
+        node.source.stop()
+        node.source.disconnect()
+        node.gain.disconnect()
+      } catch {
+        /* already stopped */
+      }
+    }, fadeSec * 1000 + 60)
+    this.emit()
+  }
+
+  /** Live-adjust the volume of a sustained looping SFX. */
+  setSfxLoopVolume(id: string, v: number): void {
+    const node = this.activeSfxLoops.get(id)
+    if (node) node.gain.gain.setTargetAtTime(v, this.now, 0.02)
   }
 
   private duckDown(): void {
@@ -383,6 +433,34 @@ export class AudioEngine {
   stopAll(crossfadeMs = 600): void {
     this.stopMusic(crossfadeMs)
     this.setAmbience([], crossfadeMs)
+    for (const id of [...this.activeSfxLoops.keys()]) this.stopSfxLoop(id, crossfadeMs / 1000)
+  }
+
+  // --- Live per-item mixing (the "mini mixer") -----------------------------
+
+  /** Live-adjust the currently-playing music track's own volume. */
+  setActiveMusicVolume(v: number): void {
+    if (this.activeMusic) this.activeMusic.gain.gain.setTargetAtTime(v, this.now, 0.02)
+  }
+
+  /** Live-toggle whether the current track loops. */
+  setActiveMusicLoop(loop: boolean): void {
+    if (this.activeMusic) {
+      this.activeMusic.source.loop = loop
+      this.activeMusic.loop = loop
+    }
+  }
+
+  /** Live-adjust one ambience layer's volume (matched by file). */
+  setAmbienceLayerVolume(file: string, v: number): void {
+    for (const a of this.activeAmbience) {
+      if (a.file === file) a.gain.gain.setTargetAtTime(v, this.now, 0.02)
+    }
+  }
+
+  /** Live-toggle whether an ambience layer loops (matched by file). */
+  setAmbienceLayerLoop(file: string, loop: boolean): void {
+    for (const a of this.activeAmbience) if (a.file === file) a.source.loop = loop
   }
 
   setMasterVolume(v: number): void {
@@ -410,6 +488,7 @@ export class AudioEngine {
     return {
       activeMusicId: this.activeMusic?.trackId ?? null,
       ambienceFiles: this.activeAmbience.map((a) => a.file),
+      loopingSfxIds: [...this.activeSfxLoops.keys()],
       masterVolume: this.masterVolume,
       musicVolume: this.musicVolume,
       ambienceVolume: this.ambienceVolume,

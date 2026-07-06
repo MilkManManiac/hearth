@@ -5,6 +5,7 @@ import TopBar from './TopBar'
 import SceneList from './SceneList'
 import MusicPalette from './MusicPalette'
 import SfxGrid from './SfxGrid'
+import AmbienceMixer from './AmbienceMixer'
 import ScriptPanel from './ScriptPanel'
 import ImageStrip from './ImageStrip'
 import IdeasPanel from './IdeasPanel'
@@ -38,6 +39,7 @@ export default function ControlBoard() {
               <MusicPalette scene={scene} />
               <ScriptPanel key={scene.id} scene={scene} />
               <SfxGrid scene={scene} />
+              <AmbienceMixer scene={scene} />
             </>
           )}
         </main>
@@ -86,29 +88,7 @@ function RightPanel({ scene }: { scene: Scene }) {
         {tab === 'ideas' && <IdeasPanel scene={scene} />}
         {tab === 'cast' && <CastPanel scene={scene} />}
       </div>
-
-      <AmbienceIndicator />
     </aside>
-  )
-}
-
-function AmbienceIndicator() {
-  const ambienceFiles = useStore((s) => s.status.ambienceFiles)
-  if (ambienceFiles.length === 0) return null
-  return (
-    <section className="border-t border-hearth-border p-3">
-      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-hearth-muted">
-        Ambience (looping)
-      </h3>
-      <ul className="space-y-1">
-        {ambienceFiles.map((f) => (
-          <li key={f} className="flex items-center gap-2 text-xs text-hearth-muted">
-            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-hearth-ember" />
-            {f.split('/').pop()}
-          </li>
-        ))}
-      </ul>
-    </section>
   )
 }
 

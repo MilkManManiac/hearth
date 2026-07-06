@@ -99,6 +99,8 @@ export interface AmbienceLayer {
   file: string
   /** 0..1, default 0.4 */
   volume?: number
+  /** Loop the bed. Default true (looping is the point of an ambience layer). */
+  loop?: boolean
 }
 
 export interface SfxItem {
@@ -109,8 +111,13 @@ export interface SfxItem {
   hotkey?: string
   /** 0..1, default 0.9 */
   volume?: number
-  /** Dip the music bus while this plays. Default true. */
+  /** Dip the music bus while this plays. Default true. Ignored when looping. */
   duckMusic?: boolean
+  /**
+   * Play as a sustained loop instead of a one-shot: tap to start, tap again to
+   * stop (e.g. a chant, a machine hum, a held wind). Looping SFX don't duck.
+   */
+  loop?: boolean
 }
 
 export interface SceneImage {
@@ -120,9 +127,77 @@ export interface SceneImage {
   playerFacing?: boolean
 }
 
-export type ScriptNode =
+// ---------------------------------------------------------------------------
+// Read-aloud script: a rich-text document tree (blocks → inline runs + cues).
+// This replaced the old flat `ScriptNode[]`; see EDITOR-REWRITE.md. The legacy
+// flat shape is still accepted on load and up-converted (migrateLegacyScript).
+// ---------------------------------------------------------------------------
+
+export type CueKind = 'music' | 'sfx' | 'image'
+
+/** Inline emphasis on a text run. Color/highlight use named palette ids. */
+export type ScriptMark =
+  | { type: 'bold' }
+  | { type: 'italic' }
+  | { type: 'color'; value: string }
+  | { type: 'highlight'; value: string }
+
+/** An atomic inline sound/image cue chip. */
+export interface CueInline {
+  type: 'cue'
+  kind: CueKind
+  ref: string
+  label?: string
+}
+
+/** A run of text (with optional marks) or an atomic cue. */
+export type ScriptInline = { type: 'text'; text: string; marks?: ScriptMark[] } | CueInline
+
+/** Block-level structure of the read-aloud doc. Callouts nest blocks. */
+export type ScriptBlock =
+  | { type: 'paragraph'; content: ScriptInline[] }
+  | { type: 'heading'; level: 1 | 2 | 3; content: ScriptInline[] }
+  | { type: 'callout'; content: ScriptBlock[] }
+
+/** The structured read-aloud document. */
+export type ScriptDoc = ScriptBlock[]
+
+/** Legacy flat script shape (pre-rewrite). Accepted on load, then migrated. */
+export type LegacyScriptNode =
   | { type: 'text'; text: string }
-  | { type: 'cue'; kind: 'music' | 'sfx' | 'image'; ref: string; label?: string }
+  | { type: 'cue'; kind: CueKind; ref: string; label?: string }
+
+export interface ScriptColorMeta {
+  label: string
+  /** CSS color (text color for `color` marks, background for `highlight`). */
+  color: string
+}
+
+/** Named text colors for `color` marks — theme-tuned, dark-mode-safe. */
+export const SCRIPT_TEXT_COLORS: Record<string, ScriptColorMeta> = {
+  danger: { label: 'Danger', color: '#e8613c' },
+  emphasis: { label: 'Emphasis', color: '#e0b341' },
+  arcane: { label: 'Arcane', color: '#9d86e6' },
+  nature: { label: 'Nature', color: '#5faf6b' },
+  whisper: { label: 'Whisper', color: '#8a8f98' }
+}
+
+/** Named highlight (background) colors for `highlight` marks. */
+export const SCRIPT_HIGHLIGHTS: Record<string, ScriptColorMeta> = {
+  read: { label: 'Read slowly', color: 'rgba(224, 179, 65, 0.22)' },
+  pause: { label: 'Pause', color: 'rgba(90, 164, 105, 0.22)' },
+  alert: { label: 'Alert', color: 'rgba(232, 97, 60, 0.22)' }
+}
+
+/** Resolve a named text-color id to its CSS value (fallback: treat as raw CSS). */
+export function scriptTextColor(id: string): string {
+  return SCRIPT_TEXT_COLORS[id]?.color ?? id
+}
+
+/** Resolve a named highlight id to its CSS background value. */
+export function scriptHighlightColor(id: string): string {
+  return SCRIPT_HIGHLIGHTS[id]?.color ?? id
+}
 
 /** A note/idea in the scene's brainstorm list; check off as used. */
 export interface SceneIdea {
@@ -157,8 +232,11 @@ export interface Scene {
   ambience?: AmbienceLayer[]
   sfx?: SfxItem[]
   images?: SceneImage[]
-  /** Structured read-aloud script. If absent, compiled from `scriptText`. */
-  script?: ScriptNode[]
+  /**
+   * Structured read-aloud document (rich-text tree). If absent, compiled from
+   * `scriptText`. A legacy flat `LegacyScriptNode[]` here is migrated on load.
+   */
+  script?: ScriptDoc
   /**
    * Read-aloud prose with inline cue markers, e.g.
    * "Shapes drop from the branches {{sfx:shriek}} and a voice cries out."

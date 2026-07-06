@@ -1,262 +1,370 @@
-import { useEffect, useRef } from 'react'
-import type { Scene, ScriptNode } from '../../shared/types'
-import { compileScriptText } from '../../shared/scriptCompile'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { BubbleMenu, useEditor, EditorContent } from '@tiptap/react'
+import type { Editor } from '@tiptap/react'
+import {
+  CATEGORY_ORDER,
+  categoryMeta,
+  SCRIPT_HIGHLIGHTS,
+  SCRIPT_TEXT_COLORS,
+  scriptHighlightColor,
+  scriptTextColor,
+  type CueKind,
+  type Scene,
+  type ScriptDoc
+} from '../../shared/types'
+import { normalizeScript } from '../../shared/scriptCompile'
+import { buildExtensions } from '../editor/extensions'
+import { docToTiptap, tiptapToDoc } from '../editor/mapping'
+import { insertCueAt, type CueAttrs } from '../editor/insert'
 
-const ICON: Record<string, string> = { music: '▶', sfx: '🔊', image: '🖼' }
+const CUE_ICON: Record<CueKind, string> = { music: '▶', sfx: '🔊', image: '🖼' }
 
-interface CuePayload {
-  kind: 'music' | 'sfx' | 'image'
+/** Registration payload for a library asset not yet on the scene. */
+interface RegisterEntry {
+  kind: 'music' | 'sfx'
+  id: string
+  label: string
+  file: string
+}
+
+interface TrayItem {
+  key: string
+  kind: CueKind
   ref: string
   label: string
-  source: 'tray' | 'chip'
+  category: string
+  register?: RegisterEntry
 }
 
-/** Build the inline chip element for a cue. */
-function makeChip(kind: string, ref: string, label: string): HTMLSpanElement {
-  const chip = document.createElement('span')
-  chip.className = 'cue-chip'
-  chip.dataset.kind = kind
-  chip.dataset.ref = ref
-  chip.dataset.label = label
-  chip.contentEditable = 'false'
-  chip.draggable = true
-  const text = document.createElement('span')
-  text.textContent = label
-  const x = document.createElement('span')
-  x.className = 'cue-x'
-  x.textContent = '×'
-  x.title = 'remove'
-  chip.append(text, x)
-  return chip
+export interface EnsureAsset {
+  (entry: RegisterEntry): void
 }
 
-function trayLabel(kind: string, name: string): string {
-  return `${ICON[kind]} ${name}`
+function basename(file: string): string {
+  return file.split('/').pop() ?? file
 }
 
-/** Populate the editor with the scene's existing script. */
-function fillEditor(container: HTMLElement, script: ScriptNode[]): void {
-  container.replaceChildren()
-  for (const node of script) {
-    if (node.type === 'text') {
-      container.append(document.createTextNode(node.text))
-    } else {
-      const label = node.label ?? `${ICON[node.kind]} ${node.ref}`
-      container.append(makeChip(node.kind, node.ref, label))
-    }
-  }
+function stem(file: string): string {
+  return basename(file).replace(/\.[^.]+$/, '')
 }
 
-/** Serialize the editor DOM back into script nodes. */
-function serialize(container: HTMLElement): ScriptNode[] {
-  const nodes: ScriptNode[] = []
-  let text = ''
-  const flush = () => {
-    if (text.length) nodes.push({ type: 'text', text })
-    text = ''
-  }
-  const walk = (n: Node) => {
-    if (n.nodeType === Node.TEXT_NODE) {
-      text += n.textContent ?? ''
-    } else if (n instanceof HTMLElement) {
-      if (n.classList.contains('cue-chip')) {
-        flush()
-        nodes.push({
-          type: 'cue',
-          kind: (n.dataset.kind as 'music' | 'sfx' | 'image') ?? 'sfx',
-          ref: n.dataset.ref ?? '',
-          label: n.dataset.label
-        })
-      } else if (n.tagName === 'BR') {
-        text += '\n'
-      } else {
-        if (text.length && !text.endsWith('\n')) text += '\n'
-        n.childNodes.forEach(walk)
-      }
-    }
-  }
-  container.childNodes.forEach(walk)
-  flush()
-  return nodes
+function slug(file: string): string {
+  return `lib-${stem(file).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
 }
 
-/** Find a safe insertion range at the drop point, never inside a chip. */
-function rangeAtPoint(container: HTMLElement, x: number, y: number): Range {
-  const doc = document as Document & {
-    caretRangeFromPoint?: (x: number, y: number) => Range | null
+function categoryRank(id: string): number {
+  const i = CATEGORY_ORDER.indexOf(id)
+  return i === -1 ? CATEGORY_ORDER.length : i
+}
+
+const IN_SCENE = 'In this scene'
+
+/** Build the tray: scene's own cues first, then the full categorized library. */
+function buildTray(scene: Scene, library: { assets: { file: string; kind: string; category?: string }[] }): TrayItem[] {
+  const items: TrayItem[] = []
+  const sceneFiles = new Set<string>()
+
+  for (const m of scene.music ?? []) {
+    sceneFiles.add(m.file)
+    items.push({ key: `m:${m.id}`, kind: 'music', ref: m.id, label: `${CUE_ICON.music} ${m.label}`, category: IN_SCENE })
   }
-  let range = doc.caretRangeFromPoint?.(x, y) ?? null
-  if (!range || !container.contains(range.startContainer)) {
-    range = document.createRange()
-    range.selectNodeContents(container)
-    range.collapse(false)
-    return range
+  for (const s of scene.sfx ?? []) {
+    sceneFiles.add(s.file)
+    items.push({ key: `s:${s.id}`, kind: 'sfx', ref: s.id, label: `${CUE_ICON.sfx} ${s.label}`, category: IN_SCENE })
   }
-  // If the caret landed inside a chip, move just after it.
-  let el: Node | null = range.startContainer
-  while (el && el !== container) {
-    if (el instanceof HTMLElement && el.classList.contains('cue-chip')) {
-      const after = document.createRange()
-      after.setStartAfter(el)
-      after.collapse(true)
-      return after
-    }
-    el = el.parentNode
+  for (const img of scene.images ?? []) {
+    items.push({
+      key: `i:${img.file}`,
+      kind: 'image',
+      ref: img.file,
+      label: `${CUE_ICON.image} ${img.caption ?? stem(img.file)}`,
+      category: IN_SCENE
+    })
   }
-  return range
+
+  for (const a of library.assets) {
+    if (a.kind !== 'music' && a.kind !== 'sfx') continue // ambience isn't cue-able
+    if (sceneFiles.has(a.file)) continue // already shown under "In this scene"
+    const kind = a.kind as 'music' | 'sfx'
+    const id = slug(a.file)
+    const label = `${CUE_ICON[kind]} ${stem(a.file)}`
+    items.push({
+      key: `lib:${a.file}`,
+      kind,
+      ref: id,
+      label,
+      category: a.category || 'uncategorized',
+      register: { kind, id, label: stem(a.file), file: a.file }
+    })
+  }
+
+  return items
 }
 
 export default function ScriptEditor({
   scene,
+  library,
   onSave,
-  onCancel
+  onEnsureAsset,
+  onDone
 }: {
   scene: Scene
-  onSave: (script: ScriptNode[]) => void
-  onCancel: () => void
+  library: { assets: { file: string; kind: string; category?: string }[] }
+  onSave: (doc: ScriptDoc) => void
+  onEnsureAsset: EnsureAsset
+  onDone: () => void
 }) {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const draggingChip = useRef<HTMLElement | null>(null)
+  const [query, setQuery] = useState('')
+  const saveTimer = useRef<number | undefined>(undefined)
+  // Capture the starting document once — never reset from props (would fight typing).
+  const initialContent = useMemo(() => docToTiptap(normalizeScript(scene.script ?? [])), [])
 
+  const scheduleSave = (ed: Editor) => {
+    window.clearTimeout(saveTimer.current)
+    saveTimer.current = window.setTimeout(() => onSave(tiptapToDoc(ed.getJSON())), 600)
+  }
+
+  const editor = useEditor({
+    extensions: buildExtensions(),
+    content: initialContent,
+    editorProps: {
+      attributes: {
+        class:
+          'script-editor min-h-[10rem] rounded-md border border-hearth-border bg-hearth-panel/60 p-4 text-[17px] leading-loose text-hearth-text focus:outline-none'
+      },
+      handleDrop: (view, event) => {
+        const raw = event.dataTransfer?.getData('application/x-cue')
+        if (!raw) return false // internal chip repositioning — let ProseMirror handle it
+        event.preventDefault()
+        const item = JSON.parse(raw) as TrayItem
+        if (item.register) onEnsureAsset(item.register)
+        const coords = view.posAtCoords({ left: event.clientX, top: event.clientY })
+        const pos = coords ? coords.pos : view.state.selection.from
+        insertCueAt(view, pos, { kind: item.kind, ref: item.ref, label: item.label })
+        return true
+      }
+    },
+    onUpdate: ({ editor }) => scheduleSave(editor)
+  })
+
+  // Flush any pending save on unmount.
   useEffect(() => {
-    const el = editorRef.current
-    if (!el) return
-    const initial = scene.script ?? compileScriptText(scene.scriptText ?? '')
-    fillEditor(el, initial)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => window.clearTimeout(saveTimer.current)
   }, [])
 
-  const trayItems: CuePayload[] = [
-    ...(scene.music ?? []).map((m) => ({ kind: 'music' as const, ref: m.id, label: trayLabel('music', m.label), source: 'tray' as const })),
-    ...(scene.sfx ?? []).map((s) => ({ kind: 'sfx' as const, ref: s.id, label: trayLabel('sfx', s.label), source: 'tray' as const })),
-    ...(scene.images ?? []).map((i) => ({
-      kind: 'image' as const,
-      ref: i.file,
-      label: trayLabel('image', i.caption ?? i.file.split('/').pop() ?? i.file),
-      source: 'tray' as const
-    }))
-  ]
-
-  const onTrayDragStart = (e: React.DragEvent, item: CuePayload) => {
-    e.dataTransfer.setData('application/x-cue', JSON.stringify(item))
-    e.dataTransfer.effectAllowed = 'copy'
+  const done = () => {
+    window.clearTimeout(saveTimer.current)
+    if (editor) onSave(tiptapToDoc(editor.getJSON()))
+    onDone()
   }
 
-  const onEditorClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    if (target.classList.contains('cue-x')) {
-      target.closest('.cue-chip')?.remove()
+  const insertItem = (item: TrayItem) => {
+    if (!editor) return
+    if (item.register) onEnsureAsset(item.register)
+    const attrs: CueAttrs = { kind: item.kind, ref: item.ref, label: item.label }
+    insertCueAt(editor.view, editor.state.selection.from, attrs)
+  }
+
+  const tray = useMemo(() => buildTray(scene, library), [scene, library])
+  const groups = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const filtered = q ? tray.filter((t) => t.label.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)) : tray
+    const byCat = new Map<string, TrayItem[]>()
+    for (const t of filtered) {
+      if (!byCat.has(t.category)) byCat.set(t.category, [])
+      byCat.get(t.category)!.push(t)
     }
-  }
-
-  const onChipDragStart = (e: React.DragEvent) => {
-    const chip = (e.target as HTMLElement).closest('.cue-chip') as HTMLElement | null
-    if (!chip) return
-    draggingChip.current = chip
-    const payload: CuePayload = {
-      kind: (chip.dataset.kind as CuePayload['kind']) ?? 'sfx',
-      ref: chip.dataset.ref ?? '',
-      label: chip.dataset.label ?? '',
-      source: 'chip'
-    }
-    e.dataTransfer.setData('application/x-cue', JSON.stringify(payload))
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const onEditorDrop = (e: React.DragEvent) => {
-    const raw = e.dataTransfer.getData('application/x-cue')
-    if (!raw) return
-    e.preventDefault()
-    editorRef.current?.classList.remove('drop-active')
-    const item = JSON.parse(raw) as CuePayload
-    if (item.source === 'chip' && draggingChip.current) {
-      draggingChip.current.remove()
-      draggingChip.current = null
-    }
-    const el = editorRef.current
-    if (!el) return
-    const range = rangeAtPoint(el, e.clientX, e.clientY)
-    const chip = makeChip(item.kind, item.ref, item.label)
-    range.insertNode(chip)
-    chip.after(document.createTextNode(' '))
-  }
-
-  const onEditorDragOver = (e: React.DragEvent) => {
-    if (e.dataTransfer.types.includes('application/x-cue')) {
-      e.preventDefault()
-      editorRef.current?.classList.add('drop-active')
-    }
-  }
-
-  const onTrayDrop = (e: React.DragEvent) => {
-    // Dropping an existing chip on the tray deletes it.
-    const raw = e.dataTransfer.getData('application/x-cue')
-    if (!raw) return
-    e.preventDefault()
-    if (draggingChip.current) {
-      draggingChip.current.remove()
-      draggingChip.current = null
-    }
-  }
+    return [...byCat.entries()].sort(([a], [b]) => {
+      if (a === IN_SCENE) return -1
+      if (b === IN_SCENE) return 1
+      return categoryRank(a) - categoryRank(b) || a.localeCompare(b)
+    })
+  }, [tray, query])
 
   return (
     <div className="space-y-3">
-      <div
-        className="flex flex-wrap gap-1.5 rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 p-2"
-        onDrop={onTrayDrop}
-        onDragOver={(e) => e.preventDefault()}
-      >
-        <span className="mr-1 self-center text-[11px] uppercase tracking-wider text-hearth-muted">
-          Drag in →
-        </span>
-        {trayItems.length === 0 && (
-          <span className="self-center text-xs text-hearth-muted">
-            Add music/sfx/images to this scene to drag them into the text.
-          </span>
-        )}
-        {trayItems.map((item) => (
-          <span
-            key={`${item.kind}:${item.ref}`}
-            draggable
-            onDragStart={(e) => onTrayDragStart(e, item)}
-            className={`tray-chip cue-chip`}
-            data-kind={item.kind}
-            title={`${item.kind}: ${item.ref}`}
-          >
-            {item.label}
-          </span>
-        ))}
-        <span className="self-center text-[11px] text-hearth-muted">
-          (drop a chip back here to delete)
-        </span>
-      </div>
+      {/* Block toolbar */}
+      {editor && (
+        <div className="flex flex-wrap items-center gap-1">
+          <ToolBtn active={editor.isActive('paragraph')} onClick={() => editor.chain().focus().setParagraph().run()}>
+            ¶
+          </ToolBtn>
+          {([1, 2, 3] as const).map((level) => (
+            <ToolBtn
+              key={level}
+              active={editor.isActive('heading', { level })}
+              onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+            >
+              H{level}
+            </ToolBtn>
+          ))}
+          <ToolBtn active={editor.isActive('callout')} onClick={() => editor.chain().focus().toggleWrap('callout').run()}>
+            ❝ Note
+          </ToolBtn>
+          <div className="mx-1 h-4 w-px bg-hearth-border" />
+          <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
+            ↶
+          </ToolBtn>
+          <ToolBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
+            ↷
+          </ToolBtn>
+        </div>
+      )}
 
-      <div
-        ref={editorRef}
-        className="script-editor min-h-[8rem] rounded-md border border-hearth-border bg-hearth-panel/60 p-4 text-hearth-text"
-        contentEditable
-        suppressContentEditableWarning
-        onClick={onEditorClick}
-        onDragStart={onChipDragStart}
-        onDrop={onEditorDrop}
-        onDragOver={onEditorDragOver}
-        onDragLeave={() => editorRef.current?.classList.remove('drop-active')}
-      />
+      {/* Selection bubble menu for inline marks */}
+      {editor && (
+        <BubbleMenu
+          editor={editor}
+          tippyOptions={{ duration: 100 }}
+          className="flex items-center gap-1 rounded-md border border-hearth-border bg-hearth-panel2 p-1 shadow-xl"
+        >
+          <ToolBtn active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
+            <b>B</b>
+          </ToolBtn>
+          <ToolBtn active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>
+            <i>I</i>
+          </ToolBtn>
+          <div className="mx-0.5 h-4 w-px bg-hearth-border" />
+          {Object.entries(SCRIPT_TEXT_COLORS).map(([id, meta]) => (
+            <Swatch
+              key={id}
+              title={meta.label}
+              color={scriptTextColor(id)}
+              active={editor.isActive('scriptColor', { value: id })}
+              onClick={() => editor.chain().focus().setMark('scriptColor', { value: id }).run()}
+            />
+          ))}
+          <div className="mx-0.5 h-4 w-px bg-hearth-border" />
+          {Object.entries(SCRIPT_HIGHLIGHTS).map(([id, meta]) => (
+            <Swatch
+              key={id}
+              title={`Highlight: ${meta.label}`}
+              color={scriptHighlightColor(id)}
+              ring
+              active={editor.isActive('scriptHighlight', { value: id })}
+              onClick={() => editor.chain().focus().setMark('scriptHighlight', { value: id }).run()}
+            />
+          ))}
+          <div className="mx-0.5 h-4 w-px bg-hearth-border" />
+          <ToolBtn onClick={() => editor.chain().focus().unsetAllMarks().run()} title="Clear formatting">
+            ⌫
+          </ToolBtn>
+        </BubbleMenu>
+      )}
+
+      <EditorContent editor={editor} />
+
+      {/* Cue tray: scene assets + full library */}
+      <div className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 p-2">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="text-[11px] uppercase tracking-wider text-hearth-muted">Cues — drag in or click</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="search sounds & images…"
+            className="ml-auto w-48 rounded border border-hearth-border bg-hearth-bg px-2 py-0.5 text-xs text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none"
+          />
+        </div>
+        <div className="max-h-40 space-y-2 overflow-y-auto pr-1">
+          {groups.length === 0 && (
+            <p className="py-3 text-center text-xs text-hearth-muted">No cues match.</p>
+          )}
+          {groups.map(([cat, catItems]) => {
+            const meta = cat === IN_SCENE ? { icon: '🎬', label: IN_SCENE } : categoryMeta(cat === 'uncategorized' ? undefined : cat)
+            return (
+              <div key={cat}>
+                <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+                  <span>{meta.icon}</span>
+                  {meta.label}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {catItems.map((item) => (
+                    <span
+                      key={item.key}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('application/x-cue', JSON.stringify(item))
+                        e.dataTransfer.effectAllowed = 'copy'
+                      }}
+                      onClick={() => insertItem(item)}
+                      title={item.register ? 'Adds to this scene when used' : item.ref}
+                      className="tray-chip cursor-grab select-none rounded border border-hearth-border bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-text hover:border-hearth-ember"
+                    >
+                      {item.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
       <div className="flex gap-2">
         <button
-          onClick={() => editorRef.current && onSave(serialize(editorRef.current))}
+          onClick={done}
           className="rounded border border-hearth-ember bg-hearth-ember/20 px-3 py-1.5 text-sm text-hearth-ember hover:bg-hearth-ember/30"
         >
-          Save script
+          Done
         </button>
-        <button
-          onClick={onCancel}
-          className="rounded border border-hearth-border px-3 py-1.5 text-sm text-hearth-muted hover:text-hearth-text"
-        >
-          Cancel
-        </button>
+        <span className="self-center text-xs text-hearth-muted">Autosaves as you type · Ctrl+Z to undo</span>
       </div>
     </div>
+  )
+}
+
+function ToolBtn({
+  active,
+  disabled,
+  onClick,
+  title,
+  children
+}: {
+  active?: boolean
+  disabled?: boolean
+  onClick: () => void
+  title?: string
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      disabled={disabled}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={`flex h-7 min-w-7 items-center justify-center rounded border px-1.5 text-sm transition-colors disabled:opacity-30 ${
+        active
+          ? 'border-hearth-ember bg-hearth-ember/20 text-hearth-ember'
+          : 'border-hearth-border bg-hearth-panel2 text-hearth-muted hover:text-hearth-text'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
+function Swatch({
+  color,
+  active,
+  ring,
+  title,
+  onClick
+}: {
+  color: string
+  active?: boolean
+  ring?: boolean
+  title: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={`h-5 w-5 rounded-full border ${active ? 'ring-2 ring-hearth-ember' : 'border-hearth-border'}`}
+      style={ring ? { boxShadow: `inset 0 0 0 999px ${color}` } : { backgroundColor: color }}
+    />
   )
 }

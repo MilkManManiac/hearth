@@ -608,6 +608,280 @@
       ],
       "source": "Kenney (kenney.nl) RPG Audio",
       "license": "CC0"
+    },
+    {
+      "file": "music/battle-rpg.ogg",
+      "kind": "music",
+      "category": "combat",
+      "tags": [
+        "combat",
+        "battle",
+        "rpg",
+        "orchestral",
+        "rock"
+      ],
+      "source": "OpenGameArt / Cleyton Kauffman",
+      "license": "CC0"
+    },
+    {
+      "file": "music/battle-theme-a.mp3",
+      "kind": "music",
+      "category": "combat",
+      "tags": [
+        "combat",
+        "battle",
+        "epic",
+        "orchestral",
+        "strings"
+      ],
+      "source": "OpenGameArt / cynicmusic",
+      "license": "CC0"
+    },
+    {
+      "file": "music/boss-epic-battle.wav",
+      "kind": "music",
+      "category": "boss",
+      "tags": [
+        "boss",
+        "epic",
+        "orchestral",
+        "loop",
+        "climax"
+      ],
+      "source": "OpenGameArt / Juhani Junkala (SubspaceAudio)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/tension-pursuit.wav",
+      "kind": "music",
+      "category": "tension",
+      "tags": [
+        "tension",
+        "chase",
+        "frantic",
+        "strings",
+        "loop"
+      ],
+      "source": "OpenGameArt / Emma_MA",
+      "license": "CC0"
+    },
+    {
+      "file": "music/mystery-exploration.mp3",
+      "kind": "music",
+      "category": "mystery",
+      "tags": [
+        "mystery",
+        "dark",
+        "explore",
+        "curious"
+      ],
+      "source": "OpenGameArt / PolygonDan",
+      "license": "CC0"
+    },
+    {
+      "file": "music/forgotten-tomb.mp3",
+      "kind": "music",
+      "category": "mystery",
+      "tags": [
+        "mystery",
+        "tomb",
+        "ancient",
+        "ominous",
+        "dungeon"
+      ],
+      "source": "OpenGameArt / kindland",
+      "license": "CC0"
+    },
+    {
+      "file": "music/somber-what-is-left.mp3",
+      "kind": "music",
+      "category": "somber",
+      "tags": [
+        "somber",
+        "sad",
+        "grief",
+        "reflective",
+        "piano"
+      ],
+      "source": "OpenGameArt / SeKa",
+      "license": "CC0"
+    },
+    {
+      "file": "music/somber-vocal-hymn.ogg",
+      "kind": "music",
+      "category": "somber",
+      "tags": [
+        "somber",
+        "vocal",
+        "medieval",
+        "choir",
+        "solemn"
+      ],
+      "source": "OpenGameArt / Magdalen Kadel",
+      "license": "CC0"
+    },
+    {
+      "file": "music/travel-onward.ogg",
+      "kind": "music",
+      "category": "travel",
+      "tags": [
+        "travel",
+        "journey",
+        "exploration",
+        "adventure"
+      ],
+      "source": "OpenGameArt / Écrivain",
+      "license": "CC0"
+    },
+    {
+      "file": "music/pirate-tune.ogg",
+      "kind": "music",
+      "category": "seafaring",
+      "tags": [
+        "seafaring",
+        "pirate",
+        "nautical",
+        "sea",
+        "jaunty"
+      ],
+      "source": "OpenGameArt / Tozan",
+      "license": "CC0"
+    },
+    {
+      "file": "music/victory-legend.mp3",
+      "kind": "music",
+      "category": "victory",
+      "tags": [
+        "victory",
+        "heroic",
+        "orchestral",
+        "triumph",
+        "uplift"
+      ],
+      "source": "OpenGameArt / CodeManu",
+      "license": "CC0"
+    },
+    {
+      "file": "music/victory-fanfare.mp3",
+      "kind": "music",
+      "category": "victory",
+      "tags": [
+        "victory",
+        "fanfare",
+        "celebration",
+        "rpg"
+      ],
+      "source": "OpenGameArt / cynicmusic",
+      "license": "CC0"
+    },
+    {
+      "file": "music/town-peaceful.mp3",
+      "kind": "music",
+      "category": "town",
+      "tags": [
+        "town",
+        "village",
+        "peaceful",
+        "harp",
+        "calm"
+      ],
+      "source": "OpenGameArt / cynicmusic",
+      "license": "CC0"
+    },
+    {
+      "file": "music/cave-exploration.ogg",
+      "kind": "music",
+      "category": "exploration",
+      "tags": [
+        "exploration",
+        "cave",
+        "dungeon",
+        "mysterious",
+        "ambient"
+      ],
+      "source": "OpenGameArt / Brandon Morris",
+      "license": "CC0"
+    },
+    {
+      "file": "music/horror-oldschool.ogg",
+      "kind": "music",
+      "category": "horror",
+      "tags": [
+        "horror",
+        "dark",
+        "creepy",
+        "dread",
+        "survival"
+      ],
+      "source": "OpenGameArt / EmoPreben",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/deep-monster-roar.wav",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "monster",
+        "roar",
+        "deep",
+        "giant",
+        "beast"
+      ],
+      "source": "OpenGameArt (CC0 deep monster roar)",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/heavy-stomp.flac",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "stomp",
+        "footstep",
+        "heavy",
+        "giant",
+        "iron"
+      ],
+      "source": "OpenGameArt (CC0 mech stomp)",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/magic-cast.ogg",
+      "kind": "sfx",
+      "category": "magic",
+      "tags": [
+        "magic",
+        "spell",
+        "cast",
+        "arcane"
+      ],
+      "source": "OpenGameArt / JaggedStone",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/teleport.wav",
+      "kind": "sfx",
+      "category": "magic",
+      "tags": [
+        "magic",
+        "teleport",
+        "portal",
+        "warp"
+      ],
+      "source": "OpenGameArt / fins",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/wind-whoosh.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "wind",
+        "gust",
+        "howl",
+        "loop"
+      ],
+      "source": "OpenGameArt (CC0 wind whoosh loop)",
+      "license": "CC0"
     }
   ]
 }

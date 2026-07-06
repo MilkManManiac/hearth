@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { Scene } from '../../shared/types'
 import { engine, useStore } from '../store'
+import { LoopButton, VolumeFader } from './Mixer'
 
 export default function MusicPalette({ scene }: { scene: Scene }) {
   const { status, switchMusic } = useStore()
   const stopAll = useStore((s) => s.stopAll)
   const setPlaylistEnabled = useStore((s) => s.setPlaylistEnabled)
+  const setTrackVolume = useStore((s) => s.setTrackVolume)
+  const setTrackLoop = useStore((s) => s.setTrackLoop)
   const tracks = scene.music ?? []
   if (tracks.length === 0) return null
 
@@ -34,25 +37,41 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
 
       {playlistOn && <NowPlayingStrip scene={scene} />}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-start gap-2">
         {tracks.map((track) => {
           const active = status.activeMusicId === track.id
           return (
-            <button
+            <div
               key={track.id}
-              onClick={() => switchMusic(track.id)}
-              className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+              className={`flex w-44 flex-col gap-1.5 rounded-md border px-3 py-2 transition-colors ${
                 active
-                  ? 'border-hearth-ember bg-hearth-ember/15 text-hearth-ember'
-                  : 'border-hearth-border bg-hearth-panel2 text-hearth-text hover:border-hearth-ember/60'
+                  ? 'border-hearth-ember bg-hearth-ember/15'
+                  : 'border-hearth-border bg-hearth-panel2 hover:border-hearth-ember/60'
               }`}
             >
-              <span className="mr-1">{active ? '♪' : '▶'}</span>
-              {track.label}
-              {track.default && !active && !playlistOn && (
-                <span className="ml-1 text-[10px] text-hearth-muted">default</span>
-              )}
-            </button>
+              <button
+                onClick={() => switchMusic(track.id)}
+                className={`flex items-center text-left text-sm ${active ? 'text-hearth-ember' : 'text-hearth-text'}`}
+              >
+                <span className="mr-1">{active ? '♪' : '▶'}</span>
+                <span className="truncate">{track.label}</span>
+                {track.default && !active && !playlistOn && (
+                  <span className="ml-1 flex-none text-[10px] text-hearth-muted">default</span>
+                )}
+              </button>
+              <div className="flex items-center gap-2">
+                <VolumeFader
+                  value={track.volume}
+                  defaultValue={0.7}
+                  onChange={(v) => setTrackVolume(track.id, v)}
+                />
+                <LoopButton
+                  on={track.loop !== false}
+                  onClick={() => setTrackLoop(track.id, track.loop === false)}
+                  title="Loop this track"
+                />
+              </div>
+            </div>
           )
         })}
         <button

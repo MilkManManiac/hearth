@@ -13,10 +13,25 @@ session (see bottom) to turn the big ones into concrete specs before building.
 - Better empty states, iconography, and spacing.
 - Possibly a dedicated **Builder mode vs. Play mode** layout split.
 
-## 2. Drag & drop editor — make it easier / more reliable
-Observed problems in the current contentEditable editor (goblin-ambush got
-mangled while testing — text like "narrow s b eneath", and an image cue landed
-mid-word):
+## 2. Drag & drop editor — ✅ REWRITTEN (2026-07-06, verify by hand)
+Rebuilt on **TipTap/ProseMirror** (grill spec in `EDITOR-REWRITE.md`). The
+read-aloud doc is now a rich-text tree (`ScriptDoc`: headings, callout/DM-note
+blocks, bold/italic + named color/highlight, atomic cue chips). Cues are atomic
+nodes so the text-mangling bug class is gone structurally. Drops snap to word
+boundaries; tray pulls the full categorized library and auto-registers assets;
+autosave + undo/redo replace Save/Cancel. Legacy flat `script` arrays (incl. the
+corrupted goblin-ambush one) migrate on load. `scriptText` now accepts
+structural markdown + `{{cues}}`. Typecheck + build + boot all clean.
+- **Still to verify by hand:** ✎ Edit → drag a cue (lands at a word boundary,
+  never mid-word) → bold/color a phrase via the bubble menu → add a `❝ Note`
+  callout → confirm autosave persists across a scene switch / reload → a
+  library asset dropped in shows up in the scene's palette.
+- **Follow-up:** update `campaign-sample/AUTHORING.md` + `src/main/authoring.ts`
+  to document the new markdown `scriptText` syntax + the `ScriptDoc` schema so
+  Claude scene-authoring uses headings/callouts/emphasis (plain prose still
+  works — markdown is a superset, so nothing is broken meanwhile).
+
+Original problems (now fixed) in the old contentEditable editor:
 - Dropping into the middle of a word splits the word / inserts stray spaces.
 - Caret/drop position is imprecise; hard to place a cue exactly.
 - Editing text around chips is fiddly (spaces appear/disappear).
@@ -96,7 +111,19 @@ Ideas to fix:
 - Category should be a first-class field on library assets (extend `library.json`
   + `LibraryAsset.category`), and the drag tray should group by category.
 
-## 5. More music — ✅ partial (2026-07-05)
+## 5. More music — ✅ gaps filled (2026-07-06)
+- **2026-07-06 batch:** +15 CC0 music (OpenGameArt) filling the documented gaps —
+  tension (Determined Pursuit loop), mystery (Mystery, Forgotten Tomb), somber
+  (What Is Left, medieval vocal hymn), travel (From Here to Where), seafaring
+  (Pirate Tune), plus boss (Epic Boss Battle), combat (Battle RPG, Battle Theme A),
+  victory ×2, town, exploration (Cave Theme), horror. Also +4 sfx (deep roar,
+  heavy stomp, magic cast, teleport) +1 ambience (wind whoosh). Library 45→65,
+  all CC0, in CREDITS.md. Note: 3 tracks are large WAVs (no ffmpeg to transcode);
+  `evil-approach.wav` (19MB tension) was left out to save space — grab from
+  OpenGameArt if wanted. SFX from Freesound/Kenney/Pixabay in the research list
+  need manual download (auth-gated) — see scratchpad sound-candidates.md.
+
+### Prior (2026-07-05)
 - Added a CC0 music set covering combat/boss, town/market, tavern (×3),
   victory, exploration, and horror (see #4 content batch). Tagged by mood +
   setting. **Gaps still worth filling:** tension, mystery, somber/sad, travel,
@@ -123,6 +150,12 @@ Ideas to fix:
   deliberately does not apply to it.
 
 ## 7. Other ideas (mine)
+- ✅ **Live mini-mixer + loop toggles (2026-07-06):** every music track, SFX, and
+  ambience layer now has a live volume fader + a loop on/off toggle in the control
+  board; changes apply live (if playing) and persist to the scene JSON (debounced).
+  SFX can be held as a sustained loop (tap to start/stop). Engine gained
+  setActiveMusicVolume/Loop, setAmbienceLayerVolume/Loop, looping-SFX support.
+  Overlap confirmed: SFX + ambience layer freely; music stays single-track (by design).
 - **Loudness normalization** on import so tracks aren't wildly different volumes.
 - **Per-cue options**: a script cue could set volume, or fire+duck depth, or
   choose one-shot vs. start-loop.

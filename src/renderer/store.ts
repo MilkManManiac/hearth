@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { DEFAULT_CROSSFADE_MS, type CampaignState, type Scene, type ScriptNode } from '../shared/types'
+import { DEFAULT_CROSSFADE_MS, type CampaignState, type CueInline, type Scene } from '../shared/types'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
 
 /** One audio engine per session, shared across the UI. */
@@ -22,6 +22,14 @@ let toastSeq = 0
 
 /** Stop handle for the single in-flight library audition, if any. */
 let currentPreviewStop: (() => void) | null = null
+
+/** Debounced disk persistence for live mixer changes (keyed per item). */
+const persistTimers = new Map<string, number>()
+function debouncePersist(key: string, fn: () => void, ms = 400): void {
+  const prev = persistTimers.get(key)
+  if (prev) window.clearTimeout(prev)
+  persistTimers.set(key, window.setTimeout(fn, ms))
+}
 
 function shuffled<T>(items: T[]): T[] {
   const a = [...items]
@@ -69,9 +77,18 @@ interface AppState {
   setCampaign: (c: CampaignState) => void
   selectScene: (id: string) => Promise<void>
 
-  fireCue: (node: Extract<ScriptNode, { type: 'cue' }>) => void
+  fireCue: (node: CueInline) => void
   switchMusic: (trackId: string) => void
   playSfx: (sfxId: string) => void
+
+  // Live "mini mixer": adjust a single item's volume/loop, live if it's
+  // playing, and persist (debounced) to the scene JSON.
+  setTrackVolume: (trackId: string, v: number) => void
+  setTrackLoop: (trackId: string, loop: boolean) => void
+  setSfxItemVolume: (sfxId: string, v: number) => void
+  setSfxItemLoop: (sfxId: string, loop: boolean) => void
+  setAmbienceLayerVolume: (file: string, v: number) => void
+  setAmbienceLayerLoop: (file: string, loop: boolean) => void
   showImage: (file: string, caption?: string) => void
   clearImage: () => void
   stopAll: () => void
@@ -288,6 +305,72 @@ export const useStore = create<AppState>((set, get) => ({
     const scene = currentScene(get())
     const sfx = scene?.sfx?.find((s) => s.id === sfxId)
     if (sfx) engine.playSfx(sfx)
+  },
+
+  setTrackVolume: (trackId, v) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    if (get().status.activeMusicId === trackId) engine.setActiveMusicVolume(v)
+    debouncePersist(`vol:m:${scene.id}:${trackId}`, () =>
+      get().updateScene(scene.id, (s) => ({
+        ...s,
+        music: (s.music ?? []).map((m) => (m.id === trackId ? { ...m, volume: v } : m))
+      }))
+    )
+  },
+
+  setTrackLoop: (trackId, loop) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    if (get().status.activeMusicId === trackId) engine.setActiveMusicLoop(loop)
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      music: (s.music ?? []).map((m) => (m.id === trackId ? { ...m, loop } : m))
+    }))
+  },
+
+  setSfxItemVolume: (sfxId, v) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    engine.setSfxLoopVolume(sfxId, v) // live only if this sfx is currently looping
+    debouncePersist(`vol:s:${scene.id}:${sfxId}`, () =>
+      get().updateScene(scene.id, (s) => ({
+        ...s,
+        sfx: (s.sfx ?? []).map((x) => (x.id === sfxId ? { ...x, volume: v } : x))
+      }))
+    )
+  },
+
+  setSfxItemLoop: (sfxId, loop) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    if (!loop) engine.stopSfxLoop(sfxId) // stop any live loop when disabling
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      sfx: (s.sfx ?? []).map((x) => (x.id === sfxId ? { ...x, loop } : x))
+    }))
+  },
+
+  setAmbienceLayerVolume: (file, v) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    engine.setAmbienceLayerVolume(file, v)
+    debouncePersist(`vol:a:${scene.id}:${file}`, () =>
+      get().updateScene(scene.id, (s) => ({
+        ...s,
+        ambience: (s.ambience ?? []).map((a) => (a.file === file ? { ...a, volume: v } : a))
+      }))
+    )
+  },
+
+  setAmbienceLayerLoop: (file, loop) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    engine.setAmbienceLayerLoop(file, loop)
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      ambience: (s.ambience ?? []).map((a) => (a.file === file ? { ...a, loop } : a))
+    }))
   },
 
   showImage: (file, caption) => {
