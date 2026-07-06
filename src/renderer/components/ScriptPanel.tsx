@@ -16,7 +16,8 @@ import SectionHeader from './SectionHeader'
 const CUE_STYLE: Record<string, string> = {
   music: 'border-hearth-ember/60 bg-hearth-ember/15 text-hearth-ember hover:bg-hearth-ember/30',
   sfx: 'border-hearth-gold/60 bg-hearth-gold/10 text-hearth-gold hover:bg-hearth-gold/25',
-  image: 'border-sky-500/50 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25'
+  image: 'border-sky-500/50 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25',
+  amb: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/25'
 }
 
 const HEADING_CLASS: Record<number, string> = {
@@ -41,28 +42,37 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
 
   const script: ScriptDoc = scene.script ?? []
 
-  // Fire a cue and record it in the recently-used list (music/sfx only).
+  // Fire a cue and record it in the recently-used list (audio cues only).
   const fire = (n: CueInline) => {
     fireCue(n)
-    const item =
+    const file =
       n.kind === 'music'
-        ? scene.music?.find((t) => t.id === n.ref)
+        ? scene.music?.find((t) => t.id === n.ref)?.file
         : n.kind === 'sfx'
-          ? scene.sfx?.find((t) => t.id === n.ref)
-          : undefined
-    if (item) pushRecent(item.file)
+          ? scene.sfx?.find((t) => t.id === n.ref)?.file
+          : n.kind === 'amb'
+            ? scene.ambience?.find((a) => a.file === n.ref)?.file
+            : undefined
+    if (file) pushRecent(file)
   }
 
-  // Teleprompter: Space fires the next cue, Shift+Space / ArrowRight skips it.
+  // Teleprompter: Space fires the next cue, Shift+Space / ArrowRight skips it,
+  // ArrowLeft rewinds the pointer (without firing anything).
   useEffect(() => {
     if (editing) return
     const cues = flattenCues(script)
     if (cues.length === 0) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== ' ' && e.key !== 'ArrowRight') return
+      if (e.key !== ' ' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+      const st = useStore.getState()
+      if (st.libraryOpen || st.triage) return // a modal owns the keyboard
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
       e.preventDefault() // no page scroll, no re-firing a focused button
+      if (e.key === 'ArrowLeft') {
+        setCuePos(Math.max(0, cuePos - 1))
+        return
+      }
       if (cuePos >= cues.length) return
       if (e.key === ' ' && !e.shiftKey) fire(cues[cuePos])
       setCuePos(cuePos + 1)
@@ -79,6 +89,11 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   // Auto-register a library asset dropped into the script that isn't on the scene yet.
   const ensureAsset: EnsureAsset = (entry) => {
     updateScene(scene.id, (s) => {
+      if (entry.kind === 'ambience') {
+        if ((s.ambience ?? []).some((a) => a.file === entry.file)) return s
+        // Script-driven bed: it waits for its {{amb}} cue, not scene go-live.
+        return { ...s, ambience: [...(s.ambience ?? []), { file: entry.file, autoplay: false }] }
+      }
       const list = entry.kind === 'music' ? s.music ?? [] : s.sfx ?? []
       if (list.some((x) => x.id === entry.id || x.file === entry.file)) return s
       const item = { id: entry.id, label: entry.label, file: entry.file }

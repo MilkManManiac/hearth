@@ -12,6 +12,8 @@ function basename(file: string): string {
 export default function AmbienceMixer({ scene }: { scene: Scene }) {
   const setVolume = useStore((s) => s.setAmbienceLayerVolume)
   const setLoop = useStore((s) => s.setAmbienceLayerLoop)
+  const setAutoplay = useStore((s) => s.setAmbienceAutoplay)
+  const removeLayer = useStore((s) => s.removeAmbienceLayer)
   const toggleAmbience = useStore((s) => s.toggleAmbience)
   const openLibrary = useStore((s) => s.openLibrary)
   const playing = useStore((s) => s.status.ambienceFiles)
@@ -39,7 +41,7 @@ export default function AmbienceMixer({ scene }: { scene: Scene }) {
           return (
             <div
               key={layer.file}
-              className={`flex items-center gap-3 rounded-md border px-3 py-2 shadow-card transition-all ${
+              className={`group flex items-center gap-3 rounded-md border px-3 py-2 shadow-card transition-all ${
                 isPlaying ? 'border-hearth-ember bg-hearth-ember/15 shadow-ember' : 'border-hearth-border bg-hearth-panel2'
               }`}
             >
@@ -73,6 +75,28 @@ export default function AmbienceMixer({ scene }: { scene: Scene }) {
                 onClick={() => setLoop(layer.file, layer.loop === false)}
                 title="Loop this ambience bed"
               />
+              <button
+                onClick={() => setAutoplay(layer.file, layer.autoplay === false)}
+                title={
+                  layer.autoplay === false
+                    ? 'Waits for its script cue or a tap — click to auto-start on Go live'
+                    : 'Auto-starts on Go live — click to make it script/tap-driven'
+                }
+                className={`flex-none rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider transition-colors ${
+                  layer.autoplay === false
+                    ? 'text-hearth-muted/60 hover:text-hearth-text'
+                    : 'bg-hearth-ember/15 text-hearth-ember'
+                }`}
+              >
+                auto
+              </button>
+              <button
+                onClick={() => removeLayer(layer.file)}
+                title="Remove from this scene (the file stays in the library)"
+                className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+              >
+                ✕
+              </button>
             </div>
           )
         })}

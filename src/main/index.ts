@@ -154,7 +154,6 @@ function registerAssetProtocol(): void {
 
 function registerIpc(): void {
   ipcMain.handle('campaign:get', async () => campaign.load())
-  ipcMain.handle('campaign:reload', async () => campaign.load())
   ipcMain.handle('campaign:choose', async () => {
     const state = await campaign.choose()
     if (state) broadcast('campaign:changed', state)
@@ -185,6 +184,11 @@ function registerIpc(): void {
     broadcast('campaign:changed', result.state)
     return result
   })
+  ipcMain.handle('scene:delete', async (_e, sceneId: string) => {
+    const state = await campaign.deleteScene(sceneId)
+    broadcast('campaign:changed', state)
+    return state
+  })
   ipcMain.handle('triage:pick', async () => campaign.triagePick())
   ipcMain.handle('triage:keep', async (_e, req: TriageKeepRequest) => {
     const state = await campaign.triageKeep(req)
@@ -192,7 +196,9 @@ function registerIpc(): void {
     return state
   })
   ipcMain.handle('campaign:reveal', async () => {
-    shell.openPath(campaign.path)
+    // openPath resolves to a non-empty string on failure (not a rejection).
+    const err = await shell.openPath(campaign.path)
+    if (err) throw new Error(err)
   })
   ipcMain.handle('presenter:open', async () => {
     ensurePresenterWindow()

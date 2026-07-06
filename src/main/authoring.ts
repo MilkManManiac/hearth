@@ -39,7 +39,8 @@ the DM triggers live. Nothing auto-advances except the one music track marked
 
   "ambience": [
     { "file": "ambience/forest-birds.ogg", "volume": 0.4 },
-    { "file": "ambience/wind-light.ogg",   "volume": 0.3 }
+    { "file": "ambience/wind-light.ogg",   "volume": 0.3 },
+    { "file": "ambience/rain-heavy.ogg",   "volume": 0.5, "autoplay": false }
   ],
 
   "sfx": [
@@ -70,8 +71,19 @@ dramatic timing:
 - \`{{music:<trackId>}}\` — crossfade to that music track
 - \`{{sfx:<sfxId>}}\` — fire that sound effect
 - \`{{image:<path>}}\` — push that image to the presenter/players (use the art path)
+- \`{{amb:<file-or-stem>}}\` — **toggle** an ambience bed on/off (fires again = off).
+  The ref is the layer's file (\`ambience/rain-heavy.ogg\`) or just its filename
+  stem (\`rain-heavy\`). Give script-driven beds \`"autoplay": false\` so they wait
+  for their cue instead of starting when the scene goes live — see below.
 
 Whitespace inside the braces is tolerated (\`{{ sfx : shriek }}\` works).
+
+**Go-live & autoplay** — selecting a scene in the app is *silent* (the DM can
+prep while the previous atmosphere keeps playing). Hitting **▶ Go live** starts
+the default music track and every ambience layer except those marked
+\`"autoplay": false\`; those wait for their \`{{amb:...}}\` cue or a tap in the
+mixer. A storm that rolls in mid-scene is an \`autoplay: false\` bed with an
+\`{{amb:...}}\` cue at the right sentence — and a second cue later to cut it.
 
 **Structure** — a small, forgiving markdown subset:
 
@@ -153,8 +165,10 @@ file in the new shape.
 
 ### Field defaults
 - music \`volume\` 0.7, loops by default
-- ambience \`volume\` 0.4, always loops
-- sfx \`volume\` 0.9, \`duckMusic\` true (music dips ~8 dB while it plays)
+- ambience \`volume\` 0.4, loops by default, \`autoplay\` true (starts on ▶ Go
+  live; set \`false\` for beds driven by \`{{amb:...}}\` cues or manual taps)
+- sfx \`volume\` 0.9, \`duckMusic\` true (music dips ~8 dB while it plays);
+  \`loop: true\` makes it a sustained tap-on/tap-off loop instead of a one-shot
 - \`transition.crossfadeMs\` 2500
 
 ### Playlist mode (optional)

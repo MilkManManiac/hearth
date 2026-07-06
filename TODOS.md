@@ -269,6 +269,54 @@ Pixabay packs that need manual download) are listed in the scratchpad
 
 ---
 
+## 9. Project review → live-trust overhaul — ✅ Tiers 1–3 done (2026-07-06)
+Full review (2 scout agents + engine/store deep-read) found the app's gap was
+"works in a demo" vs "trustworthy at the table": audio you didn't ask for,
+sounds you can't see, things you can't undo. All three fix tiers shipped:
+
+**Tier 1 — live trust:**
+- **Arm vs. go-live:** clicking a scene is now SILENT (arms + prewarms; old
+  atmosphere keeps playing). New **▶ Go live** button (or double-click the
+  scene row) crossfades to the default track + starts autoplay beds + kills
+  held loops from the previous scene. Live scene shows an ember dot + badge.
+- **`{{amb:...}}` cue kind:** ambience beds are now script-cueable (toggle
+  on/off; ref = layer file or stem). Cue tray offers ambience (auto-registers
+  as `autoplay: false`); teleprompter Space walks them like any cue. New
+  `AmbienceLayer.autoplay` (default true) replaces the volume-0 hack.
+- **Now Sounding strip** (`NowSounding.tsx`): always-visible bottom strip
+  listing every audible thing (music/beds/loops — even orphans from other
+  scenes) with per-item kill switches + ⏹ All. Palette "Silence" removed
+  (redundant/differently-scoped).
+- **Keyboard scoping:** Triage/Library modals now suppress the teleprompter,
+  SFX hotkeys, and Esc-stopAll (Esc in a text field just blurs). Teleprompter
+  gained **← rewind**.
+- **Remove/rename affordances:** scene ✎ rename (inline) + 🗑 delete (to
+  recycle bin, `scene:delete` IPC) in the rail; ✕ remove on every track/SFX/
+  bed card; image ✕ remove + inline caption editing; per-bed `auto` toggle.
+- Volume-0 bed tap now bumps to 0.4 (audible) instead of playing silence.
+
+**Tier 2 — integrity:** watcher self-write suppression (no more echo reload
+~500ms after every save); `importSceneImages` edits raw JSON (no longer
+destroys `scriptText`); `importAssets` collision-renames instead of silently
+overwriting (shared `copyUnique` helper, races guarded by COPYFILE_EXCL);
+non-loop ambience `onended` cleanup (status stays truthful); playlist-order
+rebuild when tapping a track added after the playlist started; dead
+`campaign:reload` IPC removed; `campaign:reveal` failure surfaced.
+
+**Tier 3 — polish:** goblin-ambush's corrupted sample text rebuilt; demo scene
+converted from the looping-SFX hack to real `{{amb}}` cues; faders got
+numeric readout + double-click reset; bus volumes persist (`hearth:mixer`);
+AUTHORING.md + authoring.ts seed document amb cues/autoplay/go-live.
+
+**Review items deliberately left for later:** editable cue chips (retarget
+ref without delete+redrag), shared basename/prettyLabel helper cleanup +
+unified empty-state component, cue color-map dedupe (ScriptPanel vs CueChip),
+template ids shared const (main + SceneList), symlink-hardening the asset://
+path checks (realpath), engine decode-cache eviction, one-shot SFX not
+stopped by Stop all.
+
+---
+
 ## Process: grilling + docs skill
 - We'll likely do a **grill-me** session to pin down specs (esp. the editor
   rewrite and the playlist model) before building.

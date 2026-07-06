@@ -76,7 +76,10 @@ function uniqueAssetId(existing: { id: string }[], file: string): string {
 
 interface AppState {
   campaign: CampaignState
+  /** Scene shown on the board (armed). Selecting is silent — see goLive. */
   currentSceneId: string | null
+  /** Scene whose atmosphere was last started with goLive, or null. */
+  liveSceneId: string | null
   status: EngineStatus
   presenting: PresentingImage | null
   toasts: Toast[]
@@ -113,7 +116,13 @@ interface AppState {
   setPlaylistShuffle: (shuffle: boolean) => void
   setPlaylistLoop: (loop: boolean) => void
   setCampaign: (c: CampaignState) => void
+  /** Arm a scene: show its board and prewarm its assets. Plays nothing. */
   selectScene: (id: string) => Promise<void>
+  /**
+   * Take the armed scene live: stop held SFX loops from the previous scene,
+   * crossfade to the default track, and start its autoplay ambience beds.
+   */
+  goLive: () => Promise<void>
 
   fireCue: (node: CueInline) => void
   switchMusic: (trackId: string) => void
@@ -129,9 +138,22 @@ interface AppState {
   setAmbienceLayerLoop: (file: string, loop: boolean) => void
   /** Tap an ambience bed on/off independently of the scene's auto-loaded set. */
   toggleAmbience: (file: string) => void
+  /** Flip whether a bed starts automatically on go-live (persisted). */
+  setAmbienceAutoplay: (file: string, autoplay: boolean) => void
   showImage: (file: string, caption?: string) => void
   clearImage: () => void
   stopAll: () => void
+
+  // Palette housekeeping: pull an item off the scene (the file stays in the
+  // campaign/library; only the scene's reference is removed).
+  removeTrack: (trackId: string) => void
+  removeSfxItem: (sfxId: string) => void
+  removeAmbienceLayer: (file: string) => void
+  removeImage: (file: string) => void
+  setImageCaption: (file: string, caption: string) => void
+  renameScene: (sceneId: string, name: string) => void
+  /** Move the scene's JSON file to the OS trash. */
+  deleteScene: (sceneId: string) => Promise<void>
 
   updateScene: (sceneId: string, mutate: (s: Scene) => Scene) => Promise<void>
   /** Duplicate a scene to a new file ("Copy of X") and select the copy. */
@@ -149,6 +171,13 @@ interface AppState {
 
 function currentScene(state: AppState): Scene | null {
   return state.campaign.scenes.find((s) => s.id === state.currentSceneId) ?? null
+}
+
+/** Resolve an {{amb:...}} cue ref to a scene layer: exact file first, then filename stem. */
+function resolveAmbLayer(scene: Scene | null, ref: string) {
+  const layers = scene?.ambience ?? []
+  const stem = assetStem(ref).toLowerCase()
+  return layers.find((a) => a.file === ref) ?? layers.find((a) => assetStem(a.file).toLowerCase() === stem)
 }
 
 /** Start the playlist track at `pos`, wiring auto-advance into the engine. */
@@ -175,6 +204,7 @@ function playPlaylistTrack(get: () => AppState, pos: number): void {
 export const useStore = create<AppState>((set, get) => ({
   campaign: EMPTY_CAMPAIGN,
   currentSceneId: null,
+  liveSceneId: null,
   status: engine.status(),
   presenting: null,
   toasts: [],
@@ -186,7 +216,32 @@ export const useStore = create<AppState>((set, get) => ({
   playlistPos: 0,
 
   bootstrap: async () => {
-    engine.subscribe((status) => set({ status }))
+    // Restore the bus faders from the last session before wiring subscribers.
+    try {
+      const saved = JSON.parse(localStorage.getItem('hearth:mixer') ?? 'null')
+      if (saved) {
+        engine.setMasterVolume(saved.master ?? 0.9)
+        engine.setMusicVolume(saved.music ?? 1)
+        engine.setAmbienceVolume(saved.ambience ?? 1)
+        engine.setSfxVolume(saved.sfx ?? 1)
+      }
+    } catch {
+      /* corrupt prefs — fall back to defaults */
+    }
+    engine.subscribe((status) => {
+      set({ status })
+      debouncePersist('busvol', () =>
+        localStorage.setItem(
+          'hearth:mixer',
+          JSON.stringify({
+            master: status.masterVolume,
+            music: status.musicVolume,
+            ambience: status.ambienceVolume,
+            sfx: status.sfxVolume
+          })
+        )
+      )
+    })
     engine.onError((message) => get().pushToast(message, 'error'))
     window.hearth.onCampaignChanged((c) => get().setCampaign(c))
     const campaign = await window.hearth.getCampaign()
@@ -360,11 +415,24 @@ export const useStore = create<AppState>((set, get) => ({
   selectScene: async (id) => {
     const scene = get().campaign.scenes.find((s) => s.id === id)
     if (!scene) return
+    // Arm only: the DM can read the script and prep the board in silence while
+    // the previous scene's atmosphere keeps playing. goLive() starts the audio.
     set({ currentSceneId: id })
     engine.prewarm(scene)
+  },
+
+  goLive: async () => {
+    const scene = currentScene(get())
+    if (!scene) return
+    // Held loops belong to the outgoing atmosphere — never carry them across.
+    engine.stopAllSfxLoops()
+    set({ liveSceneId: scene.id })
     if (scene.playlist?.enabled && (scene.music?.length ?? 0) > 0) {
       // Playlist mode: the store drives music; the engine only handles ambience.
-      await engine.setAmbience(scene.ambience ?? [], scene.transition?.crossfadeMs)
+      await engine.setAmbience(
+        (scene.ambience ?? []).filter((a) => a.autoplay !== false),
+        scene.transition?.crossfadeMs
+      )
       get().startPlaylist()
     } else {
       await engine.loadScene(scene)
@@ -375,6 +443,11 @@ export const useStore = create<AppState>((set, get) => ({
     if (node.kind === 'music') get().switchMusic(node.ref)
     else if (node.kind === 'sfx') get().playSfx(node.ref)
     else if (node.kind === 'image') get().showImage(node.ref)
+    else if (node.kind === 'amb') {
+      const layer = resolveAmbLayer(currentScene(get()), node.ref)
+      if (layer) get().toggleAmbience(layer.file)
+      else get().pushToast(`No ambience bed matches "${node.ref}" on this scene`, 'error')
+    }
   },
 
   switchMusic: (trackId) => {
@@ -382,8 +455,17 @@ export const useStore = create<AppState>((set, get) => ({
     const track = scene?.music?.find((m) => m.id === trackId)
     if (!track || !scene) return
     if (scene.playlist?.enabled) {
-      // In playlist mode a palette/cue tap jumps the queue to that track.
-      const pos = get().playlistOrder.indexOf(trackId)
+      // In playlist mode a palette/cue tap jumps the queue to that track. If
+      // the track isn't in the order (added after the playlist started),
+      // rebuild the order so auto-advance keeps working instead of silently
+      // falling out of playlist mode.
+      let pos = get().playlistOrder.indexOf(trackId)
+      if (pos === -1) {
+        const ids = (scene.music ?? []).map((m) => m.id)
+        const order = scene.playlist.shuffle ? shuffled(ids) : ids
+        pos = order.indexOf(trackId)
+        set({ playlistOrder: order })
+      }
       if (pos !== -1) {
         set({ playlistPos: pos })
         playPlaylistTrack(get, pos)
@@ -468,8 +550,27 @@ export const useStore = create<AppState>((set, get) => ({
   toggleAmbience: (file) => {
     const layer = currentScene(get())?.ambience?.find((a) => a.file === file)
     if (!layer) return
-    if (get().status.ambienceFiles.includes(file)) engine.stopAmbienceLayer(file)
-    else engine.startAmbienceLayer(layer)
+    if (get().status.ambienceFiles.includes(file)) {
+      engine.stopAmbienceLayer(file)
+      return
+    }
+    // A zero-volume bed "plays" silently — indistinguishable from broken. Bump
+    // it to the default level (and persist) so a tap is always audible.
+    if ((layer.volume ?? 0.4) <= 0.001) {
+      engine.startAmbienceLayer({ ...layer, volume: 0.4 })
+      get().setAmbienceLayerVolume(file, 0.4)
+    } else {
+      engine.startAmbienceLayer(layer)
+    }
+  },
+
+  setAmbienceAutoplay: (file, autoplay) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      ambience: (s.ambience ?? []).map((a) => (a.file === file ? { ...a, autoplay } : a))
+    }))
   },
 
   showImage: (file, caption) => {
@@ -486,6 +587,74 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   stopAll: () => engine.stopAll(),
+
+  removeTrack: (trackId) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    if (get().status.activeMusicId === trackId) engine.stopMusic()
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      music: (s.music ?? []).filter((m) => m.id !== trackId)
+    }))
+  },
+
+  removeSfxItem: (sfxId) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    engine.stopSfxLoop(sfxId)
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      sfx: (s.sfx ?? []).filter((x) => x.id !== sfxId)
+    }))
+  },
+
+  removeAmbienceLayer: (file) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    engine.stopAmbienceLayer(file)
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      ambience: (s.ambience ?? []).filter((a) => a.file !== file)
+    }))
+  },
+
+  removeImage: (file) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    if (get().presenting?.file === file) get().clearImage()
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      images: (s.images ?? []).filter((i) => i.file !== file)
+    }))
+  },
+
+  setImageCaption: (file, caption) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    get().updateScene(scene.id, (s) => ({
+      ...s,
+      images: (s.images ?? []).map((i) =>
+        i.file === file ? { ...i, caption: caption.trim() || undefined } : i
+      )
+    }))
+  },
+
+  renameScene: (sceneId, name) => {
+    const trimmed = name.trim()
+    if (!trimmed) return
+    get().updateScene(sceneId, (s) => ({ ...s, name: trimmed }))
+  },
+
+  deleteScene: async (sceneId) => {
+    try {
+      const state = await window.hearth.deleteScene(sceneId)
+      if (get().liveSceneId === sceneId) set({ liveSceneId: null })
+      get().setCampaign(state)
+      get().pushToast('Scene moved to the recycle bin', 'info')
+    } catch (err) {
+      get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
+    }
+  },
 
   updateScene: async (sceneId, mutate) => {
     const scene = get().campaign.scenes.find((s) => s.id === sceneId)

@@ -1,4 +1,4 @@
-import { app, dialog } from 'electron'
+import { app, dialog, shell } from 'electron'
 import { promises as fs } from 'fs'
 import * as fsSync from 'fs'
 import * as path from 'path'
@@ -110,9 +110,40 @@ export class CampaignManager {
   private campaignPath: string
   private watcher: FSWatcher | null = null
   private reloadTimer: NodeJS.Timeout | null = null
+  /**
+   * Timestamp of the last write WE made into the campaign folder. The watcher
+   * skips its reload-broadcast within a short window of this, so our own saves
+   * don't echo back as a second `campaign:changed` (which could stomp in-flight
+   * renderer state). Every mutating method already returns/broadcasts fresh
+   * state itself, so nothing is lost by suppressing the echo.
+   */
+  private lastInternalWrite = 0
 
   constructor(private onChange: (state: CampaignState) => void) {
     this.campaignPath = readConfig().campaignPath ?? defaultCampaignPath()
+  }
+
+  private markWrite(): void {
+    this.lastInternalWrite = Date.now()
+  }
+
+  /**
+   * Copy `src` into `destDir` as `stem+ext`, appending -2, -3… on collision.
+   * COPYFILE_EXCL guards the check-then-copy race. Returns the final basename.
+   * Never overwrites existing campaign files.
+   */
+  private async copyUnique(src: string, destDir: string, stem: string, ext: string): Promise<string> {
+    let base = `${stem}${ext}`
+    for (let n = 2; ; n++) {
+      try {
+        await fs.copyFile(src, path.join(destDir, base), fsSync.constants.COPYFILE_EXCL)
+        this.markWrite()
+        return base
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err
+        base = `${stem}-${n}${ext}`
+      }
+    }
   }
 
   get path(): string {
@@ -203,6 +234,10 @@ export class CampaignManager {
     const trigger = () => {
       if (this.reloadTimer) clearTimeout(this.reloadTimer)
       this.reloadTimer = setTimeout(async () => {
+        // Our own writes already broadcast fresh state from their handlers —
+        // suppress the watcher echo (chokidar stability + this debounce put the
+        // event ~500ms after the write; 1500ms covers slow disks comfortably).
+        if (Date.now() - this.lastInternalWrite < 1500) return
         this.onChange(await this.load())
       }, 200)
     }
@@ -243,6 +278,7 @@ export class CampaignManager {
       throw new Error('refusing to write outside campaign folder')
     }
     await fs.writeFile(dest, JSON.stringify(rest, null, 2))
+    this.markWrite()
     return this.load()
   }
 
@@ -268,6 +304,7 @@ export class CampaignManager {
     void _sourceFile
     void _oldId
     await fs.writeFile(path.join(dir, `${stem}.json`), JSON.stringify({ id: stem, ...rest }, null, 2))
+    this.markWrite()
     return { state: await this.load(), sceneId: stem }
   }
 
@@ -290,6 +327,20 @@ export class CampaignManager {
     return this.writeNewScene(structuredClone(template))
   }
 
+  /** Move a scene's JSON to the OS trash (recoverable — never a hard delete). */
+  async deleteScene(sceneId: string): Promise<CampaignState> {
+    const scene = (await this.loadScenes([])).find((s) => s.id === sceneId)
+    if (!scene?._sourceFile) throw new Error(`scene "${sceneId}" not found`)
+    const abs = path.join(this.campaignPath, scene._sourceFile)
+    const root = path.resolve(this.campaignPath)
+    if (!path.resolve(abs).startsWith(root + path.sep)) {
+      throw new Error('refusing to delete outside campaign folder')
+    }
+    await shell.trashItem(abs)
+    this.markWrite()
+    return this.load()
+  }
+
   /** Copy user-picked files into the campaign's <kind> folder and index them. */
   async importAssets(kind: AssetKind): Promise<CampaignState> {
     const res = await dialog.showOpenDialog({
@@ -305,9 +356,11 @@ export class CampaignManager {
     const known = new Set(lib.assets.map((a) => a.file))
 
     for (const src of res.filePaths) {
-      const base = path.basename(src)
-      const dest = path.join(destDir, base)
-      await fs.copyFile(src, dest)
+      // Collision-rename (-2, -3…) like every other copy path — a same-named
+      // import must never silently overwrite an existing campaign file.
+      const ext = path.extname(src)
+      const stem = path.basename(src, ext)
+      const base = await this.copyUnique(src, destDir, stem, ext)
       const rel = `${kind}/${base}`
       if (!known.has(rel)) {
         lib.assets.push({ file: rel, kind, tags: [], source: 'user-upload', license: 'owned' })
@@ -318,6 +371,7 @@ export class CampaignManager {
       path.join(this.campaignPath, 'library.json'),
       JSON.stringify(lib, null, 2)
     )
+    this.markWrite()
     return this.load()
   }
 
@@ -338,7 +392,7 @@ export class CampaignManager {
     if (res.canceled || res.filePaths.length === 0) return null
 
     const scene = (await this.loadScenes([])).find((s) => s.id === sceneId)
-    if (!scene) throw new Error(`scene "${sceneId}" not found`)
+    if (!scene?._sourceFile) throw new Error(`scene "${sceneId}" not found`)
 
     const destDir = path.join(this.campaignPath, 'art')
     await fs.mkdir(destDir, { recursive: true })
@@ -346,13 +400,18 @@ export class CampaignManager {
     for (const src of res.filePaths) {
       const ext = path.extname(src).toLowerCase()
       const stem = slugify(path.basename(src, path.extname(src)))
-      let base = `${stem}${ext}`
-      for (let n = 2; fsSync.existsSync(path.join(destDir, base)); n++) base = `${stem}-${n}${ext}`
-      await fs.copyFile(src, path.join(destDir, base), fsSync.constants.COPYFILE_EXCL)
+      const base = await this.copyUnique(src, destDir, stem, ext)
       images.push({ file: `art/${base}` })
     }
-    scene.images = [...(scene.images ?? []), ...images]
-    return { state: await this.saveScene(scene), added: images.length }
+    // Edit the raw on-disk JSON (like duplicateScene) instead of saving the
+    // compiled runtime scene — otherwise adding an image would silently
+    // convert a Claude-authored scriptText scene to structured `script`.
+    const scenePath = path.join(this.campaignPath, scene._sourceFile)
+    const raw = JSON.parse(await fs.readFile(scenePath, 'utf-8')) as Scene
+    raw.images = [...(raw.images ?? []), ...images]
+    await fs.writeFile(scenePath, JSON.stringify(raw, null, 2))
+    this.markWrite()
+    return { state: await this.load(), added: images.length }
   }
 
   // --- Sound triage (review inbox for a drop folder of candidates) ---
@@ -418,9 +477,7 @@ export class CampaignManager {
     const stem = slugify(req.name.trim() || path.basename(req.rel, path.extname(req.rel)))
     const destDir = path.join(this.campaignPath, req.kind)
     await fs.mkdir(destDir, { recursive: true })
-    let base = `${stem}${ext}`
-    for (let n = 2; fsSync.existsSync(path.join(destDir, base)); n++) base = `${stem}-${n}${ext}`
-    await fs.copyFile(src, path.join(destDir, base), fsSync.constants.COPYFILE_EXCL)
+    const base = await this.copyUnique(src, destDir, stem, ext)
     const lib = await this.loadLibrary([])
     const asset: LibraryAsset = { file: `${req.kind}/${base}`, kind: req.kind, tags: req.tags }
     if (req.category) asset.category = req.category
@@ -428,6 +485,7 @@ export class CampaignManager {
     if (req.license) asset.license = req.license
     lib.assets.push(asset)
     await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    this.markWrite()
     return this.load()
   }
 

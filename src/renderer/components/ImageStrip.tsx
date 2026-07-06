@@ -1,10 +1,25 @@
+import { useEffect, useRef, useState } from 'react'
 import type { Scene } from '../../shared/types'
 import { useStore } from '../store'
 import { assetUrl } from '../lib/asset'
 
 export default function ImageStrip({ scene }: { scene: Scene }) {
-  const { presenting, showImage, clearImage, importSceneImages } = useStore()
+  const { presenting, showImage, clearImage, importSceneImages, removeImage, setImageCaption } =
+    useStore()
   const images = scene.images ?? []
+  // Inline caption editing: which image file is being edited + the draft text.
+  const [editingFile, setEditingFile] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const captionRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (editingFile) captionRef.current?.select()
+  }, [editingFile])
+
+  const commitCaption = (): void => {
+    if (editingFile) setImageCaption(editingFile, draft)
+    setEditingFile(null)
+  }
 
   return (
     <section className="flex flex-col">
@@ -33,31 +48,65 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
         <div className="grid grid-cols-2 gap-2">
           {images.map((img) => {
             const active = presenting?.file === img.file
+            const editing = editingFile === img.file
             return (
-              <button
+              <div
                 key={img.file}
-                onClick={() => showImage(img.file, img.caption)}
                 className={`group relative overflow-hidden rounded-md border ${
                   active ? 'border-hearth-ember ring-1 ring-hearth-ember' : 'border-hearth-border'
                 }`}
-                title={img.caption ?? img.file}
               >
-                <img
-                  src={assetUrl(img.file)}
-                  alt={img.caption ?? ''}
-                  className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
-                />
-                {img.caption && (
-                  <span className="absolute inset-x-0 bottom-0 truncate bg-black/60 px-1.5 py-0.5 text-[11px] text-hearth-text">
-                    {img.caption}
-                  </span>
+                <button
+                  onClick={() => showImage(img.file, img.caption)}
+                  className="block w-full"
+                  title={img.caption ?? img.file}
+                >
+                  <img
+                    src={assetUrl(img.file)}
+                    alt={img.caption ?? ''}
+                    className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
+                  />
+                </button>
+                {editing ? (
+                  <input
+                    ref={captionRef}
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onBlur={commitCaption}
+                    onKeyDown={(e) => {
+                      e.stopPropagation()
+                      if (e.key === 'Enter') commitCaption()
+                      if (e.key === 'Escape') setEditingFile(null)
+                    }}
+                    placeholder="caption…"
+                    className="absolute inset-x-0 bottom-0 border-0 bg-black/80 px-1.5 py-0.5 text-[11px] text-hearth-text focus:outline-none"
+                  />
+                ) : (
+                  <button
+                    onClick={() => {
+                      setDraft(img.caption ?? '')
+                      setEditingFile(img.file)
+                    }}
+                    title="Edit caption"
+                    className="absolute inset-x-0 bottom-0 truncate bg-black/60 px-1.5 py-0.5 text-left text-[11px] text-hearth-text opacity-0 transition-opacity focus:opacity-100 group-hover:opacity-100"
+                    style={img.caption ? { opacity: 1 } : undefined}
+                  >
+                    {img.caption ?? <span className="text-hearth-muted">＋ caption</span>}
+                  </button>
                 )}
                 {active && (
                   <span className="absolute right-1 top-1 rounded bg-hearth-ember px-1 text-[9px] font-semibold uppercase text-black">
                     live
                   </span>
                 )}
-              </button>
+                <button
+                  onClick={() => removeImage(img.file)}
+                  title="Remove from this scene (the file stays in art/)"
+                  className="absolute left-1 top-1 hidden h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[11px] text-hearth-text hover:bg-red-500/80 group-hover:flex"
+                >
+                  ✕
+                </button>
+              </div>
             )
           })}
         </div>

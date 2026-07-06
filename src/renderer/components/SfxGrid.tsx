@@ -9,6 +9,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
   const playSfx = useStore((s) => s.playSfx)
   const setSfxItemVolume = useStore((s) => s.setSfxItemVolume)
   const setSfxItemLoop = useStore((s) => s.setSfxItemLoop)
+  const removeSfxItem = useStore((s) => s.removeSfxItem)
   const loopingSfxIds = useStore((s) => s.status.loopingSfxIds)
   const openLibrary = useStore((s) => s.openLibrary)
   const recents = useRecents()
@@ -29,8 +30,11 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
     const map = new Map(sfx.filter((s) => s.hotkey).map((s) => [s.hotkey!.toLowerCase(), s]))
     if (map.size === 0) return
     const onKey = (e: KeyboardEvent) => {
+      // A modal owns the keyboard — K/J in Triage must not fire scene SFX.
+      const st = useStore.getState()
+      if (st.libraryOpen || st.triage) return
       const target = e.target as HTMLElement
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
       const item = map.get(e.key.toLowerCase())
       if (item) {
         e.preventDefault()
@@ -104,6 +108,16 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
               <div className="flex items-center gap-2">
                 <VolumeFader value={s.volume} defaultValue={0.9} onChange={(v) => setSfxItemVolume(s.id, v)} />
                 <LoopButton on={!!s.loop} onClick={() => setSfxItemLoop(s.id, !s.loop)} title="Loop (hold) this sound" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    removeSfxItem(s.id)
+                  }}
+                  title="Remove from this scene (the file stays in the library)"
+                  className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                >
+                  ✕
+                </button>
               </div>
             </div>
           )

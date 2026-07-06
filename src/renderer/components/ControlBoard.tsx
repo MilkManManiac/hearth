@@ -12,10 +12,12 @@ import IdeasPanel from './IdeasPanel'
 import CastPanel from './CastPanel'
 import Toasts from './Toasts'
 import LibraryPanel from './LibraryPanel'
+import NowSounding from './NowSounding'
 
 export default function ControlBoard() {
-  const { campaign, currentSceneId } = useStore()
+  const { campaign, currentSceneId, liveSceneId, goLive } = useStore()
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
+  const isLive = !!scene && scene.id === liveSceneId
 
   return (
     <div className="hearth-ambient flex h-full flex-col text-hearth-text">
@@ -29,9 +31,28 @@ export default function ControlBoard() {
           ) : (
             <>
               <div>
-                <h2 className="font-display text-3xl font-semibold tracking-tight text-hearth-text">
-                  {scene.name}
-                </h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="font-display text-3xl font-semibold tracking-tight text-hearth-text">
+                    {scene.name}
+                  </h2>
+                  {isLive ? (
+                    <span
+                      className="flex items-center gap-1.5 rounded-full border border-hearth-ember/60 bg-hearth-ember/10 px-2.5 py-1 text-xs text-hearth-ember"
+                      title="This scene's atmosphere is playing"
+                    >
+                      <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-hearth-ember" />
+                      live
+                    </span>
+                  ) : (
+                    <button
+                      onClick={goLive}
+                      title="Start this scene's atmosphere: crossfade to its default track and start its ambience beds. Until then, selecting a scene is silent."
+                      className="rounded-full border border-hearth-ember bg-hearth-ember/15 px-3 py-1 text-sm text-hearth-ember shadow-ember transition-colors hover:bg-hearth-ember/30"
+                    >
+                      ▶ Go live
+                    </button>
+                  )}
+                </div>
                 <div className="mt-2 h-px w-full bg-gradient-to-r from-hearth-ember/50 via-hearth-border to-transparent" />
                 {scene.dmNotes && (
                   <p className="mt-3 rounded border-l-2 border-hearth-emberdim/60 bg-hearth-panel/40 px-3 py-2 text-sm italic text-hearth-muted">
@@ -49,6 +70,7 @@ export default function ControlBoard() {
 
         {scene && <RightPanel scene={scene} />}
       </div>
+      <NowSounding />
       <LibraryPanel />
       <Toasts />
     </div>

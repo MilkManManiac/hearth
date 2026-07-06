@@ -248,7 +248,9 @@ export class AudioEngine {
     } else {
       this.stopMusic(fade)
     }
-    await this.setAmbience(scene.ambience ?? [], fade)
+    // Only autoplay beds start with the scene; script-driven beds (autoplay:
+    // false) wait for their {{amb:...}} cue or a tap in the mixer.
+    await this.setAmbience((scene.ambience ?? []).filter((a) => a.autoplay !== false), fade)
   }
 
   async switchMusic(
@@ -390,9 +392,25 @@ export class AudioEngine {
       source.connect(gain)
       gain.connect(this.ambienceBus)
       source.start()
+      this.trackAmbienceEnd(layer.file, source)
       this.activeAmbience.push({ file: layer.file, source, gain, norm })
     }
     this.emit()
+  }
+
+  /**
+   * Keep status truthful for non-looping beds: when the source ends naturally,
+   * drop it from activeAmbience (a manual stop replaces the entry first, so the
+   * identity check makes stale onended calls harmless).
+   */
+  private trackAmbienceEnd(file: string, source: AudioBufferSourceNode): void {
+    source.onended = () => {
+      const cur = this.activeAmbience.find((a) => a.file === file)
+      if (cur?.source === source) {
+        this.activeAmbience = this.activeAmbience.filter((a) => a !== cur)
+        this.emit()
+      }
+    }
   }
 
   /** Start a single ambience layer (tap-to-play), leaving others untouched. */
@@ -420,6 +438,7 @@ export class AudioEngine {
     source.connect(gain)
     gain.connect(this.ambienceBus)
     source.start()
+    this.trackAmbienceEnd(layer.file, source)
     this.activeAmbience.push({ file: layer.file, source, gain, norm })
     this.emit()
   }
@@ -535,7 +554,12 @@ export class AudioEngine {
   stopAll(crossfadeMs = 600): void {
     this.stopMusic(crossfadeMs)
     this.setAmbience([], crossfadeMs)
-    for (const id of [...this.activeSfxLoops.keys()]) this.stopSfxLoop(id, crossfadeMs / 1000)
+    this.stopAllSfxLoops(crossfadeMs / 1000)
+  }
+
+  /** Stop every sustained looping SFX (used on stop-all and scene go-live). */
+  stopAllSfxLoops(fadeSec = 0.3): void {
+    for (const id of [...this.activeSfxLoops.keys()]) this.stopSfxLoop(id, fadeSec)
   }
 
   // --- Live per-item mixing (the "mini mixer") -----------------------------

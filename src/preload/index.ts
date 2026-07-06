@@ -47,7 +47,6 @@ export interface TriageKeepRequest {
 
 const api = {
   getCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:get'),
-  reloadCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:reload'),
   chooseCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:choose'),
   importAssets: (kind: AssetKind): Promise<CampaignState> => ipcRenderer.invoke('campaign:import', kind),
   saveScene: (scene: Scene): Promise<CampaignState> => ipcRenderer.invoke('scene:save', scene),
@@ -57,6 +56,8 @@ const api = {
     ipcRenderer.invoke('scene:duplicate', sceneId),
   createScene: (templateId: string): Promise<SceneWriteResult> =>
     ipcRenderer.invoke('scene:create', templateId),
+  deleteScene: (sceneId: string): Promise<CampaignState> =>
+    ipcRenderer.invoke('scene:delete', sceneId),
   pickTriageFolder: (): Promise<TriageScan | null> => ipcRenderer.invoke('triage:pick'),
   triageKeep: (req: TriageKeepRequest): Promise<CampaignState> =>
     ipcRenderer.invoke('triage:keep', req),

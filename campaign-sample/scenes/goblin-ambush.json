@@ -7,7 +7,7 @@
       "id": "travel",
       "label": "Uneasy travel",
       "file": "music/town.mp3",
-      "volume": 0.2,
+      "volume": 0.37,
       "default": true
     },
     {
@@ -20,27 +20,27 @@
       "id": "regroup",
       "label": "Regroup",
       "file": "music/market.mp3",
-      "volume": 0.87
+      "volume": 0.54
     }
   ],
   "ambience": [
     {
       "file": "ambience/forest.mp3",
-      "volume": 0.41,
+      "volume": 0,
       "loop": true
     },
     {
       "file": "ambience/campfire.wav",
-      "volume": 0.74,
+      "volume": 0.44,
       "loop": true
     },
     {
       "file": "ambience/rain-storm.ogg",
-      "volume": 0.81
+      "volume": 0.59
     },
     {
       "file": "ambience/wind-whoosh.ogg",
-      "volume": 0.21
+      "volume": 0.45
     }
   ],
   "sfx": [
@@ -160,7 +160,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The road narrow s b eneath ancient o aks, their branches knitting out the last of the daylight. Bird son g th   ins, "
+          "text": "The road narrows beneath ancient oaks, their branches knitting out the last of the daylight. Birdsong thins, "
         },
         {
           "type": "cue",
@@ -170,7 +170,7 @@
         },
         {
           "type": "text",
-          "text": " then stops entirely.  Shapes drop from the canopy — "
+          "text": " then stops entirely. Shapes drop from the canopy — "
         },
         {
           "type": "cue",
@@ -180,7 +180,7 @@
         },
         {
           "type": "text",
-          "text": " — and a snarling voice barks from th"
+          "text": " — and a snarling voice barks from the brush "
         },
         {
           "type": "cue",
@@ -190,13 +190,26 @@
         },
         {
           "type": "text",
-          "text": " e brush: \"Take the fat one alive!\" "
+          "text": ": "
+        },
+        {
+          "type": "text",
+          "text": "\"Take the fat one alive!\"",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " "
         },
         {
           "type": "cue",
           "kind": "image",
           "ref": "art/krag.svg",
-          "label": "🖼 art/krag.svg"
+          "label": "🖼 Krag the Vile"
         },
         {
           "type": "text",
@@ -210,7 +223,7 @@
         },
         {
           "type": "text",
-          "text": "as the first goblin lunges. "
+          "text": " as the first goblin lunges. "
         },
         {
           "type": "cue",

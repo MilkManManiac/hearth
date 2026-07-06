@@ -24,9 +24,14 @@ export function VolumeFader({
       max={1}
       step={0.01}
       value={v}
-      title={`Volume ${Math.round(v * 100)}%`}
+      title={`Volume ${Math.round(v * 100)}% — double-click to reset to ${Math.round(defaultValue * 100)}%`}
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        setV(defaultValue)
+        onChange(defaultValue)
+      }}
       onChange={(e) => {
         const nv = parseFloat(e.target.value)
         setV(nv)

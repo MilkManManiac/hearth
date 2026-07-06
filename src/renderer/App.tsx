@@ -17,12 +17,18 @@ function MainApp() {
   }, [bootstrap])
 
   // Panic hotkey: Esc = the Silence button (fade out music + ambience).
-  // Skipped while the library browser is open — there Esc means "close the modal".
+  // Skipped while a modal is open (there Esc means "close the modal") and while
+  // typing (there Esc means "leave this field", not "kill the session's audio").
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       const s = useStore.getState()
-      if (s.libraryOpen) return
+      if (s.libraryOpen || s.triage) return
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
+        t.blur()
+        return
+      }
       s.stopAll()
     }
     window.addEventListener('keydown', onKey)

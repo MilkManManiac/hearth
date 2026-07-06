@@ -4,7 +4,8 @@ import type { CueKind } from '../../shared/types'
 const KIND_CLASS: Record<CueKind, string> = {
   music: 'border-hearth-ember/60 bg-hearth-ember/15 text-hearth-ember',
   sfx: 'border-hearth-gold/60 bg-hearth-gold/10 text-hearth-gold',
-  image: 'border-sky-500/50 bg-sky-500/10 text-sky-300'
+  image: 'border-sky-500/50 bg-sky-500/10 text-sky-300',
+  amb: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
 }
 
 /**

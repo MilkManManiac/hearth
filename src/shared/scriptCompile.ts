@@ -7,12 +7,13 @@ import type {
   ScriptMark
 } from './types'
 
-const CUE_RE = /\{\{\s*(music|sfx|image)\s*:\s*([^}]+?)\s*\}\}/g
+const CUE_RE = /\{\{\s*(music|sfx|image|amb)\s*:\s*([^}]+?)\s*\}\}/g
 
 const CUE_ICON: Record<CueKind, string> = {
   music: '▶',
   sfx: '🔊',
-  image: '🖼'
+  image: '🖼',
+  amb: '〜'
 }
 
 function cueLabel(kind: CueKind, ref: string): string {

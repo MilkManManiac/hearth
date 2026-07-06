@@ -4,10 +4,12 @@ import TriagePanel from './TriagePanel'
 function Slider({
   label,
   value,
+  defaultValue,
   onChange
 }: {
   label: string
   value: number
+  defaultValue: number
   onChange: (v: number) => void
 }) {
   return (
@@ -19,9 +21,12 @@ function Slider({
         max={1}
         step={0.01}
         value={value}
+        title={`${label} ${Math.round(value * 100)}% — double-click to reset`}
+        onDoubleClick={() => onChange(defaultValue)}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-28"
       />
+      <span className="w-8 tabular-nums text-hearth-muted/70">{Math.round(value * 100)}%</span>
     </label>
   )
 }
@@ -109,12 +114,12 @@ export default function TopBar() {
 
       <div className="ml-auto flex flex-col gap-1">
         <div className="flex gap-4">
-          <Slider label="Master" value={status.masterVolume} onChange={(v) => engine.setMasterVolume(v)} />
-          <Slider label="Music" value={status.musicVolume} onChange={(v) => engine.setMusicVolume(v)} />
+          <Slider label="Master" value={status.masterVolume} defaultValue={0.9} onChange={(v) => engine.setMasterVolume(v)} />
+          <Slider label="Music" value={status.musicVolume} defaultValue={1} onChange={(v) => engine.setMusicVolume(v)} />
         </div>
         <div className="flex gap-4">
-          <Slider label="Ambience" value={status.ambienceVolume} onChange={(v) => engine.setAmbienceVolume(v)} />
-          <Slider label="SFX" value={status.sfxVolume} onChange={(v) => engine.setSfxVolume(v)} />
+          <Slider label="Ambience" value={status.ambienceVolume} defaultValue={1} onChange={(v) => engine.setAmbienceVolume(v)} />
+          <Slider label="SFX" value={status.sfxVolume} defaultValue={1} onChange={(v) => engine.setSfxVolume(v)} />
         </div>
       </div>
 

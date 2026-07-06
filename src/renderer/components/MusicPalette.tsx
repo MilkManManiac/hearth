@@ -7,10 +7,10 @@ import SectionHeader from './SectionHeader'
 
 export default function MusicPalette({ scene }: { scene: Scene }) {
   const { status, switchMusic } = useStore()
-  const stopAll = useStore((s) => s.stopAll)
   const setPlaylistEnabled = useStore((s) => s.setPlaylistEnabled)
   const setTrackVolume = useStore((s) => s.setTrackVolume)
   const setTrackLoop = useStore((s) => s.setTrackLoop)
+  const removeTrack = useStore((s) => s.removeTrack)
   const openLibrary = useStore((s) => s.openLibrary)
   const tracks = scene.music ?? []
   const playlistOn = !!scene.playlist?.enabled
@@ -57,7 +57,7 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
           return (
             <div
               key={track.id}
-              className={`flex w-44 flex-col gap-1.5 rounded-md border px-3 py-2 shadow-card transition-all ${
+              className={`group flex w-44 flex-col gap-1.5 rounded-md border px-3 py-2 shadow-card transition-all ${
                 active
                   ? 'border-hearth-ember bg-hearth-ember/15 shadow-ember'
                   : 'border-hearth-border bg-hearth-panel2 hover:border-hearth-ember/60'
@@ -87,17 +87,20 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
                   onClick={() => setTrackLoop(track.id, track.loop === false)}
                   title="Loop this track"
                 />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    removeTrack(track.id)
+                  }}
+                  title="Remove from this scene (the file stays in the library)"
+                  className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                >
+                  ✕
+                </button>
               </div>
             </div>
           )
         })}
-        <button
-          onClick={() => stopAll()}
-          className="rounded-md border border-hearth-border bg-transparent px-3 py-2 text-sm text-hearth-muted hover:text-hearth-text"
-          title="Fade out music and ambience"
-        >
-          ⏹ Silence
-        </button>
       </div>
       )}
     </section>

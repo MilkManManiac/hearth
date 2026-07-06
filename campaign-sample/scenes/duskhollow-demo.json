@@ -1,13 +1,14 @@
 {
   "id": "duskhollow-demo",
   "name": "Duskhollow — A Fair Day Turns (demo)",
-  "dmNotes": "Showcase scene, fully Space-driven. Three beats: sunny town → nightfall & storm → eerie shrine. Press Space to walk every cue in order — music crossfades, one-shot SFX, and the ambient beds (crowd/wind/rain/dripping/temple/ghostly), which are SUSTAINED LOOPING SFX: they fade in on their cue and keep looping until their cue fires again (crowd cuts at 'stalls empty'; rain & wind cut at the shrine door). Weather + cave beds are pro field recordings (Nox_Sound). All CC0.",
+  "dmNotes": "Showcase scene, fully Space-driven. Select it (silent), hit ▶ Go live for the fair-day theme, then press Space to walk every cue in order — music crossfades, one-shot SFX, and ambience beds toggled by {{amb}} cues (crowd cuts at 'stalls empty'; rain & wind cut at the shrine door). Beds are autoplay:false — script-driven. Weather + cave beds are pro field recordings (Nox_Sound). All CC0.",
   "music": [
     {
       "id": "town",
       "label": "Fair-day town",
       "file": "music/town-peaceful.mp3",
-      "volume": 0.45
+      "volume": 0.45,
+      "default": true
     },
     {
       "id": "market",
@@ -34,7 +35,44 @@
       "volume": 0.48
     }
   ],
-  "ambience": [],
+  "ambience": [
+    {
+      "file": "ambience/fap-crowd.ogg",
+      "volume": 0.35,
+      "loop": true,
+      "autoplay": false
+    },
+    {
+      "file": "ambience/nox-wind-forest.ogg",
+      "volume": 0.4,
+      "loop": true,
+      "autoplay": false
+    },
+    {
+      "file": "ambience/nox-rain-strong.ogg",
+      "volume": 0.5,
+      "loop": true,
+      "autoplay": false
+    },
+    {
+      "file": "ambience/nox-cave-drips.ogg",
+      "volume": 0.45,
+      "loop": true,
+      "autoplay": false
+    },
+    {
+      "file": "ambience/evil-temple.ogg",
+      "volume": 0.45,
+      "loop": true,
+      "autoplay": false
+    },
+    {
+      "file": "ambience/ghostly-loop.mp3",
+      "volume": 0.4,
+      "loop": true,
+      "autoplay": false
+    }
+  ],
   "sfx": [
     {
       "id": "coins",
@@ -83,54 +121,6 @@
       "file": "sfx/dark-magic-spell.mp3",
       "hotkey": "7",
       "duckMusic": true
-    },
-    {
-      "id": "crowd",
-      "label": "Market crowd (loop)",
-      "file": "ambience/fap-crowd.ogg",
-      "hotkey": "c",
-      "loop": true,
-      "volume": 0.35
-    },
-    {
-      "id": "wind",
-      "label": "Wind bed (loop)",
-      "file": "ambience/nox-wind-forest.ogg",
-      "hotkey": "w",
-      "loop": true,
-      "volume": 0.4
-    },
-    {
-      "id": "rain",
-      "label": "Rain bed (loop)",
-      "file": "ambience/nox-rain-strong.ogg",
-      "hotkey": "r",
-      "loop": true,
-      "volume": 0.5
-    },
-    {
-      "id": "dripping",
-      "label": "Dripping bed (loop)",
-      "file": "ambience/nox-cave-drips.ogg",
-      "hotkey": "d",
-      "loop": true,
-      "volume": 0.45
-    },
-    {
-      "id": "templebed",
-      "label": "Temple bed (loop)",
-      "file": "ambience/evil-temple.ogg",
-      "hotkey": "t",
-      "loop": true,
-      "volume": 0.45
-    },
-    {
-      "id": "ghostly",
-      "label": "Ghostly bed (loop)",
-      "file": "ambience/ghostly-loop.mp3",
-      "hotkey": "g",
-      "loop": true,
-      "volume": 0.4
     }
   ],
   "ideas": [
@@ -148,5 +138,5 @@
   "transition": {
     "crossfadeMs": 2500
   },
-  "scriptText": "# Duskhollow — A Fair Day Turns\n\n## Market Square, Midday\n\n{{music:town}} The morning bells have long since faded, and Duskhollow's market square {{sfx:crowd}} glows under a flawless sky. Awnings snap in a warm breeze, a fiddler saws out a jig, and the smell of fresh bread drifts between the stalls. A coin-seller counts his take {{sfx:coins}} and waves you toward his trinkets. *It is, by every measure, a beautiful day.*\n\n> [!dm] Space starts the fair-day theme, then the market crowd bed, then the coin clink. Let them breathe here — this is the calm before.\n\n## Dusk, and the Rain\n\nBut the light is going wrong. {{music:storm}} Clouds the color of old bruises pile over the eastern hills, and a cold wind rises {{sfx:wind}} that tugs at cloaks and strangles the fiddler's tune. The first fat drops strike the cobbles, thunder rolls across the rooftops {{sfx:thunder}} — then the sky opens {{sfx:rain}}. Stalls empty, shutters slam {{sfx:crowd}}. One of you strikes a lantern against the gloom {{sfx:torch}}, and its little flame is the only warm thing left in Duskhollow.\n\n> [!dm] The wind and rain loops fade in on Space; the second crowd cue at \"stalls empty\" shuts the crowd off. Sustained beds keep looping until fired again.\n\n## The Sunless Shrine\n\nThe road out of town ends at a door that should not be here — black stone, older than Duskhollow itself. It groans inward at a touch {{sfx:door}}, and the storm cuts off behind you {{sfx:rain}} {{sfx:wind}}. Inside, the air is cold and still and *wrong*. {{music:temple}} Water drips somewhere in the dark {{sfx:dripping}}, and the shrine itself seems to hold its breath {{sfx:templebed}}. Something breathes that has no business breathing {{sfx:ghost}}, and the shadows will not stay still {{sfx:ghostly}}. Far below, beneath the altar, you feel a slow, patient pulse — like a heart the size of a room {{sfx:heart}}. **You are not alone in here.** {{sfx:spell}}\n\n> [!dm] The rain and wind chips at the door fire those loops a second time to cut the storm as they step inside. Then dripping and the temple bed come in, then the ghostly loop. Save the dark-magic sting for the last line."
+  "scriptText": "# Duskhollow — A Fair Day Turns\n\n## Market Square, Midday\n\n{{music:town}} The morning bells have long since faded, and Duskhollow's market square {{amb:fap-crowd}} glows under a flawless sky. Awnings snap in a warm breeze, a fiddler saws out a jig, and the smell of fresh bread drifts between the stalls. A coin-seller counts his take {{sfx:coins}} and waves you toward his trinkets. *It is, by every measure, a beautiful day.*\n\n> [!dm] Hit ▶ Go live, then walk the cues with Space: the fair-day theme, the market crowd bed, the coin clink. Let them breathe here — this is the calm before.\n\n## Dusk, and the Rain\n\nBut the light is going wrong. {{music:storm}} Clouds the color of old bruises pile over the eastern hills, and a cold wind rises {{amb:nox-wind-forest}} that tugs at cloaks and strangles the fiddler's tune. The first fat drops strike the cobbles, thunder rolls across the rooftops {{sfx:thunder}} — then the sky opens {{amb:nox-rain-strong}}. Stalls empty, shutters slam {{amb:fap-crowd}}. One of you strikes a lantern against the gloom {{sfx:torch}}, and its little flame is the only warm thing left in Duskhollow.\n\n> [!dm] The wind and rain beds fade in on their cues; the second crowd cue at \"stalls empty\" toggles the crowd off. Beds keep looping until their cue fires again — watch the Now Sounding strip at the bottom.\n\n## The Sunless Shrine\n\nThe road out of town ends at a door that should not be here — black stone, older than Duskhollow itself. It groans inward at a touch {{sfx:door}}, and the storm cuts off behind you {{amb:nox-rain-strong}} {{amb:nox-wind-forest}}. Inside, the air is cold and still and *wrong*. {{music:temple}} Water drips somewhere in the dark {{amb:nox-cave-drips}}, and the shrine itself seems to hold its breath {{amb:evil-temple}}. Something breathes that has no business breathing {{sfx:ghost}}, and the shadows will not stay still {{amb:ghostly-loop}}. Far below, beneath the altar, you feel a slow, patient pulse — like a heart the size of a room {{sfx:heart}}. **You are not alone in here.** {{sfx:spell}}\n\n> [!dm] The rain and wind cues at the door toggle those beds off as they step inside. Then the dripping and temple beds come in, then the ghostly loop. Save the dark-magic sting for the last line."
 }

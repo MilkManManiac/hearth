@@ -101,6 +101,12 @@ export interface AmbienceLayer {
   volume?: number
   /** Loop the bed. Default true (looping is the point of an ambience layer). */
   loop?: boolean
+  /**
+   * Start automatically when the scene goes live. Default true. Script-driven
+   * beds (toggled by an {{amb:...}} cue mid-read) set this false so they wait
+   * for their moment instead of blasting on scene start.
+   */
+  autoplay?: boolean
 }
 
 export interface SfxItem {
@@ -133,7 +139,12 @@ export interface SceneImage {
 // flat shape is still accepted on load and up-converted (migrateLegacyScript).
 // ---------------------------------------------------------------------------
 
-export type CueKind = 'music' | 'sfx' | 'image'
+/**
+ * Cue kinds: music switches the track, sfx fires a one-shot, image pushes to
+ * the presenter, amb toggles an ambience bed on/off (ref = layer file or its
+ * filename stem).
+ */
+export type CueKind = 'music' | 'sfx' | 'image' | 'amb'
 
 /** Inline emphasis on a text run. Color/highlight use named palette ids. */
 export type ScriptMark =

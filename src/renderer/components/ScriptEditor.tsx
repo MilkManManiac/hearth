@@ -17,11 +17,11 @@ import { buildExtensions } from '../editor/extensions'
 import { docToTiptap, tiptapToDoc } from '../editor/mapping'
 import { insertCueAt, type CueAttrs } from '../editor/insert'
 
-const CUE_ICON: Record<CueKind, string> = { music: '▶', sfx: '🔊', image: '🖼' }
+const CUE_ICON: Record<CueKind, string> = { music: '▶', sfx: '🔊', image: '🖼', amb: '〜' }
 
 /** Registration payload for a library asset not yet on the scene. */
 interface RegisterEntry {
-  kind: 'music' | 'sfx'
+  kind: 'music' | 'sfx' | 'ambience'
   id: string
   label: string
   file: string
@@ -72,6 +72,10 @@ function buildTray(scene: Scene, library: { assets: { file: string; kind: string
     sceneFiles.add(s.file)
     items.push({ key: `s:${s.id}`, kind: 'sfx', ref: s.id, label: `${CUE_ICON.sfx} ${s.label}`, category: IN_SCENE })
   }
+  for (const a of scene.ambience ?? []) {
+    sceneFiles.add(a.file)
+    items.push({ key: `a:${a.file}`, kind: 'amb', ref: a.file, label: `${CUE_ICON.amb} ${stem(a.file)}`, category: IN_SCENE })
+  }
   for (const img of scene.images ?? []) {
     items.push({
       key: `i:${img.file}`,
@@ -83,8 +87,21 @@ function buildTray(scene: Scene, library: { assets: { file: string; kind: string
   }
 
   for (const a of library.assets) {
-    if (a.kind !== 'music' && a.kind !== 'sfx') continue // ambience isn't cue-able
     if (sceneFiles.has(a.file)) continue // already shown under "In this scene"
+    if (a.kind === 'ambience') {
+      // Bed toggled by cue: ref is the file; dropping auto-registers the layer
+      // (autoplay: false — the cue is its start signal, not scene go-live).
+      items.push({
+        key: `lib:${a.file}`,
+        kind: 'amb',
+        ref: a.file,
+        label: `${CUE_ICON.amb} ${stem(a.file)}`,
+        category: a.category || 'uncategorized',
+        register: { kind: 'ambience', id: a.file, label: stem(a.file), file: a.file }
+      })
+      continue
+    }
+    if (a.kind !== 'music' && a.kind !== 'sfx') continue
     const kind = a.kind as 'music' | 'sfx'
     const id = slug(a.file)
     const label = `${CUE_ICON[kind]} ${stem(a.file)}`
