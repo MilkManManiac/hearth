@@ -6,12 +6,22 @@ export interface PresenterPayload {
   caption?: string
 }
 
+/** Result of creating/duplicating a scene: fresh state + the new scene's id. */
+export interface SceneWriteResult {
+  state: CampaignState
+  sceneId: string
+}
+
 const api = {
   getCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:get'),
   reloadCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:reload'),
   chooseCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:choose'),
   importAssets: (kind: AssetKind): Promise<CampaignState> => ipcRenderer.invoke('campaign:import', kind),
   saveScene: (scene: Scene): Promise<CampaignState> => ipcRenderer.invoke('scene:save', scene),
+  duplicateScene: (sceneId: string): Promise<SceneWriteResult> =>
+    ipcRenderer.invoke('scene:duplicate', sceneId),
+  createScene: (templateId: string): Promise<SceneWriteResult> =>
+    ipcRenderer.invoke('scene:create', templateId),
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),

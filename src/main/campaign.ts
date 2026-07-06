@@ -14,6 +14,75 @@ interface Config {
   campaignPath?: string
 }
 
+/** Filesystem-safe slug for scene filenames/ids, e.g. "Copy of The Tavern!" → "copy-of-the-tavern". */
+function slugify(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return slug || 'scene'
+}
+
+type SceneTemplate = Omit<Scene, 'id' | '_sourceFile'>
+
+/**
+ * Built-in starting points for "+ New Scene": tiny, asset-free skeletons (every
+ * campaign's library differs) — empty palettes plus placeholder scriptText that
+ * shows the authoring conventions ({{cues}}, callouts). Ids must match the
+ * template menu in renderer/components/SceneList.tsx.
+ */
+const SCENE_TEMPLATES: Record<string, SceneTemplate> = {
+  blank: {
+    name: 'New Scene',
+    scriptText:
+      '# New Scene\n\n' +
+      'Write the read-aloud prose the players hear when this scene opens. Use the ✎ editor to style it and drop sound cues straight into the text.\n\n' +
+      '> [!dm] Add music, ambience beds, and SFX from the library (+ Add in each section), then come back and wire {{sfx:...}} cues where they land best.',
+    music: [],
+    ambience: [],
+    sfx: []
+  },
+  tavern: {
+    name: 'The Tavern',
+    dmNotes:
+      'Template scene — rename it, then add music/ambience from the library (tavern, town, fire tags work well).',
+    scriptText:
+      '# The Tavern\n\n' +
+      'The door swings open on a wall of warmth: woodsmoke, spilled ale, and a dozen conversations that dip — just for a heartbeat — as every eye takes your measure. A fire crackles in the hearth, and somewhere in the back a fiddle saws out a half-remembered dance.\n\n' +
+      'The barkeep lifts a chin in greeting. *"Sit where you like. First round\'s not free."*\n\n' +
+      '> [!dm] Set the mood before they order: add a tavern music palette and crowd/fireplace ambience beds from the library, then drop {{sfx:...}} cues into this script with the ✎ editor.',
+    music: [],
+    ambience: [],
+    sfx: []
+  },
+  combat: {
+    name: 'Combat Encounter',
+    dmNotes:
+      'Template scene — rename it. Three music slots work well: tension for the standoff, the fight itself, and an aftermath/regroup track.',
+    scriptText:
+      '# Combat Encounter\n\n' +
+      'Steel clears its scabbard somewhere in the dark. Whatever you came here to do, it is too late for talking now — **roll initiative**.\n\n' +
+      '> [!dm] Build the palette: a tension track, a battle track, and a victory or regroup track. Add hit/roar/clash SFX with hotkeys 1–4, then wire {{sfx:...}} cues into the prose.\n\n' +
+      '> [!dm] Escalation levers if the fight drags or goes too easy: reinforcements arrive, the terrain changes (fire spreads, floor gives way), or the leader flees at half HP.',
+    music: [],
+    ambience: [],
+    sfx: []
+  },
+  dungeon: {
+    name: 'Dungeon Crawl',
+    dmNotes:
+      'Template scene — rename it. Low drones and drip/echo ambience sell a dungeon better than music; keep the music sparse.',
+    scriptText:
+      '# Dungeon Crawl\n\n' +
+      'Your torchlight gutters against stone that has not felt wind in a hundred years. The passage ahead swallows the light after a dozen paces, and from somewhere below comes a slow, patient *drip... drip... drip*.\n\n' +
+      'The air tastes of dust and old iron. Something down here is waiting to be found — or waiting for you.\n\n' +
+      '> [!dm] Add a cave/dungeon ambience bed and a sparse exploration track from the library. Save a stinger SFX for the first trap or door — drop it as a {{sfx:...}} cue right where you\'ll read it.',
+    music: [],
+    ambience: [],
+    sfx: []
+  }
+}
+
 function readConfig(): Config {
   try {
     return JSON.parse(fsSync.readFileSync(CONFIG_FILE(), 'utf-8'))
@@ -173,6 +242,50 @@ export class CampaignManager {
     }
     await fs.writeFile(dest, JSON.stringify(rest, null, 2))
     return this.load()
+  }
+
+  /**
+   * Write a brand-new scene JSON into scenes/, deriving a unique slug filename
+   * (and matching id) from the scene name — appends -2, -3… on collision with
+   * existing files or scene ids. Returns the fresh state plus the new scene's
+   * id so the renderer can select it. The folder watcher also picks up the new
+   * file, but returning state directly makes the UI update immediate.
+   */
+  private async writeNewScene(
+    scene: SceneTemplate & { id?: string }
+  ): Promise<{ state: CampaignState; sceneId: string }> {
+    const dir = path.join(this.campaignPath, 'scenes')
+    await fs.mkdir(dir, { recursive: true })
+    const taken = new Set((await fs.readdir(dir)).map((f) => f.toLowerCase().replace(/\.json$/i, '')))
+    for (const s of await this.loadScenes([])) taken.add(s.id.toLowerCase())
+    const base = slugify(scene.name)
+    let stem = base
+    for (let n = 2; taken.has(stem); n++) stem = `${base}-${n}`
+    // Strip runtime/stale fields; the filename stem becomes the scene id.
+    const { _sourceFile, id: _oldId, ...rest } = scene as Scene
+    void _sourceFile
+    void _oldId
+    await fs.writeFile(path.join(dir, `${stem}.json`), JSON.stringify({ id: stem, ...rest }, null, 2))
+    return { state: await this.load(), sceneId: stem }
+  }
+
+  /** Duplicate a scene to a new scenes/<slug>.json named "Copy of X". */
+  async duplicateScene(sceneId: string): Promise<{ state: CampaignState; sceneId: string }> {
+    const scenes = await this.loadScenes([])
+    const scene = scenes.find((s) => s.id === sceneId)
+    if (!scene?._sourceFile) throw new Error(`scene "${sceneId}" not found`)
+    // Copy the on-disk JSON (preserving scriptText / authored form) rather than
+    // the runtime object, so the duplicate is a faithful copy of the file.
+    const raw = JSON.parse(
+      await fs.readFile(path.join(this.campaignPath, scene._sourceFile), 'utf-8')
+    ) as Scene
+    return this.writeNewScene({ ...raw, name: `Copy of ${scene.name}` })
+  }
+
+  /** Create a new scene from a built-in template (unknown ids fall back to blank). */
+  async createScene(templateId: string): Promise<{ state: CampaignState; sceneId: string }> {
+    const template = SCENE_TEMPLATES[templateId] ?? SCENE_TEMPLATES.blank
+    return this.writeNewScene(structuredClone(template))
   }
 
   /** Copy user-picked files into the campaign's <kind> folder and index them. */

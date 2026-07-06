@@ -128,6 +128,10 @@ interface AppState {
   stopAll: () => void
 
   updateScene: (sceneId: string, mutate: (s: Scene) => Scene) => Promise<void>
+  /** Duplicate a scene to a new file ("Copy of X") and select the copy. */
+  duplicateScene: (sceneId: string) => Promise<void>
+  /** Create a new scene from a built-in template id ('blank', 'tavern', …) and select it. */
+  createScene: (templateId: string) => Promise<void>
 
   chooseCampaign: () => Promise<void>
   importAssets: (kind: 'music' | 'ambience' | 'sfx') => Promise<void>
@@ -470,6 +474,26 @@ export const useStore = create<AppState>((set, get) => ({
       get().setCampaign(fresh)
     } catch (err) {
       console.error('saveScene failed', err)
+    }
+  },
+
+  duplicateScene: async (sceneId) => {
+    try {
+      const { state, sceneId: newId } = await window.hearth.duplicateScene(sceneId)
+      get().setCampaign(state)
+      await get().selectScene(newId)
+    } catch (err) {
+      get().pushToast(`Duplicate failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  createScene: async (templateId) => {
+    try {
+      const { state, sceneId } = await window.hearth.createScene(templateId)
+      get().setCampaign(state)
+      await get().selectScene(sceneId)
+    } catch (err) {
+      get().pushToast(`New scene failed: ${(err as Error).message}`, 'error')
     }
   },
 

@@ -52,24 +52,104 @@ the DM triggers live. Nothing auto-advances except the one music track marked
     { "file": "art/krag.png",        "caption": "Krag the Vile",       "playerFacing": true }
   ],
 
-  "scriptText": "The road narrows beneath ancient oaks. Birdsong thins, then stops. {{music:combat}} Shapes drop from the branches {{sfx:shriek}} and a snarling voice cries out: \\"Take the fat one alive!\\" {{image:art/krag.png}}",
+  "scriptText": "# The Old Forest Road\\n\\nThe road narrows beneath ancient oaks. Birdsong thins, then *stops*. {{music:combat}}\\n\\n> [!dm] Stealth (DC 13) to spot the snare line. Krag flees at half HP.\\n\\nShapes drop from the branches {{sfx:shriek}} and a snarling voice cries out: **\\"Take the fat one alive!\\"** {{image:art/krag.png}}",
 
   "transition": { "crossfadeMs": 2500 }
 }
 \`\`\`
 
-### Read-aloud script
+### Read-aloud script (\`scriptText\`)
 
-Write \`scriptText\` as plain prose with inline **cue markers**:
+Write \`scriptText\` as **markdown prose with inline cue markers**. The app
+compiles it at load time into a rich document tree (the \`script\` field, below).
+
+**Cue markers** — on the control board a small tappable button lands exactly
+where each marker sits, so the DM reads and taps mid-sentence. Place them for
+dramatic timing:
 
 - \`{{music:<trackId>}}\` — crossfade to that music track
 - \`{{sfx:<sfxId>}}\` — fire that sound effect
 - \`{{image:<path>}}\` — push that image to the presenter/players (use the art path)
 
-On the control board the prose renders with a small tappable button exactly
-where each marker sits, so the DM reads and taps mid-sentence. Place cues for
-dramatic timing. (You may instead provide a structured \`script\` array, but
-\`scriptText\` is the easy path.)
+Whitespace inside the braces is tolerated (\`{{ sfx : shriek }}\` works).
+
+**Structure** — a small, forgiving markdown subset:
+
+- \`# Title\` / \`## Section\` / \`### Beat\` — headings, levels 1–3 only
+  (\`####\` and deeper are *not* parsed; they stay literal text)
+- \`**bold**\` — bold; \`*italic*\` or \`_italic_\` — italic
+- \`> [!dm] ...\` — a **DM-note callout**: renders as a visually distinct box so
+  the DM never reads their own stage directions aloud
+- A blank line starts a new paragraph. Consecutive non-blank lines reflow into
+  **one** paragraph (soft line breaks become spaces).
+
+Callout details: one or more consecutive \`>\` lines form a single callout. The
+leading \`[!dm]\` tag is optional (and stripped from the text). Callout bodies
+are parsed like the top level, so a callout can hold several paragraphs,
+headings, and even cue markers.
+
+Gotchas:
+
+- Keep a \`**...**\` / \`*...*\` pair inside one paragraph, and don't put a cue
+  marker between the opening and closing stars — emphasis never spans a cue.
+- Text **color/highlight have no markdown syntax** — they're app-only polish
+  the DM applies in the in-app editor. Don't try to author them in \`scriptText\`.
+
+Example (shown unescaped — in the scene JSON it's one string with \`\\n\` breaks):
+
+\`\`\`markdown
+# The Old Forest Road
+
+The road narrows beneath ancient oaks. Birdsong thins, then *stops*. {{music:combat}}
+
+> [!dm] Stealth (DC 13) to spot the snare line before the wagon reaches it.
+> Krag hangs back and flees at half HP.
+
+Shapes drop from the branches {{sfx:shriek}} and a snarling voice cries out:
+**"Take the fat one alive!"** {{image:art/krag.png}}
+\`\`\`
+
+### The stored \`script\` tree
+
+Once the DM edits the read-aloud in the app (drag cue chips into the words,
+apply formatting), the scene is saved back with a structured \`script\` field and
+\`scriptText\` is dropped. Both are valid on load; if both are present, \`script\`
+wins. \`script\` is a block tree:
+
+\`\`\`jsonc
+"script": [
+  { "type": "heading", "level": 1, "content": [
+    { "type": "text", "text": "The Old Forest Road" }
+  ]},
+  { "type": "paragraph", "content": [
+    { "type": "text", "text": "Birdsong thins, then " },
+    { "type": "text", "text": "stops", "marks": [{ "type": "italic" }] },
+    { "type": "text", "text": ". " },
+    { "type": "cue", "kind": "music", "ref": "combat", "label": "▶ combat" }
+  ]},
+  { "type": "callout", "content": [
+    { "type": "paragraph", "content": [
+      { "type": "text", "text": "Stealth (DC 13) to spot the snare line." }
+    ]}
+  ]}
+]
+\`\`\`
+
+- **Blocks:** \`paragraph\`, \`heading\` (\`level\` 1–3), \`callout\` — a callout's
+  \`content\` nests *blocks*, not inlines.
+- **Inlines:** text runs (optional \`marks\`) and atomic cues
+  (\`kind\`: \`music\` | \`sfx\` | \`image\`, \`ref\`, optional display \`label\`).
+- **Marks:** \`bold\`, \`italic\`, \`color\`, \`highlight\`. Color/highlight carry a
+  named palette id in \`value\` — text colors: \`danger\` · \`emphasis\` · \`arcane\` ·
+  \`nature\` · \`whisper\`; highlights: \`read\` · \`pause\` · \`alert\`.
+
+You *can* author \`script\` directly, but \`scriptText\` is the easy path — prefer
+it when drafting scenes.
+
+**Legacy scenes:** the old flat \`script\` array (top-level
+\`{"type": "text" | "cue"}\` items, no blocks) is still accepted — the loader
+migrates it to the tree automatically, and the next in-app save rewrites the
+file in the new shape.
 
 ### Field defaults
 - music \`volume\` 0.7, loops by default
@@ -94,10 +174,6 @@ By default music is a **palette** (tap to switch). A scene can instead play its
 - Per-track \`fadeInMs\` / \`fadeOutMs\` on a music entry override the crossfade for
   that track's own start/end (also honored in palette mode).
 - The DM can flip palette ↔ playlist live; the toggle persists to the scene.
-
-> Note: the app can edit the read-aloud script in place (drag sound/image chips
-> into the words). Once a scene is edited in-app it is saved with a structured
-> \`script\` array instead of \`scriptText\` — both are valid on load.
 
 ### Ideas & Cast (\`ideas\`, \`entities\`)
 
@@ -146,11 +222,11 @@ creature):
 \`category\` is a single coarse bucket (free-form, but prefer these so grouping
 stays tidy). Recommended set:
 
-- **SFX:** \`creatures\` · \`combat\` · \`magic\` · \`weather\` · \`water\` ·
-  \`fire\` · \`places\` · \`objects\` · \`horror\` · \`ui\`
+- **SFX:** \`creatures\` · \`combat\` · \`magic\` · \`weather\` · \`water\` · \`fire\` ·
+  \`places\` · \`objects\` · \`horror\` · \`ui\`
 - **Music / ambience (by mood/setting):** \`exploration\` · \`town\` · \`tavern\` ·
-  \`tension\` · \`combat\` · \`boss\` · \`victory\` · \`somber\` · \`mystery\` ·
-  \`travel\` · \`seafaring\` · \`places\` · \`horror\`
+  \`tension\` · \`combat\` · \`boss\` · \`victory\` · \`somber\` · \`mystery\` · \`travel\` ·
+  \`seafaring\` · \`places\` · \`horror\`
 
 Assets with no \`category\` still work — they group under "Uncategorized". Put the
 mood/setting in \`tags\` too, since scene-matching searches tags.
@@ -161,6 +237,7 @@ mood/setting in \`tags\` too, since scene-matching searches tags.
    ask about anything ambiguous, and add entries to library.json with good tags.
 2. **Draft scenes from a description.** Match assets by tag, note gaps ("no
    dockside ambience — want CC0 options?"), write the scene JSON with a
-   \`scriptText\` whose cues are timed for effect.
+   \`scriptText\` whose cues are timed for effect — use headings for beats and
+   \`> [!dm]\` callouts for stage directions the DM shouldn't read aloud.
 3. The app watches this folder and hot-reloads on save, so edits appear live.
 `

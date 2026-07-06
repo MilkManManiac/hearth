@@ -153,6 +153,16 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  ipcMain.handle('scene:duplicate', async (_e, sceneId: string) => {
+    const result = await campaign.duplicateScene(sceneId)
+    broadcast('campaign:changed', result.state)
+    return result
+  })
+  ipcMain.handle('scene:create', async (_e, templateId: string) => {
+    const result = await campaign.createScene(templateId)
+    broadcast('campaign:changed', result.state)
+    return result
+  })
   ipcMain.handle('campaign:reveal', async () => {
     shell.openPath(campaign.path)
   })
