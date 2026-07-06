@@ -201,13 +201,33 @@ Filled the empty **Water** category + added **Horror SFX/ambience** and mood
 music (tension/chase/somber/travel/horror). These are **un-auditioned** (added
 by license+source+name, not by ear) — cull any duds from the Library browser.
 
-**Still the higher-quality tier (needs you):** the SOUND-SOURCES.md wave-1 itch
-packs (kmontesdev / Nox / Blacis) are **browser-gated** — itch's download
-endpoint refuses headless clients (confirmed 2026-07-06, same wall as Freesound/
-Kenney/Pixabay). To add those: download in a browser → drop in one folder → run
-📥 Triage. Install **ffmpeg** (WAV→OGG) + **vc_redist.x64** (CLAUDE.md gotcha)
-first. OpenGameArt remains the one bundle-safe well fetchable headless, so more
-automated OGA waves are possible on request (fantasy-fit candidates remain).
+**Waves 5+6 done 2026-07-06 (library 94 → 165):** the user downloaded the itch
+packs; curated + integrated headless with a scratchpad **ffmpeg 8.1.2** static
+build (WAV→OGG libvorbis q4 — note: scratchpad copy is session-temp; install
+ffmpeg properly via `winget install ffmpeg` for future waves).
+- **Wave 5 — kmontesdev Fantasy Ambient Pack (CC0):** 46 assets (`fap-*`).
+  Named monster vocals (goblin/orc/troll/ghost/giant/minotaur/dragon/
+  elementals), real weapon foley (bow/crossbow/dagger/staff/sword-on-shield/
+  armour/flesh), location beds (town/village/potion shop/library/caves/forests/
+  rain/lake/river/waves/desert/crowd), screams.
+- **Wave 6 — Nox_Sound Essentials (CC0, pro 24-bit field recordings):** 25
+  assets (`nox-*`). The fidelity ceiling: loop-authored nature beds (3 caves,
+  3 fire sizes, rain ×2, wind ×2, waterfall ×2, river/stream/sea/night/
+  cicadas), Iceland storm sea, Azores hot spring + old-mill waterwheel, and 4
+  NPC combat vocals (attack/pain, m/f).
+- The `duskhollow-demo` scene now runs on the pro beds (nox rain/wind/drips +
+  fap crowd) — 19 Space-driven cues.
+- **Rejected: "music pack 1 (non copyrighed songs)"** (Oliver Siimon, 231
+  tracks) — **no license file in the archive**; "non-copyrighted" is a YouTube
+  marketing phrase, not a grant. Also mostly not D&D-shaped (chiptune/
+  Christmas/jazz). Do not import unless the user produces actual license terms
+  from the source.
+- Un-auditioned caveat still applies to waves 4–6 (curated by name/folder/
+  license, not by ear) — cull duds via the Library browser or 📥 Triage.
+- Remaining big-pack candidates: Blacis Fantasy Music Mega Pack (CC0, music
+  breadth) wasn't in the drop; TomMusic/Leohpaz/JDSherbert (verify license at
+  download); Sonniss GDC (Tier B, personal-only). Freesound/Kenney/Pixabay
+  finds parked in scratchpad sound-candidates.md.
 
 1. ✅ **Research better sources** — done, see `SOUND-SOURCES.md` (ranked +
    license-verified: 3 big CC0 itch.io packs first, Nakarada CC-BY for mood

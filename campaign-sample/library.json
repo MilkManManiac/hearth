@@ -730,7 +730,7 @@
         "exploration",
         "adventure"
       ],
-      "source": "OpenGameArt / Écrivain",
+      "source": "OpenGameArt / \u00c9crivain",
       "license": "CC0"
     },
     {
@@ -1296,6 +1296,950 @@
         "travel"
       ],
       "source": "OpenGameArt / arthur",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-rain-light.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "rain",
+        "light",
+        "storm",
+        "weather"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-rain-downpour.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "rain",
+        "downpour",
+        "storm",
+        "heavy"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-forest-night.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "forest",
+        "night",
+        "crickets",
+        "nature"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-forest-day.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "forest",
+        "day",
+        "nature",
+        "woods"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-forest-rain.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "forest",
+        "rain",
+        "storm",
+        "nature"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-cave-whispers.ogg",
+      "kind": "ambience",
+      "category": "horror",
+      "tags": [
+        "cave",
+        "whispers",
+        "evil",
+        "dungeon",
+        "horror"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-cave-creepy.ogg",
+      "kind": "ambience",
+      "category": "horror",
+      "tags": [
+        "cave",
+        "creepy",
+        "dungeon",
+        "eerie"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-cave-drips.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "cave",
+        "drips",
+        "dungeon",
+        "water"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-cave-wind.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "cave",
+        "wind",
+        "dungeon"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-lake-shore.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "lake",
+        "shore",
+        "water"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-river.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "river",
+        "stream",
+        "water",
+        "calm"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-waves-beach.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "waves",
+        "beach",
+        "ocean",
+        "seafaring"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-desert-night.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "desert",
+        "night",
+        "wind",
+        "travel"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-crowd.ogg",
+      "kind": "ambience",
+      "category": "town",
+      "tags": [
+        "crowd",
+        "market",
+        "people",
+        "tavern"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-forest-birds.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "birds",
+        "forest",
+        "day",
+        "nature"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-town.ogg",
+      "kind": "ambience",
+      "category": "town",
+      "tags": [
+        "town",
+        "street",
+        "people",
+        "city"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-potion-shop.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "shop",
+        "potion",
+        "interior",
+        "alchemy"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-library.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "library",
+        "corridor",
+        "quiet",
+        "interior"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-cave-dark.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "cave",
+        "dark",
+        "dungeon"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/fap-village.ogg",
+      "kind": "ambience",
+      "category": "town",
+      "tags": [
+        "village",
+        "countryside",
+        "rural",
+        "town"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-goblin-vocal.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "goblin",
+        "creature",
+        "snarl",
+        "vocal"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-goblin-death.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "goblin",
+        "death",
+        "creature"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-orc-vocal.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "orc",
+        "creature",
+        "grunt",
+        "vocal"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-troll-vocal.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "troll",
+        "creature",
+        "monster",
+        "vocal"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-troll-bite.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "troll",
+        "bite",
+        "attack",
+        "creature"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-ghost-vocal.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "ghost",
+        "undead",
+        "horror",
+        "vocal"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-ghost-attack.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "ghost",
+        "attack",
+        "horror",
+        "undead"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-giant-attack.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "giant",
+        "attack",
+        "monster"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-minotaur-vocal.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "minotaur",
+        "creature",
+        "roar",
+        "vocal"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-fire-elemental.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "elemental",
+        "fire",
+        "attack",
+        "magic"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-earth-elemental.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "elemental",
+        "earth",
+        "creature",
+        "vocal"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-dragon-roar-1.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "dragon",
+        "roar",
+        "creature",
+        "boss"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-dragon-roar-2.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "dragon",
+        "roar",
+        "creature",
+        "boss"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-sword-clash.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "sword",
+        "clash",
+        "metal",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-sword-shield.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "sword",
+        "shield",
+        "block",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-sword-armour.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "sword",
+        "armour",
+        "plate",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-sword-flesh.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "sword",
+        "flesh",
+        "gore",
+        "stab"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-bow-fire.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "bow",
+        "arrow",
+        "fire",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-bow-draw.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "bow",
+        "draw",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-crossbow.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "crossbow",
+        "fire",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-dagger.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "dagger",
+        "swing",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-staff-hit.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "staff",
+        "hit",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-punch.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "punch",
+        "fist",
+        "hit",
+        "combat"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-sword-draw.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "sword",
+        "draw",
+        "scrape",
+        "rapier"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-scream-male.ogg",
+      "kind": "sfx",
+      "category": "horror",
+      "tags": [
+        "scream",
+        "male",
+        "horror",
+        "death"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/fap-scream-female.ogg",
+      "kind": "sfx",
+      "category": "horror",
+      "tags": [
+        "scream",
+        "female",
+        "horror",
+        "terror"
+      ],
+      "source": "itch.io / kmontesdev \u2014 Fantasy Ambient Pack",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-cave-dark.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "cave",
+        "dark",
+        "dungeon",
+        "deep",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-cave-deep.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "cave",
+        "deep",
+        "dungeon",
+        "underdark",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-cave-drips.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "cave",
+        "drips",
+        "dungeon",
+        "water",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-cicadas.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "cicadas",
+        "summer",
+        "night",
+        "swamp",
+        "jungle",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-campfire-small.ogg",
+      "kind": "ambience",
+      "category": "fire",
+      "tags": [
+        "campfire",
+        "small",
+        "fire",
+        "camp",
+        "rest",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-campfire.ogg",
+      "kind": "ambience",
+      "category": "fire",
+      "tags": [
+        "campfire",
+        "fire",
+        "camp",
+        "crackle",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-fire-big.ogg",
+      "kind": "ambience",
+      "category": "fire",
+      "tags": [
+        "fire",
+        "bonfire",
+        "blaze",
+        "burning",
+        "building",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-forest-birds.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "forest",
+        "birds",
+        "day",
+        "nature",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-night.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "night",
+        "crickets",
+        "camp",
+        "outdoors",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-rain-calm.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "rain",
+        "calm",
+        "light",
+        "weather",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-rain-strong.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "rain",
+        "strong",
+        "storm",
+        "downpour",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-river.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "river",
+        "flow",
+        "water",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-sea.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "sea",
+        "ocean",
+        "waves",
+        "seafaring",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-stream.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "stream",
+        "brook",
+        "calm",
+        "water",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-waterfall-calm.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "waterfall",
+        "calm",
+        "water",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-waterfall.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "waterfall",
+        "strong",
+        "roar",
+        "water",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-wind-calm.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "wind",
+        "calm",
+        "breeze",
+        "plains",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-wind-forest.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "wind",
+        "forest",
+        "trees",
+        "weather",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-hot-spring.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "hotspring",
+        "bubbling",
+        "volcanic",
+        "swamp",
+        "alchemy",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-old-mill.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "mill",
+        "waterwheel",
+        "wood",
+        "creak",
+        "docks",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-sea-storm.ogg",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "sea",
+        "storm",
+        "waves",
+        "crash",
+        "seafaring",
+        "loop"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/nox-attack-male.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "attack",
+        "yell",
+        "male",
+        "effort",
+        "npc"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/nox-pain-male.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "pain",
+        "hurt",
+        "male",
+        "grunt",
+        "npc"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/nox-attack-female.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "attack",
+        "yell",
+        "female",
+        "effort",
+        "npc"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/nox-pain-female.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "pain",
+        "hurt",
+        "female",
+        "grunt",
+        "npc"
+      ],
+      "source": "itch.io / Nox_Sound - Essentials Series",
       "license": "CC0"
     }
   ]

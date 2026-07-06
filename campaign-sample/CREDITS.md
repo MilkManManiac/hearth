@@ -92,6 +92,55 @@ _Sound effects_
 - `sfx/heartbeat.mp3` — qubodup — CC0 — https://opengameart.org/content/heartbeat-single-sound
 - `sfx/leaves-rustle.mp3` — qubodup — CC0 — https://opengameart.org/content/20-rustles-dry-leaves
 
+## 2026-07-06 — kmontesdev Fantasy Ambient Pack (wave 5)
+46 assets (library 94 → 140) curated from the **Fantasy Ambient Sound Effects
+Pack** by **kmontesdev** — **CC0** ("to be used, remixed, or altered in any type
+of project, be it commercial or non-commercial") —
+https://kmontesdev.itch.io/fantasy-ambient-sound-effects-pack-cc0
+Source WAVs transcoded to OGG (libvorbis q4) on import. Named monster vocals
+(goblin/orc/troll/ghost/giant/minotaur/dragon/elementals), real weapon foley
+(bow/crossbow/dagger/staff/sword-on-shield/armour), and location beds (town,
+village, potion shop, library, caves, forests, rain, lake/river/waves, desert
+night, crowd). All files prefixed `fap-`.
+
+_Ambience beds (loop):_ `fap-rain-light.ogg`, `fap-rain-downpour.ogg`,
+`fap-forest-night.ogg`, `fap-forest-day.ogg`, `fap-forest-rain.ogg`,
+`fap-forest-birds.ogg`, `fap-cave-whispers.ogg`, `fap-cave-creepy.ogg`,
+`fap-cave-drips.ogg`, `fap-cave-wind.ogg`, `fap-cave-dark.ogg`,
+`fap-lake-shore.ogg`, `fap-river.ogg`, `fap-waves-beach.ogg`,
+`fap-desert-night.ogg`, `fap-crowd.ogg`, `fap-town.ogg`, `fap-village.ogg`,
+`fap-potion-shop.ogg`, `fap-library.ogg`
+
+_Sound effects:_ `fap-goblin-vocal.ogg`, `fap-goblin-death.ogg`,
+`fap-orc-vocal.ogg`, `fap-troll-vocal.ogg`, `fap-troll-bite.ogg`,
+`fap-ghost-vocal.ogg`, `fap-ghost-attack.ogg`, `fap-giant-attack.ogg`,
+`fap-minotaur-vocal.ogg`, `fap-fire-elemental.ogg`, `fap-earth-elemental.ogg`,
+`fap-dragon-roar-1.ogg`, `fap-dragon-roar-2.ogg`, `fap-sword-clash.ogg`,
+`fap-sword-shield.ogg`, `fap-sword-armour.ogg`, `fap-sword-flesh.ogg`,
+`fap-sword-draw.ogg`, `fap-bow-fire.ogg`, `fap-bow-draw.ogg`,
+`fap-crossbow.ogg`, `fap-dagger.ogg`, `fap-staff-hit.ogg`, `fap-punch.ogg`,
+`fap-scream-male.ogg`, `fap-scream-female.ogg`
+
+## 2026-07-06 — Nox_Sound Essentials Series (wave 6)
+25 assets (library 140 → 165) curated from the **Essentials Series** by
+**Nox_Sound** — **CC0** (per the pack's own README: "All these sounds are under
+CC0 license") — https://nox-sound-design.itch.io/essentials-series-sfx-nox-sound
+Professional 24-bit field recordings, transcoded WAV → OGG (libvorbis q4) on
+import. All files prefixed `nox-`. This is the fidelity ceiling of the library:
+seamless loop-authored nature beds plus location recordings from Iceland and
+São Miguel (Azores).
+
+_Ambience beds (all loop-authored):_ `nox-cave-dark.ogg`, `nox-cave-deep.ogg`,
+`nox-cave-drips.ogg`, `nox-cicadas.ogg`, `nox-campfire-small.ogg`,
+`nox-campfire.ogg`, `nox-fire-big.ogg`, `nox-forest-birds.ogg`, `nox-night.ogg`,
+`nox-rain-calm.ogg`, `nox-rain-strong.ogg`, `nox-river.ogg`, `nox-sea.ogg`,
+`nox-sea-storm.ogg` (Vík big waves), `nox-stream.ogg`, `nox-waterfall-calm.ogg`,
+`nox-waterfall.ogg`, `nox-wind-calm.ogg`, `nox-wind-forest.ogg`,
+`nox-hot-spring.ogg` (Furnas caldeiras), `nox-old-mill.ogg` (waterwheel)
+
+_Sound effects (NPC combat vocals):_ `nox-attack-male.ogg`, `nox-pain-male.ogg`,
+`nox-attack-female.ogg`, `nox-pain-female.ogg`
+
 ## Art
 - `art/*.svg` — generated placeholders (swap for your own maps/handouts)
 
