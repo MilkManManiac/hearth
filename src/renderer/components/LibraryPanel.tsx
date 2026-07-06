@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AssetKind, LibraryAsset } from '../../shared/types'
-import { CATEGORY_ORDER, categoryMeta } from '../../shared/types'
+import { assetDisplayName, CATEGORY_ORDER, categoryMeta } from '../../shared/types'
 import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
 
@@ -76,33 +76,36 @@ export default function LibraryPanel() {
       if (kind !== 'all' && a.kind !== kind) return false
       if (category !== 'all' && (a.category ?? '') !== category) return false
       if (!q) return true
-      const hay = `${a.file} ${a.category ?? ''} ${a.tags.join(' ')}`.toLowerCase()
+      const hay = `${a.name ?? ''} ${a.file} ${a.category ?? ''} ${a.tags.join(' ')}`.toLowerCase()
       return hay.includes(q)
     })
   }, [assets, query, kind, category])
 
-  // Group the filtered assets: Favorites, then Recent, then the category groups.
+  // Group the filtered assets: Favorites, then Recent, then the category
+  // groups. Trash-marked assets are pulled out into a final section.
   const groups = useMemo(() => {
     const sections: { key: string; icon: string; label: string; items: LibraryAsset[] }[] = []
+    const live = filtered.filter((a) => !a.trash)
+    const trashed = filtered.filter((a) => a.trash)
+    const byName = (a: LibraryAsset, b: LibraryAsset) =>
+      assetDisplayName(a).localeCompare(assetDisplayName(b))
 
     const favSet = new Set(favorites)
-    const favItems = filtered
-      .filter((a) => favSet.has(a.file))
-      .sort((a, b) => basename(a.file).localeCompare(basename(b.file)))
+    const favItems = live.filter((a) => favSet.has(a.file)).sort(byName)
     if (favItems.length > 0) {
       sections.push({ key: 'favorites', icon: '★', label: 'Favorites', items: favItems })
     }
 
     // Recent keeps fire order; favorites already shown above are skipped.
     const recentItems = recents
-      .map((f) => filtered.find((a) => a.file === f && !favSet.has(f)))
+      .map((f) => live.find((a) => a.file === f && !favSet.has(f)))
       .filter((a): a is LibraryAsset => !!a)
     if (recentItems.length > 0) {
       sections.push({ key: 'recent', icon: '🕘', label: 'Recent', items: recentItems })
     }
 
     const byCat = new Map<string, LibraryAsset[]>()
-    for (const a of filtered) {
+    for (const a of live) {
       const c = a.category ?? ''
       if (!byCat.has(c)) byCat.set(c, [])
       byCat.get(c)!.push(a)
@@ -115,7 +118,16 @@ export default function LibraryPanel() {
         key: `cat:${cat || 'uncategorized'}`,
         icon: meta.icon,
         label: meta.label,
-        items: items.sort((a, b) => basename(a.file).localeCompare(basename(b.file)))
+        items: items.sort(byName)
+      })
+    }
+
+    if (trashed.length > 0) {
+      sections.push({
+        key: 'trash',
+        icon: '🚮',
+        label: 'Marked as trash',
+        items: trashed.sort(byName)
       })
     }
     return sections
@@ -245,6 +257,9 @@ function FilterChip({
   )
 }
 
+const inputCls =
+  'rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-xs text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none'
+
 function AssetRow({
   asset,
   inScene,
@@ -258,57 +273,174 @@ function AssetRow({
 }) {
   const previewingFile = useStore((s) => s.previewingFile)
   const previewAsset = useStore((s) => s.previewAsset)
+  const updateLibraryAsset = useStore((s) => s.updateLibraryAsset)
+  const deleteLibraryAsset = useStore((s) => s.deleteLibraryAsset)
   const playing = previewingFile === asset.file
   const fav = useFavorites().includes(asset.file)
 
+  // Inline metadata editor (rename / recategorize / retag).
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState('')
+  const [cat, setCat] = useState('')
+  const [tags, setTags] = useState('')
+  const nameRef = useRef<HTMLInputElement>(null)
+
+  const openEditor = (): void => {
+    setName(assetDisplayName(asset))
+    setCat(asset.category ?? '')
+    setTags(asset.tags.join(', '))
+    setEditing(true)
+  }
+  useEffect(() => {
+    if (editing) nameRef.current?.select()
+  }, [editing])
+
+  const commit = (): void => {
+    setEditing(false)
+    void updateLibraryAsset(asset.file, {
+      name,
+      category: cat,
+      tags: [...new Set(tags.toLowerCase().split(/[,\s]+/).filter(Boolean))]
+    })
+  }
+
   return (
-    <li className="flex items-center gap-2 rounded border border-hearth-border/50 bg-hearth-panel2/40 px-2 py-1.5">
-      <button
-        onClick={() => previewAsset(asset.file)}
-        title={playing ? 'Stop' : 'Audition'}
-        className={`flex h-7 w-7 flex-none items-center justify-center rounded-full border text-sm transition-colors ${
-          playing
-            ? 'border-hearth-ember bg-hearth-ember/20 text-hearth-ember'
-            : 'border-hearth-border text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember'
-        }`}
-      >
-        {playing ? '■' : '▶'}
-      </button>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm text-hearth-text">{basename(asset.file)}</div>
-        {asset.tags.length > 0 && (
-          <div className="truncate text-[11px] text-hearth-muted">{asset.tags.join(' · ')}</div>
-        )}
-      </div>
-      <button
-        onClick={() => toggleFavorite(asset.file)}
-        title={fav ? 'Remove from favorites' : 'Add to favorites'}
-        className={`flex-none px-1 text-base leading-none transition-colors ${
-          fav ? 'text-hearth-ember' : 'text-hearth-muted/40 hover:text-hearth-ember'
-        }`}
-      >
-        {fav ? '★' : '☆'}
-      </button>
-      <span className="flex-none rounded bg-hearth-bg px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-hearth-muted">
-        {asset.kind}
-      </span>
-      {canAdd &&
-        (inScene ? (
-          <span
-            className="flex-none rounded border border-hearth-border px-2 py-1 text-xs text-hearth-muted"
-            title="Already on this scene"
-          >
-            ✓ In scene
-          </span>
+    <li
+      className={`rounded border border-hearth-border/50 px-2 py-1.5 ${
+        asset.trash ? 'bg-hearth-bg/60 opacity-70' : 'bg-hearth-panel2/40'
+      }`}
+    >
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => previewAsset(asset.file)}
+          title={playing ? 'Stop' : 'Audition'}
+          className={`flex h-7 w-7 flex-none items-center justify-center rounded-full border text-sm transition-colors ${
+            playing
+              ? 'border-hearth-ember bg-hearth-ember/20 text-hearth-ember'
+              : 'border-hearth-border text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember'
+          }`}
+        >
+          {playing ? '■' : '▶'}
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm text-hearth-text" title={asset.file}>
+            {assetDisplayName(asset)}
+          </div>
+          {asset.tags.length > 0 && (
+            <div className="truncate text-[11px] text-hearth-muted">{asset.tags.join(' · ')}</div>
+          )}
+        </div>
+        <button
+          onClick={() => toggleFavorite(asset.file)}
+          title={fav ? 'Remove from favorites' : 'Add to favorites'}
+          className={`flex-none px-1 text-base leading-none transition-colors ${
+            fav ? 'text-hearth-ember' : 'text-hearth-muted/40 hover:text-hearth-ember'
+          }`}
+        >
+          {fav ? '★' : '☆'}
+        </button>
+        <button
+          onClick={() => (editing ? setEditing(false) : openEditor())}
+          title="Rename / recategorize / retag"
+          className={`flex-none px-1 text-sm transition-colors ${
+            editing ? 'text-hearth-ember' : 'text-hearth-muted hover:text-hearth-ember'
+          }`}
+        >
+          ✎
+        </button>
+        {asset.trash ? (
+          <>
+            <button
+              onClick={() => void updateLibraryAsset(asset.file, { trash: false })}
+              title="Restore — unmark as trash"
+              className="flex-none px-1 text-sm text-hearth-muted hover:text-hearth-ember"
+            >
+              ♻
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm(`Delete "${assetDisplayName(asset)}" for good? The file moves to the recycle bin.`)) {
+                  void deleteLibraryAsset(asset.file)
+                }
+              }}
+              title="Delete for good (file → recycle bin). Blocked while a scene still uses it."
+              className="flex-none px-1 text-sm text-hearth-muted hover:text-red-400"
+            >
+              🗑
+            </button>
+          </>
         ) : (
           <button
-            onClick={onAdd}
-            title="Add to the current scene"
-            className="flex-none rounded border border-hearth-ember bg-hearth-ember/15 px-2 py-1 text-xs text-hearth-ember hover:bg-hearth-ember/30"
+            onClick={() => void updateLibraryAsset(asset.file, { trash: true })}
+            title="Mark as trash — hidden from cue tray, staged under 'Marked as trash' for deletion"
+            className="flex-none px-1 text-sm text-hearth-muted/50 hover:text-red-400"
           >
-            + Add
+            🚮
           </button>
-        ))}
+        )}
+        <span className="flex-none rounded bg-hearth-bg px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-hearth-muted">
+          {asset.kind}
+        </span>
+        {canAdd &&
+          !asset.trash &&
+          (inScene ? (
+            <span
+              className="flex-none rounded border border-hearth-border px-2 py-1 text-xs text-hearth-muted"
+              title="Already on this scene"
+            >
+              ✓ In scene
+            </span>
+          ) : (
+            <button
+              onClick={onAdd}
+              title="Add to the current scene"
+              className="flex-none rounded border border-hearth-ember bg-hearth-ember/15 px-2 py-1 text-xs text-hearth-ember hover:bg-hearth-ember/30"
+            >
+              + Add
+            </button>
+          ))}
+      </div>
+
+      {editing && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            commit()
+          }}
+          className="mt-2 flex flex-wrap items-center gap-2 border-t border-hearth-border/50 pt-2"
+        >
+          <input
+            ref={nameRef}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
+            placeholder="display name"
+            className={`${inputCls} w-44`}
+            title="Display name (the file on disk keeps its name — scenes are unaffected)"
+          />
+          <select value={cat} onChange={(e) => setCat(e.target.value)} className={inputCls}>
+            <option value="">— no category —</option>
+            {CATEGORY_ORDER.map((c) => (
+              <option key={c} value={c}>
+                {categoryMeta(c).icon} {categoryMeta(c).label}
+              </option>
+            ))}
+          </select>
+          <input
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
+            placeholder="tags (comma separated)"
+            className={`${inputCls} min-w-0 flex-1`}
+          />
+          <button
+            type="submit"
+            className="rounded border border-hearth-ember bg-hearth-ember/15 px-2 py-1 text-xs text-hearth-ember hover:bg-hearth-ember/30"
+          >
+            Save
+          </button>
+        </form>
+      )}
     </li>
   )
 }

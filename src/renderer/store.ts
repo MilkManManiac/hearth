@@ -7,7 +7,7 @@ import {
   type Scene
 } from '../shared/types'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
-import type { TriageScan } from '../preload/index'
+import type { LibraryAssetPatch, TriageScan } from '../preload/index'
 
 /** One audio engine per session, shared across the UI. */
 export const engine = new AudioEngine()
@@ -106,6 +106,10 @@ interface AppState {
   closeTriage: () => void
   /** Add a library asset to the current scene's palette (by its kind). */
   addAssetToScene: (file: string) => void
+  /** Edit a library entry (rename / recategorize / retag / trash-flag). */
+  updateLibraryAsset: (file: string, patch: LibraryAssetPatch) => Promise<void>
+  /** Delete an asset for real: file → recycle bin, entry dropped. Blocked while scenes use it. */
+  deleteLibraryAsset: (file: string) => Promise<void>
   previewAsset: (file: string) => Promise<void>
 
   /** (Re)build the play order and start the scene's playlist from the top. */
@@ -291,11 +295,12 @@ export const useStore = create<AppState>((set, get) => ({
     // Fall back to the top-level folder as the kind for un-indexed files.
     const kind: AssetKind =
       asset?.kind ?? ((file.split('/')[0] as AssetKind) || 'sfx')
+    const label = asset?.name ?? prettyLabel(file)
     get().updateScene(scene.id, (s) => {
       if (kind === 'music') {
         if ((s.music ?? []).some((m) => m.file === file)) return s
         const id = uniqueAssetId(s.music ?? [], file)
-        return { ...s, music: [...(s.music ?? []), { id, label: prettyLabel(file), file }] }
+        return { ...s, music: [...(s.music ?? []), { id, label, file }] }
       }
       if (kind === 'ambience') {
         if ((s.ambience ?? []).some((a) => a.file === file)) return s
@@ -303,9 +308,28 @@ export const useStore = create<AppState>((set, get) => ({
       }
       if ((s.sfx ?? []).some((x) => x.file === file)) return s
       const id = uniqueAssetId(s.sfx ?? [], file)
-      return { ...s, sfx: [...(s.sfx ?? []), { id, label: prettyLabel(file), file }] }
+      return { ...s, sfx: [...(s.sfx ?? []), { id, label, file }] }
     })
     get().pushToast(`Added ${prettyLabel(file)} to ${scene.name}`, 'info')
+  },
+
+  updateLibraryAsset: async (file, patch) => {
+    try {
+      const state = await window.hearth.updateLibraryAsset(file, patch)
+      get().setCampaign(state)
+    } catch (err) {
+      get().pushToast(`Library update failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  deleteLibraryAsset: async (file) => {
+    try {
+      const state = await window.hearth.deleteLibraryAsset(file)
+      get().setCampaign(state)
+      get().pushToast('Sound moved to the recycle bin', 'info')
+    } catch (err) {
+      get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
+    }
   },
 
   startPlaylist: () => {

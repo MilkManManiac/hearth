@@ -59,8 +59,13 @@ function categoryRank(id: string): number {
 
 const IN_SCENE = 'In this scene'
 
+/** The slice of a library asset the tray needs. */
+interface TrayLibrary {
+  assets: { file: string; kind: string; category?: string; name?: string; trash?: boolean }[]
+}
+
 /** Build the tray: scene's own cues first, then the full categorized library. */
-function buildTray(scene: Scene, library: { assets: { file: string; kind: string; category?: string }[] }): TrayItem[] {
+function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
   const items: TrayItem[] = []
   const sceneFiles = new Set<string>()
 
@@ -87,7 +92,9 @@ function buildTray(scene: Scene, library: { assets: { file: string; kind: string
   }
 
   for (const a of library.assets) {
+    if (a.trash) continue // staged for deletion — keep it out of new scripts
     if (sceneFiles.has(a.file)) continue // already shown under "In this scene"
+    const display = a.name ?? stem(a.file)
     if (a.kind === 'ambience') {
       // Bed toggled by cue: ref is the file; dropping auto-registers the layer
       // (autoplay: false — the cue is its start signal, not scene go-live).
@@ -95,23 +102,23 @@ function buildTray(scene: Scene, library: { assets: { file: string; kind: string
         key: `lib:${a.file}`,
         kind: 'amb',
         ref: a.file,
-        label: `${CUE_ICON.amb} ${stem(a.file)}`,
+        label: `${CUE_ICON.amb} ${display}`,
         category: a.category || 'uncategorized',
-        register: { kind: 'ambience', id: a.file, label: stem(a.file), file: a.file }
+        register: { kind: 'ambience', id: a.file, label: display, file: a.file }
       })
       continue
     }
     if (a.kind !== 'music' && a.kind !== 'sfx') continue
     const kind = a.kind as 'music' | 'sfx'
     const id = slug(a.file)
-    const label = `${CUE_ICON[kind]} ${stem(a.file)}`
+    const label = `${CUE_ICON[kind]} ${display}`
     items.push({
       key: `lib:${a.file}`,
       kind,
       ref: id,
       label,
       category: a.category || 'uncategorized',
-      register: { kind, id, label: stem(a.file), file: a.file }
+      register: { kind, id, label: display, file: a.file }
     })
   }
 
@@ -126,7 +133,7 @@ export default function ScriptEditor({
   onDone
 }: {
   scene: Scene
-  library: { assets: { file: string; kind: string; category?: string }[] }
+  library: TrayLibrary
   onSave: (doc: ScriptDoc) => void
   onEnsureAsset: EnsureAsset
   onDone: () => void

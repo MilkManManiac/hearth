@@ -2,7 +2,7 @@ import { app, BrowserWindow, protocol, ipcMain, shell } from 'electron'
 import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
-import type { AssetKind, Scene } from '../shared/types'
+import type { AssetKind, LibraryAsset, Scene } from '../shared/types'
 import type { TriageKeepRequest } from '../preload/index'
 
 const MIME: Record<string, string> = {
@@ -186,6 +186,16 @@ function registerIpc(): void {
   })
   ipcMain.handle('scene:delete', async (_e, sceneId: string) => {
     const state = await campaign.deleteScene(sceneId)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('library:update', async (_e, file: string, patch: Partial<LibraryAsset>) => {
+    const state = await campaign.updateLibraryAsset(file, patch)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('library:delete', async (_e, file: string) => {
+    const state = await campaign.deleteLibraryAsset(file)
     broadcast('campaign:changed', state)
     return state
   })

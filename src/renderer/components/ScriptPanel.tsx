@@ -104,13 +104,27 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   }
 
   const isEmpty = script.length === 0 || (script.length === 1 && script[0].type === 'paragraph' && script[0].content.length === 0)
+  const cueCount = flattenCues(script).length
 
   // Mutable document-order cue counter for this render pass; `next` gets the ring.
   const cueCtx: CueCtx = { i: 0, next: cuePos }
 
+  // Clicking a cue fires it AND re-syncs the teleprompter pointer to just past
+  // it — so a manual tap (or a jump back to an earlier cue) puts Space back on
+  // track from that point in the story.
+  const fireAt = (n: CueInline, idx: number) => {
+    fire(n)
+    setCuePos(idx + 1)
+  }
+
   return (
     <section>
       <SectionHeader icon="📖" title="Read-aloud">
+        {!editing && cueCount > 0 && (
+          <span className="flex items-center gap-1.5 text-[10px] text-hearth-muted/70" title="Teleprompter: the ember ring marks the next cue. Click any cue to jump the pointer there.">
+            <Key>Space</Key> next · <Key>→</Key> skip · <Key>←</Key> back
+          </span>
+        )}
         {!editing && (
           <button onClick={() => setEditing(true)} className="text-xs text-hearth-muted hover:text-hearth-ember">
             ✎ Edit
@@ -133,10 +147,18 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
         </p>
       ) : (
         <div className="rounded-md border border-hearth-border bg-hearth-panel/60 p-5 font-display text-[18px] leading-loose text-hearth-text shadow-card">
-          {script.map((block, i) => renderBlock(block, i, fire, cueCtx))}
+          {script.map((block, i) => renderBlock(block, i, fireAt, cueCtx))}
         </div>
       )}
     </section>
+  )
+}
+
+function Key({ children }: { children: React.ReactNode }) {
+  return (
+    <kbd className="rounded border border-hearth-border bg-hearth-bg px-1 py-px font-mono text-[9px] text-hearth-muted">
+      {children}
+    </kbd>
   )
 }
 
@@ -171,7 +193,7 @@ function inlineFormat(node: Extract<ScriptInline, { type: 'text' }>): { classNam
   return { className: cls.join(' '), style }
 }
 
-function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline) => void, ctx: CueCtx): ReactNode {
+function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, idx: number) => void, ctx: CueCtx): ReactNode {
   if (node.type === 'text') {
     const { className, style } = inlineFormat(node)
     return (
@@ -181,11 +203,12 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline) =
     )
   }
   // Teleprompter "next up" indicator: subtle ember ring + glow on the cue Space will fire.
-  const isNext = ctx.i++ === ctx.next
+  const idx = ctx.i++
+  const isNext = idx === ctx.next
   return (
     <button
       key={key}
-      onClick={() => fireCue(node)}
+      onClick={() => fireCue(node, idx)}
       className={`mx-1 inline-flex items-center gap-1 rounded border px-2 py-0.5 align-middle text-sm transition-colors ${CUE_STYLE[node.kind]} ${
         isNext ? 'ring-1 ring-hearth-ember/80 ring-offset-2 ring-offset-hearth-panel shadow-[0_0_10px_rgba(255,140,60,0.35)]' : ''
       }`}
@@ -196,7 +219,7 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline) =
   )
 }
 
-function renderBlock(block: ScriptBlock, key: number, fireCue: (n: CueInline) => void, ctx: CueCtx): ReactNode {
+function renderBlock(block: ScriptBlock, key: number, fireCue: (n: CueInline, idx: number) => void, ctx: CueCtx): ReactNode {
   if (block.type === 'callout') {
     return (
       <div

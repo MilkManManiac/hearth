@@ -1,5 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AssetKind, CampaignState, Scene } from '../shared/types'
+import type { AssetKind, CampaignState, LibraryAsset, Scene } from '../shared/types'
+
+/** Editable slice of a library entry (file/kind stay fixed). */
+export type LibraryAssetPatch = Partial<Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash'>>
 
 export interface PresenterPayload {
   file: string | null
@@ -58,6 +61,10 @@ const api = {
     ipcRenderer.invoke('scene:create', templateId),
   deleteScene: (sceneId: string): Promise<CampaignState> =>
     ipcRenderer.invoke('scene:delete', sceneId),
+  updateLibraryAsset: (file: string, patch: LibraryAssetPatch): Promise<CampaignState> =>
+    ipcRenderer.invoke('library:update', file, patch),
+  deleteLibraryAsset: (file: string): Promise<CampaignState> =>
+    ipcRenderer.invoke('library:delete', file),
   pickTriageFolder: (): Promise<TriageScan | null> => ipcRenderer.invoke('triage:pick'),
   triageKeep: (req: TriageKeepRequest): Promise<CampaignState> =>
     ipcRenderer.invoke('triage:keep', req),

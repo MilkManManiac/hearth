@@ -9,12 +9,27 @@ export interface LibraryAsset {
   kind: AssetKind
   tags: string[]
   /**
+   * Display-name override. The file on disk is never renamed (scene references
+   * point at `file`), so renaming an asset is always safe.
+   */
+  name?: string
+  /**
    * Coarse grouping for the library browser + drag tray, e.g. "creatures",
    * "combat", "town". Free-form; see LIBRARY_CATEGORIES for the recommended set.
    */
   category?: string
+  /**
+   * Marked as junk: hidden from the cue tray and grouped under "Marked as
+   * trash" in the Library, pending real deletion. A soft-delete staging flag.
+   */
+  trash?: boolean
   source?: string
   license?: string
+}
+
+/** Human-facing name for a library asset: the override, else the filename stem. */
+export function assetDisplayName(a: Pick<LibraryAsset, 'file' | 'name'>): string {
+  return a.name ?? (a.file.split('/').pop() ?? a.file).replace(/\.[^.]+$/, '')
 }
 
 export interface LibraryCategoryMeta {

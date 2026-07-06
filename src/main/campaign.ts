@@ -414,6 +414,63 @@ export class CampaignManager {
     return { state: await this.load(), added: images.length }
   }
 
+  /**
+   * Patch a library entry (display name / category / tags / trash flag),
+   * keyed by its campaign-relative file path. Empty-string name/category
+   * clear the field; the file on disk is untouched.
+   */
+  async updateLibraryAsset(
+    file: string,
+    patch: Partial<Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash'>>
+  ): Promise<CampaignState> {
+    const lib = await this.loadLibrary([])
+    const asset = lib.assets.find((a) => a.file === file)
+    if (!asset) throw new Error(`asset "${file}" not in library.json`)
+    if (patch.name !== undefined) {
+      if (patch.name.trim()) asset.name = patch.name.trim()
+      else delete asset.name
+    }
+    if (patch.category !== undefined) {
+      if (patch.category) asset.category = patch.category
+      else delete asset.category
+    }
+    if (patch.tags !== undefined) asset.tags = patch.tags
+    if (patch.trash !== undefined) {
+      if (patch.trash) asset.trash = true
+      else delete asset.trash
+    }
+    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    this.markWrite()
+    return this.load()
+  }
+
+  /**
+   * Delete a library asset for real: refuse if any scene still references the
+   * file (deleting would leave dead cues); otherwise move the file to the OS
+   * trash and drop the library entry.
+   */
+  async deleteLibraryAsset(file: string): Promise<CampaignState> {
+    const scenes = await this.loadScenes([])
+    const users = scenes.filter(
+      (s) =>
+        s.music?.some((m) => m.file === file) ||
+        s.ambience?.some((a) => a.file === file) ||
+        s.sfx?.some((x) => x.file === file)
+    )
+    if (users.length > 0) {
+      throw new Error(`still used by: ${users.map((s) => s.name).join(', ')} — remove it from those scenes first`)
+    }
+    const abs = path.resolve(this.campaignPath, file)
+    const root = path.resolve(this.campaignPath)
+    if (!abs.startsWith(root + path.sep)) throw new Error('refusing to delete outside campaign folder')
+    if (fsSync.existsSync(abs)) await shell.trashItem(abs)
+    const lib = await this.loadLibrary([])
+    lib.assets = lib.assets.filter((a) => a.file !== file)
+    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    this.markWrite()
+    return this.load()
+  }
+
   // --- Sound triage (review inbox for a drop folder of candidates) ---
 
   private triageRoot: string | null = null
