@@ -77,6 +77,24 @@ dramatic timing. (You may instead provide a structured \`script\` array, but
 - sfx \`volume\` 0.9, \`duckMusic\` true (music dips ~8 dB while it plays)
 - \`transition.crossfadeMs\` 2500
 
+### Playlist mode (optional)
+
+By default music is a **palette** (tap to switch). A scene can instead play its
+\`music\` array as an ordered, auto-advancing queue:
+
+\`\`\`jsonc
+{
+  "playlist": { "enabled": true, "shuffle": false, "loop": true, "crossfadeMs": 4000 }
+}
+\`\`\`
+
+- \`loop\` (default true) wraps to the first track after the last; \`false\` stops.
+- \`crossfadeMs\` is the fade between consecutive tracks (falls back to
+  \`transition.crossfadeMs\`).
+- Per-track \`fadeInMs\` / \`fadeOutMs\` on a music entry override the crossfade for
+  that track's own start/end (also honored in palette mode).
+- The DM can flip palette ↔ playlist live; the toggle persists to the scene.
+
 > Note: the app can edit the read-aloud script in place (drag sound/image chips
 > into the words). Once a scene is edited in-app it is saved with a structured
 > \`script\` array instead of \`scriptText\` — both are valid on load.
@@ -108,19 +126,34 @@ When drafting a scene, populate these: likely NPCs/monsters, findable loot, and
 
 ## library.json
 
-Every asset gets an entry with descriptive **tags** — this is what lets a scene
-description be matched to tracks. Keep tags concrete (mood, setting, instrument,
+Every asset gets an entry with a **category** + descriptive **tags** — this is
+what lets a scene description be matched to tracks, and what groups the library
+browser and the drag tray. Keep tags concrete (mood, setting, instrument,
 creature):
 
 \`\`\`jsonc
 {
   "assets": [
-    { "file": "music/combat-drums.mp3", "kind": "music",
+    { "file": "music/combat-drums.mp3", "kind": "music", "category": "combat",
       "tags": ["combat", "drums", "urgent", "goblin", "forest"],
       "source": "user-upload", "license": "owned" }
   ]
 }
 \`\`\`
+
+### Categories
+
+\`category\` is a single coarse bucket (free-form, but prefer these so grouping
+stays tidy). Recommended set:
+
+- **SFX:** \`creatures\` · \`combat\` · \`magic\` · \`weather\` · \`water\` ·
+  \`fire\` · \`places\` · \`objects\` · \`horror\` · \`ui\`
+- **Music / ambience (by mood/setting):** \`exploration\` · \`town\` · \`tavern\` ·
+  \`tension\` · \`combat\` · \`boss\` · \`victory\` · \`somber\` · \`mystery\` ·
+  \`travel\` · \`seafaring\` · \`places\` · \`horror\`
+
+Assets with no \`category\` still work — they group under "Uncategorized". Put the
+mood/setting in \`tags\` too, since scene-matching searches tags.
 
 ## Workflow for Claude
 

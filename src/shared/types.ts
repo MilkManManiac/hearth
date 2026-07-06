@@ -8,8 +8,56 @@ export interface LibraryAsset {
   file: string
   kind: AssetKind
   tags: string[]
+  /**
+   * Coarse grouping for the library browser + drag tray, e.g. "creatures",
+   * "combat", "town". Free-form; see LIBRARY_CATEGORIES for the recommended set.
+   */
+  category?: string
   source?: string
   license?: string
+}
+
+export interface LibraryCategoryMeta {
+  label: string
+  icon: string
+}
+
+/**
+ * Recommended library categories with a display label + icon, in a sensible
+ * grouping order. `LibraryAsset.category` is free-form — values outside this map
+ * still display (with a default icon) and sort after these alphabetically.
+ */
+export const LIBRARY_CATEGORIES: Record<string, LibraryCategoryMeta> = {
+  creatures: { label: 'Creatures', icon: '🐺' },
+  combat: { label: 'Combat', icon: '⚔️' },
+  magic: { label: 'Magic', icon: '✨' },
+  weather: { label: 'Weather', icon: '🌧️' },
+  water: { label: 'Water', icon: '💧' },
+  fire: { label: 'Fire', icon: '🔥' },
+  places: { label: 'Places', icon: '🏰' },
+  objects: { label: 'Objects', icon: '📦' },
+  horror: { label: 'Horror', icon: '💀' },
+  ui: { label: 'UI / Table', icon: '🎲' },
+  exploration: { label: 'Exploration', icon: '🧭' },
+  town: { label: 'Town', icon: '🏘️' },
+  tavern: { label: 'Tavern', icon: '🍺' },
+  tension: { label: 'Tension', icon: '😨' },
+  boss: { label: 'Boss', icon: '👹' },
+  victory: { label: 'Victory', icon: '🏆' },
+  somber: { label: 'Somber', icon: '🕯️' },
+  mystery: { label: 'Mystery', icon: '🔮' },
+  travel: { label: 'Travel', icon: '🐎' },
+  seafaring: { label: 'Seafaring', icon: '⛵' }
+}
+
+/** Category ids in recommended display order. */
+export const CATEGORY_ORDER = Object.keys(LIBRARY_CATEGORIES)
+
+/** Display metadata for any category id, with a fallback for unknown/absent ones. */
+export function categoryMeta(id: string | undefined): LibraryCategoryMeta {
+  if (id && LIBRARY_CATEGORIES[id]) return LIBRARY_CATEGORIES[id]
+  const label = id ? id[0].toUpperCase() + id.slice(1) : 'Uncategorized'
+  return { label, icon: '📁' }
 }
 
 export interface Library {
@@ -24,8 +72,27 @@ export interface MusicTrack {
   volume?: number
   /** If true, starts automatically when the scene is loaded. */
   default?: boolean
-  /** Loop the track. Music defaults to true. */
+  /** Loop the track. Music defaults to true (ignored in playlist mode). */
   loop?: boolean
+  /** Fade-in when this track starts (ms). Defaults to the crossfade in effect. */
+  fadeInMs?: number
+  /** Fade-out when this track is stopped/advanced away from (ms). Same default. */
+  fadeOutMs?: number
+}
+
+/**
+ * Playlist mode: play the scene's `music` array as an ordered queue with
+ * auto-advance, instead of the tap-to-switch palette. Palette behavior is the
+ * default; the DM can flip modes live (persisted on the scene).
+ */
+export interface PlaylistConfig {
+  enabled?: boolean
+  /** Play in random order (reshuffled per scene load / toggle). */
+  shuffle?: boolean
+  /** Wrap to the first track after the last. Default true. */
+  loop?: boolean
+  /** Crossfade between consecutive tracks (ms). Defaults to transition.crossfadeMs. */
+  crossfadeMs?: number
 }
 
 export interface AmbienceLayer {
@@ -103,6 +170,8 @@ export interface Scene {
   ideas?: SceneIdea[]
   /** Cast & loot — NPCs, monsters, findable items, hooks. */
   entities?: SceneEntity[]
+  /** Optional playlist mode for this scene's music (palette stays the default). */
+  playlist?: PlaylistConfig
   transition?: { crossfadeMs?: number }
   /** Populated by the loader: relative path of the source file within the campaign. */
   _sourceFile?: string

@@ -24,6 +24,17 @@ The app is currently named **Hearth** (package `hearth`). This is a placeholder 
 
 The Electron binary downloads on first install; if `node_modules/electron/dist/electron.exe` is missing, run `node node_modules/electron/install.js`.
 
+**Known env gotcha (this machine):** Electron 43's installer unzips via a Rust
+native module (`@electron-internal/extract-zip`) that needs the **Microsoft
+Visual C++ Redistributable** — `vcruntime140.dll` is missing here, so
+`install.js` fails with `ERR_DLOPEN_FAILED`. Durable fix: install `vc_redist.x64`
+(also needed for future native deps like `@discordjs/voice` Opus and
+`uiohook-napi` in Phases 2/5). Workaround already applied once: download the zip
+with `@electron/get` and extract with PowerShell `Expand-Archive` into
+`node_modules/electron/dist`, then write `path.txt` = `electron.exe` (that's all
+`install.js` does after unzip). If `node_modules` is blown away, the binary must
+be re-provisioned this way until the redistributable is installed.
+
 ## Layout
 - `src/main/` — Electron main. `index.ts` (windows, `asset://` protocol serving campaign files, IPC), `campaign.ts` (load/watch scenes + library, imports), `authoring.ts` (AUTHORING.md seeded into campaigns).
 - `src/preload/` — contextBridge API exposed as `window.hearth`.

@@ -29,17 +29,56 @@ Ideas to fix:
 - Make chips easier to grab/drag (bigger hit target, drag handle).
 - Undo/redo.
 
-## 3. Audio playback reliability (bug)
-- "Audio doesn't always play when I click the button in the main screen / builder."
-- Investigate: ensure the Web Audio context resumes on the *first* user gesture
-  regardless of which button is clicked (SFX/music/scene); verify every trigger
-  path calls `engine.resume()` synchronously enough.
-- Verify imported files with spaces/parens in the name (e.g. `Falloutv2 (1).mp3`)
-  play — check `asset://` URL encoding end to end.
-- Add a visible "now playing / audio active" indicator and a decode/failure toast
-  so silent failures are obvious.
+## 3. Audio playback reliability (bug) — ✅ DONE (2026-07-05)
+- **ACTUAL root cause: the `asset://` protocol handler.** Nothing loaded at all
+  (all fetches failed). Two compounding bugs in `src/main/index.ts`:
+  1. `asset` is a *standard* scheme, so Chromium parses the first path segment
+     as the URL **host** — `new URL(url).pathname` dropped it, so
+     `asset://art/x.svg`/`asset:///sfx/x.ogg` resolved to the campaign *root*
+     (missing `art/`, `sfx/`, …) → every file 404'd. Fixed by rebuilding the
+     relative path from the raw URL (host + path) instead of `pathname`.
+  2. The scheme wasn't CORS-enabled, so fetching it from the dev renderer
+     (`http://localhost`) failed with `TypeError: Failed to fetch`. Fixed with
+     `corsEnabled: true` + an `Access-Control-Allow-Origin: *` header on the
+     handler responses.
+- Defensive fixes made along the way (good regardless): autoplay gate disabled
+  via `app.commandLine.appendSwitch('autoplay-policy',
+  'no-user-gesture-required')` (kept `engine.resume()` as fallback); and a
+  double-start race in
+  `AudioEngine.switchMusic()`/`setAmbience()` (they checked/reset state *before*
+  the async decode, so two fast clicks stacked overlapping tracks). Now guarded
+  by monotonic `musicIntent`/`ambienceIntent` tokens — a stale in-flight load
+  bails instead of starting.
+- ~~Files with spaces/parens.~~ `Falloutv2 (1).mp3` is in the sample library and
+  loads; `assetUrl()` per-segment encoding + main-process `decodeURIComponent`
+  round-trip verified. Use the **Probe** button (TopBar) to check every
+  referenced asset loads before a session.
+- ~~Now-playing indicator + failure toast.~~ TopBar shows the active track with
+  a pulse; failed decodes/loads now emit an `onError` → toast (bottom-right)
+  instead of failing silently. See `Toasts.tsx`, `engine.onError`, store
+  `pushToast`/`probeAssets`.
+- Remaining to verify **by ear** (needs speakers): first-click SFX plays;
+  spam-click a music palette button → exactly one track audible; break a file →
+  toast appears.
 
 ## 4. Stock sound library — expand + categorize
+- ✅ **Schema + browser + audition DONE (2026-07-05).** `LibraryAsset.category`
+  added (`src/shared/types.ts`) with a recommended taxonomy + icons
+  (`LIBRARY_CATEGORIES`/`categoryMeta`). New **Library** browser modal
+  (`LibraryPanel.tsx`, opened from TopBar 📚): search by name/tag/category,
+  filter by kind + category, grouped list, per-asset ▶ **audition** (one at a
+  time, via `engine.preview` → sfx bus, no ducking). Sample `library.json`
+  backfilled with categories; taxonomy documented in AUTHORING.md (+ seed in
+  `authoring.ts`).
+- ✅ **Content batch added (2026-07-05):** library grew 19 → **45** CC0 assets.
+  +8 music (RandomMind "Medieval" series: battle/market/tavern/feast/victory/
+  exploration/dance + a horror atmosphere), +3 ambience (rain-storm, campfire,
+  dungeon-cave), +15 SFX (Kenney RPG Audio: doors, chest, coins, books, blades,
+  chop, footsteps, cloth). All CC0, categorized + tagged, documented in
+  CREDITS.md. Sources: OpenGameArt + kenney.nl. More can always be added.
+- ⏳ Drag-tray grouping by category: deferred into the #2 editor rewrite (the
+  tray shows scene cues, not library assets, and the editor is being rebuilt;
+  grouping it now means library lookups on a fragile contentEditable).
 - Add many more useful D&D sounds (all CC0 / royalty-free, documented in CREDITS).
 - **Categories** so they're easy to find. Proposed taxonomy:
   - Creatures: growls, howls, screams, roars, snarls, hisses, wings, footsteps
@@ -57,19 +96,31 @@ Ideas to fix:
 - Category should be a first-class field on library assets (extend `library.json`
   + `LibraryAsset.category`), and the drag tray should group by category.
 
-## 5. More music
-- Add a broader CC0/royalty-free music set covering common moods: exploration,
-  town, tavern, tension, combat, boss, victory, sad/somber, mystery, travel,
-  seafaring, horror.
-- Tag by mood + setting so scene-building suggestions get better.
+## 5. More music — ✅ partial (2026-07-05)
+- Added a CC0 music set covering combat/boss, town/market, tavern (×3),
+  victory, exploration, and horror (see #4 content batch). Tagged by mood +
+  setting. **Gaps still worth filling:** tension, mystery, somber/sad, travel,
+  seafaring — no strong CC0 match grabbed this pass.
+- Original ask: broader CC0/royalty-free set covering exploration, town, tavern,
+  tension, combat, boss, victory, sad/somber, mystery, travel, seafaring, horror.
 
-## 6. Per-scene playlist with fade in/out
-- A scene can have an ordered **playlist** of music tracks (not just a palette):
-  - auto-advance to next track, optional shuffle, loop-the-playlist.
-  - crossfade / fade-in / fade-out between tracks (configurable seconds).
-  - keep the "palette" (tap-to-switch) behavior too — playlist is an alternate mode.
-- Per-track fade-in and fade-out points; gapless where desired.
-- A "now playing" strip with next/prev and a progress bar.
+## 6. Per-scene playlist with fade in/out — ✅ DONE (2026-07-05)
+- ~~Ordered playlist with auto-advance, shuffle, loop, crossfade.~~ Built:
+  `Scene.playlist` config (`enabled`/`shuffle`/`loop`/`crossfadeMs`) +
+  per-track `fadeInMs`/`fadeOutMs` on `MusicTrack` (honored in both modes;
+  outgoing track's authored fade-out wins over the incoming crossfade). Schema
+  documented in AUTHORING.md.
+- Palette stays the default; the ▤/▦ toggle in the Music header flips modes
+  live and persists to the scene JSON. Palette taps in playlist mode jump the
+  queue. Auto-advance is timer-based at the track's fade-out point
+  (`engine.switchMusic` opts `{loop:false, onEnding}`), cleared on any manual
+  switch/stop so it can't double-fire; superseded tracks can't advance.
+- ~~Now-playing strip.~~ `NowPlayingStrip` in `MusicPalette.tsx`: prev/next,
+  track label, elapsed/duration + queue position, progress bar (polls
+  `engine.musicProgress()` at 500ms), shuffle + loop toggles (shuffle re-orders
+  the *remaining* queue without restarting the current track).
+- Note: the "Silence" panic button keeps its fast fade — per-track fadeOutMs
+  deliberately does not apply to it.
 
 ## 7. Other ideas (mine)
 - **Loudness normalization** on import so tracks aren't wildly different volumes.
@@ -103,8 +154,10 @@ Ideas to fix:
   would need to be added to the user's skills.
 
 ## Priority hint (rough)
-1. Fix audio-click reliability (#3) — it's a live bug.
-2. Sound categories + library search + preview (#4) and more sounds/music (#4/#5).
-3. Playlist + fades (#6).
-4. Drag/drop editor rewrite (#2) — do the grill session first.
+1. ~~Fix audio-click reliability (#3)~~ — ✅ done 2026-07-05.
+2. ~~Library categories/search/audition + CC0 content (#4/#5)~~ — ✅ done
+   2026-07-05 (45 assets). Optional: fill mood gaps (tension/mystery/somber/
+   travel/seafaring).
+3. ~~Playlist + fades (#6)~~ — ✅ done 2026-07-05 (verify by ear).
+4. Drag/drop editor rewrite (#2) — do the grill session first. ← next
 5. Design pass (#1) — ongoing.

@@ -9,6 +9,8 @@ import ScriptPanel from './ScriptPanel'
 import ImageStrip from './ImageStrip'
 import IdeasPanel from './IdeasPanel'
 import CastPanel from './CastPanel'
+import Toasts from './Toasts'
+import LibraryPanel from './LibraryPanel'
 
 export default function ControlBoard() {
   const { campaign, currentSceneId } = useStore()
@@ -42,6 +44,8 @@ export default function ControlBoard() {
 
         {scene && <RightPanel scene={scene} />}
       </div>
+      <LibraryPanel />
+      <Toasts />
     </div>
   )
 }

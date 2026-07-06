@@ -3,6 +3,7 @@
     {
       "file": "music/town.mp3",
       "kind": "music",
+      "category": "town",
       "tags": [
         "town",
         "calm",
@@ -16,6 +17,7 @@
     {
       "file": "music/market.mp3",
       "kind": "music",
+      "category": "town",
       "tags": [
         "market",
         "calm",
@@ -29,6 +31,7 @@
     {
       "file": "music/battle.mp3",
       "kind": "music",
+      "category": "combat",
       "tags": [
         "combat",
         "battle",
@@ -42,6 +45,7 @@
     {
       "file": "ambience/forest.mp3",
       "kind": "ambience",
+      "category": "places",
       "tags": [
         "forest",
         "woods",
@@ -55,6 +59,7 @@
     {
       "file": "ambience/dungeon.ogg",
       "kind": "ambience",
+      "category": "places",
       "tags": [
         "dungeon",
         "cave",
@@ -69,6 +74,7 @@
     {
       "file": "sfx/sword-clash.ogg",
       "kind": "sfx",
+      "category": "combat",
       "tags": [
         "sword",
         "blade",
@@ -82,6 +88,7 @@
     {
       "file": "sfx/metal-clang.ogg",
       "kind": "sfx",
+      "category": "combat",
       "tags": [
         "metal",
         "clang",
@@ -93,6 +100,7 @@
     {
       "file": "sfx/goblin-snarl.ogg",
       "kind": "sfx",
+      "category": "creatures",
       "tags": [
         "goblin",
         "creature",
@@ -105,6 +113,7 @@
     {
       "file": "sfx/monster-roar.ogg",
       "kind": "sfx",
+      "category": "creatures",
       "tags": [
         "monster",
         "roar",
@@ -117,6 +126,7 @@
     {
       "file": "sfx/creature-hurt.ogg",
       "kind": "sfx",
+      "category": "creatures",
       "tags": [
         "creature",
         "hurt",
@@ -129,6 +139,7 @@
     {
       "file": "sfx/creature-die.ogg",
       "kind": "sfx",
+      "category": "creatures",
       "tags": [
         "creature",
         "die",
@@ -141,6 +152,7 @@
     {
       "file": "sfx/spell-cast.ogg",
       "kind": "sfx",
+      "category": "magic",
       "tags": [
         "spell",
         "magic",
@@ -153,6 +165,7 @@
     {
       "file": "sfx/spell-fire.ogg",
       "kind": "sfx",
+      "category": "magic",
       "tags": [
         "spell",
         "fire",
@@ -165,6 +178,7 @@
     {
       "file": "sfx/coins.ogg",
       "kind": "sfx",
+      "category": "objects",
       "tags": [
         "coins",
         "gold",
@@ -177,6 +191,7 @@
     {
       "file": "sfx/gem.ogg",
       "kind": "sfx",
+      "category": "objects",
       "tags": [
         "gem",
         "jewel",
@@ -189,6 +204,7 @@
     {
       "file": "sfx/lock-click.ogg",
       "kind": "sfx",
+      "category": "objects",
       "tags": [
         "lock",
         "click",
@@ -201,6 +217,7 @@
     {
       "file": "sfx/wood-thunk.ogg",
       "kind": "sfx",
+      "category": "objects",
       "tags": [
         "wood",
         "thunk",
@@ -213,6 +230,7 @@
     {
       "file": "sfx/book-flip.ogg",
       "kind": "sfx",
+      "category": "ui",
       "tags": [
         "book",
         "page",
@@ -228,6 +246,368 @@
       "tags": [],
       "source": "user-upload",
       "license": "owned"
+    },
+    {
+      "file": "music/battle-medieval.mp3",
+      "kind": "music",
+      "category": "combat",
+      "tags": [
+        "combat",
+        "battle",
+        "boss",
+        "medieval",
+        "orchestral",
+        "urgent"
+      ],
+      "source": "OpenGameArt / RandomMind",
+      "license": "CC0"
+    },
+    {
+      "file": "music/market-day.mp3",
+      "kind": "music",
+      "category": "town",
+      "tags": [
+        "town",
+        "market",
+        "medieval",
+        "cheerful",
+        "day",
+        "folk"
+      ],
+      "source": "OpenGameArt / RandomMind",
+      "license": "CC0"
+    },
+    {
+      "file": "music/kings-feast.mp3",
+      "kind": "music",
+      "category": "tavern",
+      "tags": [
+        "tavern",
+        "feast",
+        "medieval",
+        "celebration",
+        "folk",
+        "inn"
+      ],
+      "source": "OpenGameArt / RandomMind",
+      "license": "CC0"
+    },
+    {
+      "file": "music/old-tower-inn.mp3",
+      "kind": "music",
+      "category": "tavern",
+      "tags": [
+        "tavern",
+        "inn",
+        "medieval",
+        "cozy",
+        "folk",
+        "rest"
+      ],
+      "source": "OpenGameArt / RandomMind",
+      "license": "CC0"
+    },
+    {
+      "file": "music/rejoicing.mp3",
+      "kind": "music",
+      "category": "victory",
+      "tags": [
+        "victory",
+        "celebration",
+        "triumphant",
+        "medieval",
+        "upbeat",
+        "folk"
+      ],
+      "source": "OpenGameArt / RandomMind",
+      "license": "CC0"
+    },
+    {
+      "file": "music/harvest-season.mp3",
+      "kind": "music",
+      "category": "exploration",
+      "tags": [
+        "exploration",
+        "pastoral",
+        "town",
+        "medieval",
+        "upbeat",
+        "travel"
+      ],
+      "source": "OpenGameArt / RandomMind",
+      "license": "CC0"
+    },
+    {
+      "file": "music/minstrel-dance.mp3",
+      "kind": "music",
+      "category": "tavern",
+      "tags": [
+        "tavern",
+        "dance",
+        "minstrel",
+        "medieval",
+        "folk",
+        "lively"
+      ],
+      "source": "OpenGameArt / RandomMind",
+      "license": "CC0"
+    },
+    {
+      "file": "music/horror-atmosphere.ogg",
+      "kind": "music",
+      "category": "horror",
+      "tags": [
+        "horror",
+        "dark",
+        "drone",
+        "eerie",
+        "atmosphere",
+        "dread"
+      ],
+      "source": "OpenGameArt / SubspaceAudio (Juhani Junkala)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/rain-storm.ogg",
+      "kind": "ambience",
+      "category": "weather",
+      "tags": [
+        "rain",
+        "storm",
+        "thunder",
+        "weather",
+        "night",
+        "outdoor"
+      ],
+      "source": "OpenGameArt / kindland",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/campfire.wav",
+      "kind": "ambience",
+      "category": "fire",
+      "tags": [
+        "fire",
+        "campfire",
+        "crackle",
+        "warm",
+        "camp",
+        "loop"
+      ],
+      "source": "OpenGameArt / PagDev",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/dungeon-cave.ogg",
+      "kind": "ambience",
+      "category": "places",
+      "tags": [
+        "dungeon",
+        "cave",
+        "wind",
+        "water-drips",
+        "underground",
+        "echo"
+      ],
+      "source": "OpenGameArt / JaggedStone",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/door-open.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "door",
+        "open",
+        "wood"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/door-close.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "door",
+        "close",
+        "wood"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/door-creak.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "door",
+        "creak",
+        "wood",
+        "eerie"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/chest-latch.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "chest",
+        "latch",
+        "metal",
+        "open"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/lock-metal-click.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "lock",
+        "click",
+        "metal",
+        "latch"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/coins-handle.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "coins",
+        "gold",
+        "loot",
+        "treasure",
+        "money"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/book-close.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "book",
+        "close",
+        "page",
+        "paper"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/book-open.ogg",
+      "kind": "sfx",
+      "category": "ui",
+      "tags": [
+        "book",
+        "open",
+        "page",
+        "paper"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/pot-clank.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "pot",
+        "metal",
+        "clank",
+        "kitchen"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/blade-draw.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "blade",
+        "knife",
+        "draw",
+        "metal",
+        "sword"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/blade-slice.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "blade",
+        "slice",
+        "knife",
+        "attack",
+        "cut"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/chop.ogg",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "chop",
+        "axe",
+        "hit",
+        "wood",
+        "impact"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/footstep-1.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "footstep",
+        "walk",
+        "step",
+        "movement"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/footstep-2.ogg",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "footstep",
+        "walk",
+        "step",
+        "movement"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/cloth-rustle.ogg",
+      "kind": "sfx",
+      "category": "objects",
+      "tags": [
+        "cloth",
+        "rustle",
+        "fabric",
+        "movement"
+      ],
+      "source": "Kenney (kenney.nl) RPG Audio",
+      "license": "CC0"
     }
   ]
 }

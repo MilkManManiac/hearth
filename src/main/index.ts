@@ -26,9 +26,27 @@ const MIME: Record<string, string> = {
 protocol.registerSchemesAsPrivileged([
   {
     scheme: 'asset',
-    privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true, bypassCSP: true }
+    // corsEnabled is required so the renderer (served from http://localhost in
+    // dev, file:// in prod) can `fetch()` asset:// cross-origin; without it,
+    // and without the ACAO header the handler returns, every load fails with
+    // "TypeError: Failed to fetch".
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      stream: true,
+      bypassCSP: true,
+      corsEnabled: true
+    }
   }
 ])
+
+// We are the browser here — a mixing console, not a web page. Chromium's
+// autoplay gesture gate can otherwise leave the AudioContext suspended on the
+// very first cue click (the async resume() chain loses the gesture). Removing
+// the requirement makes first-click audio deterministic; resume() stays as a
+// belt-and-braces fallback.
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
 let mainWindow: BrowserWindow | null = null
 let presenterWindow: BrowserWindow | null = null
@@ -90,19 +108,29 @@ function ensurePresenterWindow(): BrowserWindow {
 }
 
 function registerAssetProtocol(): void {
+  // Allow the renderer to fetch these cross-origin (dev http://localhost, prod file://).
+  const CORS = { 'Access-Control-Allow-Origin': '*' }
   protocol.handle('asset', async (request) => {
-    const rel = decodeURIComponent(new URL(request.url).pathname).replace(/^\/+/, '')
+    // `asset` is a *standard* scheme, so Chromium parses the first path segment
+    // as the URL host — `new URL(url).pathname` would drop it (asset://art/x.svg
+    // -> "/x.svg", losing "art/"). Strip the scheme off the raw URL instead so
+    // host+path survive; this also tolerates both asset:// and asset:/// forms.
+    const rel = decodeURIComponent(request.url.replace(/^asset:\/\//, '').split(/[?#]/)[0]).replace(
+      /^\/+/,
+      ''
+    )
     const root = path.resolve(campaign.path)
     const resolved = path.resolve(root, rel)
     if (resolved !== root && !resolved.startsWith(root + path.sep)) {
-      return new Response('Forbidden', { status: 403 })
+      return new Response('Forbidden', { status: 403, headers: CORS })
     }
     try {
       const data = await readFile(resolved)
       const type = MIME[path.extname(resolved).toLowerCase()] ?? 'application/octet-stream'
-      return new Response(new Uint8Array(data), { headers: { 'Content-Type': type } })
-    } catch {
-      return new Response('Not found', { status: 404 })
+      return new Response(new Uint8Array(data), { headers: { 'Content-Type': type, ...CORS } })
+    } catch (err) {
+      console.error(`[audio] 404 url=${request.url} root=${root} resolved=${resolved} err=${(err as Error).message}`)
+      return new Response('Not found', { status: 404, headers: CORS })
     }
   })
 }
