@@ -20,23 +20,27 @@
       "id": "regroup",
       "label": "Regroup",
       "file": "music/market.mp3",
-      "volume": 0.5
+      "volume": 0.87
     }
   ],
   "ambience": [
     {
       "file": "ambience/forest.mp3",
-      "volume": 0.7,
+      "volume": 0.25,
       "loop": true
     },
     {
       "file": "ambience/campfire.wav",
-      "volume": 0.72,
+      "volume": 0.41,
       "loop": true
     },
     {
       "file": "ambience/rain-storm.ogg",
-      "volume": 0.83
+      "volume": 0.81
+    },
+    {
+      "file": "ambience/wind-whoosh.ogg",
+      "volume": 0.21
     }
   ],
   "sfx": [

@@ -7,14 +7,14 @@
       "id": "held",
       "label": "Held breath",
       "file": "music/market.mp3",
-      "volume": 0.56,
+      "volume": 0.39,
       "default": true
     },
     {
       "id": "rise",
       "label": "The dead rise",
       "file": "music/battle.mp3",
-      "volume": 0.7
+      "volume": 0.16
     }
   ],
   "ambience": [
