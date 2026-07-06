@@ -12,6 +12,33 @@ export interface SceneWriteResult {
   sceneId: string
 }
 
+/** One audio candidate found in a triage drop folder. */
+export interface TriageFile {
+  /** Path relative to the drop folder, '/'-separated. */
+  rel: string
+  /** File size in bytes. */
+  size: number
+}
+
+/** A picked + scanned triage drop folder. Audition via `asset:///.triage/<token>/<rel>`. */
+export interface TriageScan {
+  root: string
+  token: string
+  files: TriageFile[]
+}
+
+/** A kept candidate: copy into the campaign's <kind>/ folder and index in library.json. */
+export interface TriageKeepRequest {
+  rel: string
+  kind: AssetKind
+  /** Becomes the destination filename (slugified); falls back to the source name. */
+  name: string
+  category?: string
+  tags: string[]
+  source?: string
+  license?: string
+}
+
 const api = {
   getCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:get'),
   reloadCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:reload'),
@@ -22,6 +49,9 @@ const api = {
     ipcRenderer.invoke('scene:duplicate', sceneId),
   createScene: (templateId: string): Promise<SceneWriteResult> =>
     ipcRenderer.invoke('scene:create', templateId),
+  pickTriageFolder: (): Promise<TriageScan | null> => ipcRenderer.invoke('triage:pick'),
+  triageKeep: (req: TriageKeepRequest): Promise<CampaignState> =>
+    ipcRenderer.invoke('triage:keep', req),
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),

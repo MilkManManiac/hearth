@@ -3,12 +3,14 @@ import { promises as fs } from 'fs'
 import * as fsSync from 'fs'
 import * as path from 'path'
 import chokidar, { type FSWatcher } from 'chokidar'
-import type { AssetKind, CampaignState, Library, Scene } from '../shared/types'
+import type { AssetKind, CampaignState, Library, LibraryAsset, Scene } from '../shared/types'
+import type { TriageKeepRequest, TriageScan } from '../preload/index'
 import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import { AUTHORING_MD } from './authoring'
 
 const CONFIG_FILE = () => path.join(app.getPath('userData'), 'hearth-config.json')
 const SUBFOLDERS = ['scenes', 'music', 'ambience', 'sfx', 'art']
+const TRIAGE_AUDIO_EXTS = new Set(['.mp3', '.ogg', '.wav', '.flac', '.m4a'])
 
 interface Config {
   campaignPath?: string
@@ -316,6 +318,82 @@ export class CampaignManager {
       path.join(this.campaignPath, 'library.json'),
       JSON.stringify(lib, null, 2)
     )
+    return this.load()
+  }
+
+  // --- Sound triage (review inbox for a drop folder of candidates) ---
+
+  private triageRoot: string | null = null
+  private triageSeq = 0
+  private triageToken: string | null = null
+
+  /** Current triage session, if any — the asset:// handler serves `.triage/<token>/…` from its root. */
+  get triage(): { root: string; token: string } | null {
+    return this.triageRoot && this.triageToken
+      ? { root: this.triageRoot, token: this.triageToken }
+      : null
+  }
+
+  /** Pick a drop folder and scan it recursively for audio candidates. Read-only. */
+  async triagePick(): Promise<TriageScan | null> {
+    const res = await dialog.showOpenDialog({
+      title: 'Choose a drop folder of sound candidates',
+      properties: ['openDirectory']
+    })
+    if (res.canceled || res.filePaths.length === 0) return null
+    const root = res.filePaths[0]
+    const files: TriageScan['files'] = []
+    const walk = async (dir: string): Promise<void> => {
+      let entries: fsSync.Dirent[]
+      try {
+        entries = await fs.readdir(dir, { withFileTypes: true })
+      } catch {
+        return // unreadable subfolder — skip, don't abort the scan
+      }
+      for (const e of entries) {
+        const abs = path.join(dir, e.name)
+        if (e.isDirectory()) await walk(abs)
+        else if (e.isFile() && TRIAGE_AUDIO_EXTS.has(path.extname(e.name).toLowerCase())) {
+          files.push({
+            rel: path.relative(root, abs).split(path.sep).join('/'),
+            size: (await fs.stat(abs)).size
+          })
+        }
+      }
+    }
+    await walk(root)
+    files.sort((a, b) => a.rel.localeCompare(b.rel))
+    this.triageRoot = root
+    // Token namespaces audition URLs per session so the renderer's decode
+    // cache can't serve a stale buffer from a previous drop folder.
+    this.triageToken = String(++this.triageSeq)
+    return { root, token: this.triageToken, files }
+  }
+
+  /**
+   * Keep a triage candidate: COPY it (source file is never modified/deleted)
+   * into the campaign's <kind>/ folder — appending -2, -3… on filename
+   * collision — and index it in library.json.
+   */
+  async triageKeep(req: TriageKeepRequest): Promise<CampaignState> {
+    if (!this.triageRoot) throw new Error('no triage session in progress')
+    const root = path.resolve(this.triageRoot)
+    const src = path.resolve(root, req.rel)
+    if (!src.startsWith(root + path.sep)) throw new Error('candidate outside the drop folder')
+    const ext = path.extname(req.rel).toLowerCase()
+    const stem = slugify(req.name.trim() || path.basename(req.rel, path.extname(req.rel)))
+    const destDir = path.join(this.campaignPath, req.kind)
+    await fs.mkdir(destDir, { recursive: true })
+    let base = `${stem}${ext}`
+    for (let n = 2; fsSync.existsSync(path.join(destDir, base)); n++) base = `${stem}-${n}${ext}`
+    await fs.copyFile(src, path.join(destDir, base), fsSync.constants.COPYFILE_EXCL)
+    const lib = await this.loadLibrary([])
+    const asset: LibraryAsset = { file: `${req.kind}/${base}`, kind: req.kind, tags: req.tags }
+    if (req.category) asset.category = req.category
+    if (req.source) asset.source = req.source
+    if (req.license) asset.license = req.license
+    lib.assets.push(asset)
+    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
     return this.load()
   }
 

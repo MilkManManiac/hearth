@@ -1,4 +1,5 @@
 import { engine, useStore } from '../store'
+import TriagePanel from './TriagePanel'
 
 function Slider({
   label,
@@ -56,7 +57,8 @@ export default function TopBar() {
     openPresenter,
     stopAll,
     probeAssets,
-    openLibrary
+    openLibrary,
+    openTriage
   } = useStore()
 
   const folderName = campaign.path ? campaign.path.split(/[\\/]/).pop() : 'no campaign'
@@ -99,6 +101,7 @@ export default function TopBar() {
 
       <div className="flex items-center gap-2">
         <Btn onClick={openLibrary} title="Browse, search & audition the asset library">📚 Library</Btn>
+        <Btn onClick={openTriage} title="Review a drop folder of sound candidates — keep or cull">📥 Triage</Btn>
         <Btn onClick={() => importAssets('music')} title="Import music files">+ Music</Btn>
         <Btn onClick={() => importAssets('ambience')} title="Import ambience loops">+ Ambience</Btn>
         <Btn onClick={() => importAssets('sfx')} title="Import sound effects">+ SFX</Btn>
@@ -126,6 +129,10 @@ export default function TopBar() {
           ⏹ Stop all
         </button>
       </div>
+
+      {/* Triage review inbox (fixed-position modal; lives here because the
+          board root is LibraryPanel's home and the button is ours). */}
+      <TriagePanel />
     </header>
   )
 }

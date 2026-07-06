@@ -3,6 +3,7 @@ import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
 import type { AssetKind, Scene } from '../shared/types'
+import type { TriageKeepRequest } from '../preload/index'
 
 const MIME: Record<string, string> = {
   '.mp3': 'audio/mpeg',
@@ -119,8 +120,24 @@ function registerAssetProtocol(): void {
       /^\/+/,
       ''
     )
-    const root = path.resolve(campaign.path)
-    const resolved = path.resolve(root, rel)
+    // Triage auditions live *outside* the campaign: `.triage/<token>/<rel>` is
+    // served (read-only) from the current triage drop folder; the token must
+    // match the live session so stale URLs die instead of hitting old paths.
+    const triageMatch = rel.match(/^\.triage\/([^/]+)\/(.+)$/)
+    let root: string
+    let sub: string
+    if (triageMatch) {
+      const t = campaign.triage
+      if (!t || triageMatch[1] !== t.token) {
+        return new Response('No triage session', { status: 404, headers: CORS })
+      }
+      root = path.resolve(t.root)
+      sub = triageMatch[2]
+    } else {
+      root = path.resolve(campaign.path)
+      sub = rel
+    }
+    const resolved = path.resolve(root, sub)
     if (resolved !== root && !resolved.startsWith(root + path.sep)) {
       return new Response('Forbidden', { status: 403, headers: CORS })
     }
@@ -162,6 +179,12 @@ function registerIpc(): void {
     const result = await campaign.createScene(templateId)
     broadcast('campaign:changed', result.state)
     return result
+  })
+  ipcMain.handle('triage:pick', async () => campaign.triagePick())
+  ipcMain.handle('triage:keep', async (_e, req: TriageKeepRequest) => {
+    const state = await campaign.triageKeep(req)
+    broadcast('campaign:changed', state)
+    return state
   })
   ipcMain.handle('campaign:reveal', async () => {
     shell.openPath(campaign.path)

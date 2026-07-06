@@ -7,6 +7,7 @@ import {
   type Scene
 } from '../shared/types'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
+import type { TriageScan } from '../preload/index'
 
 /** One audio engine per session, shared across the UI. */
 export const engine = new AudioEngine()
@@ -84,6 +85,8 @@ interface AppState {
   libraryKind: AssetKind | 'all'
   /** Library asset file currently being auditioned, or null. */
   previewingFile: string | null
+  /** Active sound-triage session (drop-folder review inbox), or null. */
+  triage: TriageScan | null
   /** Track-id play order for the current scene's playlist mode. */
   playlistOrder: string[]
   /** Index into playlistOrder of the current/last-started track. */
@@ -95,6 +98,9 @@ interface AppState {
   probeAssets: () => Promise<void>
   openLibrary: (kind?: AssetKind) => void
   closeLibrary: () => void
+  /** Pick a drop folder via the OS dialog and open the triage review inbox. */
+  openTriage: () => Promise<void>
+  closeTriage: () => void
   /** Add a library asset to the current scene's palette (by its kind). */
   addAssetToScene: (file: string) => void
   previewAsset: (file: string) => Promise<void>
@@ -173,6 +179,7 @@ export const useStore = create<AppState>((set, get) => ({
   libraryOpen: false,
   libraryKind: 'all',
   previewingFile: null,
+  triage: null,
   playlistOrder: [],
   playlistPos: 0,
 
@@ -198,6 +205,26 @@ export const useStore = create<AppState>((set, get) => ({
     currentPreviewStop?.()
     currentPreviewStop = null
     set({ libraryOpen: false, previewingFile: null })
+  },
+
+  openTriage: async () => {
+    try {
+      const scan = await window.hearth.pickTriageFolder()
+      if (!scan) return // dialog canceled
+      if (scan.files.length === 0) {
+        get().pushToast('No audio files found in that folder', 'info')
+        return
+      }
+      set({ triage: scan })
+    } catch (err) {
+      get().pushToast(`Triage failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  closeTriage: () => {
+    currentPreviewStop?.()
+    currentPreviewStop = null
+    set({ triage: null, previewingFile: null })
   },
 
   addAssetToScene: (file) => {
