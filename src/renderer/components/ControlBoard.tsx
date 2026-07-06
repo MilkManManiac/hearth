@@ -18,7 +18,7 @@ export default function ControlBoard() {
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
 
   return (
-    <div className="flex h-full flex-col bg-hearth-bg text-hearth-text">
+    <div className="hearth-ambient flex h-full flex-col text-hearth-text">
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         <SceneList />
@@ -29,9 +29,12 @@ export default function ControlBoard() {
           ) : (
             <>
               <div>
-                <h2 className="text-2xl font-semibold text-hearth-text">{scene.name}</h2>
+                <h2 className="font-display text-3xl font-semibold tracking-tight text-hearth-text">
+                  {scene.name}
+                </h2>
+                <div className="mt-2 h-px w-full bg-gradient-to-r from-hearth-ember/50 via-hearth-border to-transparent" />
                 {scene.dmNotes && (
-                  <p className="mt-1 rounded border border-hearth-border/60 bg-hearth-panel/40 px-3 py-2 text-sm text-hearth-muted">
+                  <p className="mt-3 rounded border-l-2 border-hearth-emberdim/60 bg-hearth-panel/40 px-3 py-2 text-sm italic text-hearth-muted">
                     {scene.dmNotes}
                   </p>
                 )}
@@ -94,15 +97,15 @@ function RightPanel({ scene }: { scene: Scene }) {
 
 function EmptyState({ hasCampaign }: { hasCampaign: boolean }) {
   return (
-    <div className="mx-auto mt-24 max-w-md text-center text-hearth-muted">
-      <div className="mb-3 text-4xl">🔥</div>
-      <h2 className="mb-2 text-lg text-hearth-text">
+    <div className="mx-auto mt-28 max-w-md text-center text-hearth-muted">
+      <div className="mb-4 text-5xl drop-shadow-[0_0_18px_rgba(224,138,60,0.45)]">🔥</div>
+      <h2 className="mb-2 font-display text-2xl font-semibold text-hearth-text">
         {hasCampaign ? 'No scene selected' : 'Welcome to Hearth'}
       </h2>
-      <p className="text-sm">
+      <p className="text-sm leading-relaxed">
         {hasCampaign
-          ? 'Pick a scene on the left, or add a scene JSON file to the scenes/ folder. See AUTHORING.md in the campaign folder for the format.'
-          : 'Choose a campaign folder from the top bar to get started.'}
+          ? 'Pick a scene on the left, or drop a scene JSON into the scenes/ folder — it appears here automatically. See AUTHORING.md in the campaign folder for the format.'
+          : 'Choose a campaign folder from the top bar to gather round and get started.'}
       </p>
     </div>
   )

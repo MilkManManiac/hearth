@@ -23,7 +23,7 @@ export default function SceneList() {
               onClick={() => selectScene(scene.id)}
               className={`block w-full border-l-2 px-3 py-2 text-left text-sm transition-colors ${
                 active
-                  ? 'border-hearth-ember bg-hearth-panel2 text-hearth-text'
+                  ? 'border-hearth-ember bg-gradient-to-r from-hearth-ember/15 to-transparent font-medium text-hearth-text shadow-[inset_2px_0_10px_-4px_rgba(224,138,60,0.6)]'
                   : 'border-transparent text-hearth-muted hover:bg-hearth-panel2/50 hover:text-hearth-text'
               }`}
             >

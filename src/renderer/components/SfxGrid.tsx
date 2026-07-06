@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import type { Scene } from '../../shared/types'
 import { useStore } from '../store'
 import { LoopButton, VolumeFader } from './Mixer'
+import SectionHeader from './SectionHeader'
 
 export default function SfxGrid({ scene }: { scene: Scene }) {
   const playSfx = useStore((s) => s.playSfx)
@@ -30,18 +31,15 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
 
   return (
     <section>
-      <div className="mb-2 flex items-center gap-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">
-          Sound effects
-        </h3>
+      <SectionHeader icon="🔊" title="Sound effects">
         <button
           onClick={() => openLibrary('sfx')}
           title="Add a sound effect from the library"
-          className="ml-auto rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+          className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
         >
           + Add sound
         </button>
-      </div>
+      </SectionHeader>
       {sfx.length === 0 ? (
         <p className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 px-3 py-2 text-xs text-hearth-muted">
           No sound effects yet — click <span className="text-hearth-ember">+ Add sound</span> to pull from the library.
@@ -53,9 +51,9 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
           return (
             <div
               key={s.id}
-              className={`group flex flex-col gap-1.5 rounded-md border px-3 py-2 transition-colors ${
+              className={`group flex flex-col gap-1.5 rounded-md border px-3 py-2 shadow-card transition-all ${
                 looping
-                  ? 'border-hearth-ember bg-hearth-ember/15'
+                  ? 'border-hearth-ember bg-hearth-ember/15 shadow-ember'
                   : 'border-hearth-border bg-hearth-panel2 hover:border-hearth-ember hover:bg-hearth-ember/10'
               }`}
             >

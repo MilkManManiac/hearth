@@ -14,6 +14,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/*
+ * Atmospheric backdrop — a warm glow spilling from the top and a low ember
+ * pool at the lower right, so the board feels lit by a hearth. Applied to the
+ * app root instead of a flat fill; panels sit on top and the glow reads in the
+ * gutters between them. Fixed so it doesn't scroll with content.
+ */
+.hearth-ambient {
+  background-color: #14110f;
+  background-image:
+    radial-gradient(1100px 620px at 50% -12%, rgba(224, 138, 60, 0.12), transparent 62%),
+    radial-gradient(820px 520px at 88% 112%, rgba(138, 84, 38, 0.12), transparent 66%);
+  background-attachment: fixed;
+}
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;

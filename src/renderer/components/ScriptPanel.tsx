@@ -10,6 +10,7 @@ import {
 } from '../../shared/types'
 import { useStore } from '../store'
 import ScriptEditor, { type EnsureAsset } from './ScriptEditor'
+import SectionHeader from './SectionHeader'
 
 const CUE_STYLE: Record<string, string> = {
   music: 'border-hearth-ember/60 bg-hearth-ember/15 text-hearth-ember hover:bg-hearth-ember/30',
@@ -55,14 +56,13 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
 
   return (
     <section>
-      <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">Read-aloud</h3>
+      <SectionHeader icon="📖" title="Read-aloud">
         {!editing && (
           <button onClick={() => setEditing(true)} className="text-xs text-hearth-muted hover:text-hearth-ember">
             ✎ Edit
           </button>
         )}
-      </div>
+      </SectionHeader>
 
       {editing ? (
         <ScriptEditor
@@ -78,7 +78,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
           sound cues.
         </p>
       ) : (
-        <div className="rounded-md border border-hearth-border bg-hearth-panel/60 p-4 text-[17px] leading-loose text-hearth-text">
+        <div className="rounded-md border border-hearth-border bg-hearth-panel/60 p-5 font-display text-[18px] leading-loose text-hearth-text shadow-card">
           {script.map((block, i) => renderBlock(block, i, fireCue))}
         </div>
       )}

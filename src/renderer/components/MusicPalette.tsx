@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Scene } from '../../shared/types'
 import { engine, useStore } from '../store'
 import { LoopButton, VolumeFader } from './Mixer'
+import SectionHeader from './SectionHeader'
 
 export default function MusicPalette({ scene }: { scene: Scene }) {
   const { status, switchMusic } = useStore()
@@ -15,8 +16,7 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
 
   return (
     <section>
-      <div className="mb-2 flex items-center gap-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">Music</h3>
+      <SectionHeader icon="♪" title="Music">
         {tracks.length > 0 && (
           <button
             onClick={() => setPlaylistEnabled(!playlistOn)}
@@ -37,11 +37,11 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
         <button
           onClick={() => openLibrary('music')}
           title="Add music from the library"
-          className="ml-auto rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+          className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
         >
           + Add music
         </button>
-      </div>
+      </SectionHeader>
 
       {playlistOn && tracks.length > 0 && <NowPlayingStrip scene={scene} />}
 
@@ -56,9 +56,9 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
           return (
             <div
               key={track.id}
-              className={`flex w-44 flex-col gap-1.5 rounded-md border px-3 py-2 transition-colors ${
+              className={`flex w-44 flex-col gap-1.5 rounded-md border px-3 py-2 shadow-card transition-all ${
                 active
-                  ? 'border-hearth-ember bg-hearth-ember/15'
+                  ? 'border-hearth-ember bg-hearth-ember/15 shadow-ember'
                   : 'border-hearth-border bg-hearth-panel2 hover:border-hearth-ember/60'
               }`}
             >

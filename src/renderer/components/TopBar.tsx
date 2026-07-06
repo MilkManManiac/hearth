@@ -68,9 +68,12 @@ export default function TopBar() {
     : null
 
   return (
-    <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hearth-border bg-hearth-panel px-4 py-2">
+    <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hearth-border bg-hearth-panel px-4 py-2 shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold tracking-wide text-hearth-ember">Hearth</span>
+        <span className="flex items-center gap-1.5 font-display text-xl font-semibold tracking-wide text-hearth-ember">
+          <span className="text-base drop-shadow-[0_0_8px_rgba(224,138,60,0.6)]">🔥</span>
+          Hearth
+        </span>
         <button
           onClick={chooseCampaign}
           title="Choose campaign folder"
@@ -83,7 +86,7 @@ export default function TopBar() {
             className="flex items-center gap-1.5 rounded bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-muted"
             title="Music now playing"
           >
-            <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-hearth-ember" />
+            <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-hearth-ember" />
             <span className="max-w-[12rem] truncate text-hearth-text">{nowPlaying}</span>
           </span>
         )}
