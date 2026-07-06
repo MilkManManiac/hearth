@@ -15,5 +15,19 @@ function MainApp() {
   useEffect(() => {
     bootstrap()
   }, [bootstrap])
+
+  // Panic hotkey: Esc = the Silence button (fade out music + ambience).
+  // Skipped while the library browser is open — there Esc means "close the modal".
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      const s = useStore.getState()
+      if (s.libraryOpen) return
+      s.stopAll()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   return <ControlBoard />
 }

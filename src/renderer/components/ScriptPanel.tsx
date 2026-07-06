@@ -8,6 +8,7 @@ import {
   type ScriptDoc,
   type ScriptInline
 } from '../../shared/types'
+import { pushRecent } from '../lib/prefs'
 import { useStore } from '../store'
 import ScriptEditor, { type EnsureAsset } from './ScriptEditor'
 import SectionHeader from './SectionHeader'
@@ -29,11 +30,46 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   const updateScene = useStore((s) => s.updateScene)
   const library = useStore((s) => s.campaign.library)
   const [editing, setEditing] = useState(false)
+  // Teleprompter pointer: index (in document order) of the next cue Space will fire.
+  const [cuePos, setCuePos] = useState(0)
 
-  // Leave edit mode when switching scenes.
-  useEffect(() => setEditing(false), [scene.id])
+  // Leave edit mode and rewind the teleprompter when switching scenes.
+  useEffect(() => {
+    setEditing(false)
+    setCuePos(0)
+  }, [scene.id])
 
   const script: ScriptDoc = scene.script ?? []
+
+  // Fire a cue and record it in the recently-used list (music/sfx only).
+  const fire = (n: CueInline) => {
+    fireCue(n)
+    const item =
+      n.kind === 'music'
+        ? scene.music?.find((t) => t.id === n.ref)
+        : n.kind === 'sfx'
+          ? scene.sfx?.find((t) => t.id === n.ref)
+          : undefined
+    if (item) pushRecent(item.file)
+  }
+
+  // Teleprompter: Space fires the next cue, Shift+Space / ArrowRight skips it.
+  useEffect(() => {
+    if (editing) return
+    const cues = flattenCues(script)
+    if (cues.length === 0) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== ' ' && e.key !== 'ArrowRight') return
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      e.preventDefault() // no page scroll, no re-firing a focused button
+      if (cuePos >= cues.length) return
+      if (e.key === ' ' && !e.shiftKey) fire(cues[cuePos])
+      setCuePos(cuePos + 1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [editing, script, cuePos, fire])
 
   // Autosave path — persist the doc, stay in edit mode.
   const handleSave = (doc: ScriptDoc) => {
@@ -53,6 +89,9 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   }
 
   const isEmpty = script.length === 0 || (script.length === 1 && script[0].type === 'paragraph' && script[0].content.length === 0)
+
+  // Mutable document-order cue counter for this render pass; `next` gets the ring.
+  const cueCtx: CueCtx = { i: 0, next: cuePos }
 
   return (
     <section>
@@ -79,12 +118,28 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
         </p>
       ) : (
         <div className="rounded-md border border-hearth-border bg-hearth-panel/60 p-5 font-display text-[18px] leading-loose text-hearth-text shadow-card">
-          {script.map((block, i) => renderBlock(block, i, fireCue))}
+          {script.map((block, i) => renderBlock(block, i, fire, cueCtx))}
         </div>
       )}
     </section>
   )
 }
+
+/** All cues in the doc, in document order (descending into callouts). */
+function flattenCues(doc: ScriptDoc): CueInline[] {
+  const out: CueInline[] = []
+  const walk = (blocks: ScriptBlock[]): void => {
+    for (const b of blocks) {
+      if (b.type === 'callout') walk(b.content)
+      else for (const n of b.content) if (n.type === 'cue') out.push(n)
+    }
+  }
+  walk(doc)
+  return out
+}
+
+/** Render-pass cue counter: `i` mutates as cues render; the cue at `next` gets the ring. */
+type CueCtx = { i: number; next: number }
 
 function inlineFormat(node: Extract<ScriptInline, { type: 'text' }>): { className: string; style: CSSProperties } {
   const cls = ['whitespace-pre-wrap']
@@ -101,7 +156,7 @@ function inlineFormat(node: Extract<ScriptInline, { type: 'text' }>): { classNam
   return { className: cls.join(' '), style }
 }
 
-function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline) => void): ReactNode {
+function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline) => void, ctx: CueCtx): ReactNode {
   if (node.type === 'text') {
     const { className, style } = inlineFormat(node)
     return (
@@ -110,30 +165,34 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline) =
       </span>
     )
   }
+  // Teleprompter "next up" indicator: subtle ember ring + glow on the cue Space will fire.
+  const isNext = ctx.i++ === ctx.next
   return (
     <button
       key={key}
       onClick={() => fireCue(node)}
-      className={`mx-1 inline-flex items-center gap-1 rounded border px-2 py-0.5 align-middle text-sm transition-colors ${CUE_STYLE[node.kind]}`}
-      title={`${node.kind}: ${node.ref}`}
+      className={`mx-1 inline-flex items-center gap-1 rounded border px-2 py-0.5 align-middle text-sm transition-colors ${CUE_STYLE[node.kind]} ${
+        isNext ? 'ring-1 ring-hearth-ember/80 ring-offset-2 ring-offset-hearth-panel shadow-[0_0_10px_rgba(255,140,60,0.35)]' : ''
+      }`}
+      title={`${node.kind}: ${node.ref}${isNext ? ' — next (Space)' : ''}`}
     >
       {node.label ?? node.ref}
     </button>
   )
 }
 
-function renderBlock(block: ScriptBlock, key: number, fireCue: (n: CueInline) => void): ReactNode {
+function renderBlock(block: ScriptBlock, key: number, fireCue: (n: CueInline) => void, ctx: CueCtx): ReactNode {
   if (block.type === 'callout') {
     return (
       <div
         key={key}
         className="script-callout my-2 rounded border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-3 py-1.5 text-[15px] text-hearth-muted"
       >
-        {block.content.map((b, i) => renderBlock(b, i, fireCue))}
+        {block.content.map((b, i) => renderBlock(b, i, fireCue, ctx))}
       </div>
     )
   }
-  const inlines = block.content.map((n, i) => renderInline(n, i, fireCue))
+  const inlines = block.content.map((n, i) => renderInline(n, i, fireCue, ctx))
   if (block.type === 'heading') {
     const cls = HEADING_CLASS[block.level]
     if (block.level === 1) return <h1 key={key} className={cls}>{inlines}</h1>

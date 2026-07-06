@@ -11,6 +11,53 @@ const DEFAULT_MUSIC_VOL = 0.7
 const DEFAULT_AMB_VOL = 0.4
 const DEFAULT_SFX_VOL = 0.9
 
+// Loudness normalization target: -18 dBFS RMS. Every decoded asset gets a
+// gain nudging its whole-file RMS toward this, so imports mastered at wildly
+// different levels play at a consistent perceived volume.
+const NORM_TARGET_RMS = Math.pow(10, -18 / 20) // ≈ 0.126
+const NORM_GAIN_MIN = 0.25
+const NORM_GAIN_MAX = 4
+
+/** A decoded asset plus its precomputed loudness-normalization gain. */
+interface DecodedAudio {
+  buffer: AudioBuffer
+  /** Multiplier applied to every source playing this buffer (see computeNormGain). */
+  norm: number
+}
+
+/**
+ * Compute a loudness-normalization gain for a buffer: one linear pass
+ * accumulating mean-square (averaged across channels) and absolute peak.
+ *
+ * ponytail: whole-file RMS stands in for true perceived loudness. Upgrade
+ * path is K-weighted LUFS / EBU R128 (e.g. a small loudness lib) if RMS ever
+ * feels wrong on real material — the cache shape here wouldn't change.
+ *
+ * The gain is target/rms, clamped to [NORM_GAIN_MIN, NORM_GAIN_MAX] so
+ * quiet-but-intentional material isn't boosted absurdly, and additionally
+ * capped so peak * gain <= 1 (never boost into clipping).
+ */
+function computeNormGain(buffer: AudioBuffer): number {
+  let sumSquares = 0
+  let peak = 0
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    const data = buffer.getChannelData(c)
+    for (let i = 0; i < data.length; i++) {
+      const s = data[i]
+      sumSquares += s * s
+      const a = Math.abs(s)
+      if (a > peak) peak = a
+    }
+  }
+  const totalSamples = buffer.length * buffer.numberOfChannels
+  const rms = totalSamples > 0 ? Math.sqrt(sumSquares / totalSamples) : 0
+  if (rms <= 0 || peak <= 0) return 1 // silent buffer — nothing to normalize
+  let gain = NORM_TARGET_RMS / rms
+  gain = Math.min(Math.max(gain, NORM_GAIN_MIN), NORM_GAIN_MAX)
+  gain = Math.min(gain, 1 / peak)
+  return gain
+}
+
 /** Build an asset:/// URL, encoding each path segment. */
 function assetUrl(file: string): string {
   return `asset:///${file.split('/').map(encodeURIComponent).join('/')}`
@@ -20,6 +67,8 @@ interface ActiveMusic {
   trackId: string
   source: AudioBufferSourceNode
   gain: GainNode
+  /** Loudness-normalization multiplier baked into gain; live volume edits re-apply it. */
+  norm: number
   /** ctx.currentTime when the source started (for progress). */
   startedAt: number
   duration: number
@@ -52,6 +101,8 @@ interface ActiveAmbience {
   file: string
   source: AudioBufferSourceNode
   gain: GainNode
+  /** Loudness-normalization multiplier baked into gain; live volume edits re-apply it. */
+  norm: number
 }
 
 export interface EngineStatus {
@@ -78,6 +129,9 @@ type ErrorListener = (message: string) => void
  *   sfx source → sfxGain → sfxBus ─────────────────┘
  *
  * musicBus carries the user's music volume; musicDuck is dipped while SFX play.
+ * Every per-source gain is (authored volume × the buffer's loudness-
+ * normalization multiplier, see computeNormGain) so imports play at a
+ * consistent perceived level.
  */
 export class AudioEngine {
   private ctx: AudioContext
@@ -87,11 +141,14 @@ export class AudioEngine {
   private ambienceBus: GainNode
   private sfxBus: GainNode
 
-  private buffers = new Map<string, Promise<AudioBuffer>>()
+  private buffers = new Map<string, Promise<DecodedAudio>>()
   private activeMusic: ActiveMusic | null = null
   private activeAmbience: ActiveAmbience[] = []
   /** Sustained looping SFX, keyed by sfx id (tap to start, tap to stop). */
-  private activeSfxLoops = new Map<string, { source: AudioBufferSourceNode; gain: GainNode }>()
+  private activeSfxLoops = new Map<
+    string,
+    { source: AudioBufferSourceNode; gain: GainNode; norm: number }
+  >()
   private duckCount = 0
 
   // Monotonic "intent" counters. Any operation that changes what music /
@@ -146,7 +203,7 @@ export class AudioEngine {
     }
   }
 
-  private getBuffer(file: string): Promise<AudioBuffer> {
+  private getBuffer(file: string): Promise<DecodedAudio> {
     let p = this.buffers.get(file)
     if (!p) {
       p = fetch(assetUrl(file))
@@ -154,7 +211,10 @@ export class AudioEngine {
           if (!r.ok) throw new Error(`HTTP ${r.status} for ${assetUrl(file)}`)
           const bytes = await r.arrayBuffer()
           try {
-            return await this.ctx.decodeAudioData(bytes)
+            const buffer = await this.ctx.decodeAudioData(bytes)
+            // Loudness measured once at decode and cached with the buffer, so
+            // every play path (music, ambience, SFX, preview) gets it free.
+            return { buffer, norm: computeNormGain(buffer) }
           } catch (e) {
             throw new Error(`decode failed (${(e as Error)?.message || 'unknown'})`)
           }
@@ -200,8 +260,9 @@ export class AudioEngine {
     if (this.activeMusic?.trackId === track.id) return
     const seq = ++this.musicIntent
     let buffer: AudioBuffer
+    let norm: number
     try {
-      buffer = await this.getBuffer(track.file)
+      ;({ buffer, norm } = await this.getBuffer(track.file))
     } catch (err) {
       this.emitError(`Music "${track.label ?? track.file}": ${(err as Error).message}`)
       return
@@ -211,7 +272,7 @@ export class AudioEngine {
     if (seq !== this.musicIntent) return
     const fadeIn = Math.max(track.fadeInMs ?? crossfadeMs, 1) / 1000
     const fadeOutOld = Math.max(crossfadeMs, 1) / 1000
-    const target = track.volume ?? DEFAULT_MUSIC_VOL
+    const target = (track.volume ?? DEFAULT_MUSIC_VOL) * norm
     const t = this.now
 
     const gain = this.ctx.createGain()
@@ -246,6 +307,7 @@ export class AudioEngine {
       trackId: track.id,
       source,
       gain,
+      norm,
       startedAt: t,
       duration: buffer.duration,
       loop,
@@ -308,15 +370,16 @@ export class AudioEngine {
 
     for (const layer of layers) {
       let buffer: AudioBuffer
+      let norm: number
       try {
-        buffer = await this.getBuffer(layer.file)
+        ;({ buffer, norm } = await this.getBuffer(layer.file))
       } catch (err) {
         this.emitError(`Ambience "${layer.file}": ${(err as Error).message}`)
         continue
       }
       // Another scene loaded while we were decoding — stop building this set.
       if (seq !== this.ambienceIntent) return
-      const target = layer.volume ?? DEFAULT_AMB_VOL
+      const target = (layer.volume ?? DEFAULT_AMB_VOL) * norm
       const t = this.now
       const gain = this.ctx.createGain()
       gain.gain.setValueAtTime(0, t)
@@ -327,7 +390,7 @@ export class AudioEngine {
       source.connect(gain)
       gain.connect(this.ambienceBus)
       source.start()
-      this.activeAmbience.push({ file: layer.file, source, gain })
+      this.activeAmbience.push({ file: layer.file, source, gain, norm })
     }
     this.emit()
   }
@@ -337,15 +400,16 @@ export class AudioEngine {
     await this.resume()
     if (this.activeAmbience.some((a) => a.file === layer.file)) return
     let buffer: AudioBuffer
+    let norm: number
     try {
-      buffer = await this.getBuffer(layer.file)
+      ;({ buffer, norm } = await this.getBuffer(layer.file))
     } catch (err) {
       this.emitError(`Ambience "${layer.file}": ${(err as Error).message}`)
       return
     }
     if (this.activeAmbience.some((a) => a.file === layer.file)) return // decoded twice; bail
     const fade = Math.max(crossfadeMs, 1) / 1000
-    const target = layer.volume ?? DEFAULT_AMB_VOL
+    const target = (layer.volume ?? DEFAULT_AMB_VOL) * norm
     const t = this.now
     const gain = this.ctx.createGain()
     gain.gain.setValueAtTime(0, t)
@@ -356,7 +420,7 @@ export class AudioEngine {
     source.connect(gain)
     gain.connect(this.ambienceBus)
     source.start()
-    this.activeAmbience.push({ file: layer.file, source, gain })
+    this.activeAmbience.push({ file: layer.file, source, gain, norm })
     this.emit()
   }
 
@@ -377,13 +441,14 @@ export class AudioEngine {
       return
     }
     let buffer: AudioBuffer
+    let norm: number
     try {
-      buffer = await this.getBuffer(sfx.file)
+      ;({ buffer, norm } = await this.getBuffer(sfx.file))
     } catch (err) {
       this.emitError(`SFX "${sfx.label ?? sfx.file}": ${(err as Error).message}`)
       return
     }
-    const target = sfx.volume ?? DEFAULT_SFX_VOL
+    const target = (sfx.volume ?? DEFAULT_SFX_VOL) * norm
     const gain = this.ctx.createGain()
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
@@ -398,7 +463,7 @@ export class AudioEngine {
       gain.gain.linearRampToValueAtTime(target, t + 0.08)
       source.loop = true
       source.start()
-      this.activeSfxLoops.set(sfx.id, { source, gain })
+      this.activeSfxLoops.set(sfx.id, { source, gain, norm })
       this.emit()
       return
     }
@@ -443,7 +508,7 @@ export class AudioEngine {
   /** Live-adjust the volume of a sustained looping SFX. */
   setSfxLoopVolume(id: string, v: number): void {
     const node = this.activeSfxLoops.get(id)
-    if (node) node.gain.gain.setTargetAtTime(v, this.now, 0.02)
+    if (node) node.gain.gain.setTargetAtTime(v * node.norm, this.now, 0.02)
   }
 
   private duckDown(): void {
@@ -477,7 +542,8 @@ export class AudioEngine {
 
   /** Live-adjust the currently-playing music track's own volume. */
   setActiveMusicVolume(v: number): void {
-    if (this.activeMusic) this.activeMusic.gain.gain.setTargetAtTime(v, this.now, 0.02)
+    const m = this.activeMusic
+    if (m) m.gain.gain.setTargetAtTime(v * m.norm, this.now, 0.02)
   }
 
   /** Live-toggle whether the current track loops. */
@@ -491,7 +557,7 @@ export class AudioEngine {
   /** Live-adjust one ambience layer's volume (matched by file). */
   setAmbienceLayerVolume(file: string, v: number): void {
     for (const a of this.activeAmbience) {
-      if (a.file === file) a.gain.gain.setTargetAtTime(v, this.now, 0.02)
+      if (a.file === file) a.gain.gain.setTargetAtTime(v * a.norm, this.now, 0.02)
     }
   }
 
@@ -554,15 +620,16 @@ export class AudioEngine {
   async preview(file: string, onEnded?: () => void, volume = DEFAULT_MUSIC_VOL): Promise<() => void> {
     await this.resume()
     let buffer: AudioBuffer
+    let norm: number
     try {
-      buffer = await this.getBuffer(file)
+      ;({ buffer, norm } = await this.getBuffer(file))
     } catch (err) {
       this.emitError(`Preview "${file}": ${(err as Error).message}`)
       onEnded?.()
       return () => undefined
     }
     const gain = this.ctx.createGain()
-    gain.gain.value = volume
+    gain.gain.value = volume * norm
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.connect(gain)

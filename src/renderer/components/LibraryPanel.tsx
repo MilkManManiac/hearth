@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { AssetKind, LibraryAsset } from '../../shared/types'
 import { CATEGORY_ORDER, categoryMeta } from '../../shared/types'
+import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
 
 const KIND_LABELS: Record<AssetKind, string> = {
@@ -35,6 +36,8 @@ export default function LibraryPanel() {
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
   const [category, setCategory] = useState<string | 'all'>('all')
+  const favorites = useFavorites()
+  const recents = useRecents()
 
   // Files already on the current scene (any bucket) — to show "in scene" state.
   const filesInScene = useMemo(() => {
@@ -78,21 +81,45 @@ export default function LibraryPanel() {
     })
   }, [assets, query, kind, category])
 
-  // Group the filtered assets by category, in display order.
+  // Group the filtered assets: Favorites, then Recent, then the category groups.
   const groups = useMemo(() => {
+    const sections: { key: string; icon: string; label: string; items: LibraryAsset[] }[] = []
+
+    const favSet = new Set(favorites)
+    const favItems = filtered
+      .filter((a) => favSet.has(a.file))
+      .sort((a, b) => basename(a.file).localeCompare(basename(b.file)))
+    if (favItems.length > 0) {
+      sections.push({ key: 'favorites', icon: '★', label: 'Favorites', items: favItems })
+    }
+
+    // Recent keeps fire order; favorites already shown above are skipped.
+    const recentItems = recents
+      .map((f) => filtered.find((a) => a.file === f && !favSet.has(f)))
+      .filter((a): a is LibraryAsset => !!a)
+    if (recentItems.length > 0) {
+      sections.push({ key: 'recent', icon: '🕘', label: 'Recent', items: recentItems })
+    }
+
     const byCat = new Map<string, LibraryAsset[]>()
     for (const a of filtered) {
       const c = a.category ?? ''
       if (!byCat.has(c)) byCat.set(c, [])
       byCat.get(c)!.push(a)
     }
-    return [...byCat.entries()]
-      .sort(([a], [b]) => categoryRank(a) - categoryRank(b) || a.localeCompare(b))
-      .map(([cat, items]) => ({
-        cat,
+    for (const [cat, items] of [...byCat.entries()].sort(
+      ([a], [b]) => categoryRank(a) - categoryRank(b) || a.localeCompare(b)
+    )) {
+      const meta = categoryMeta(cat || undefined)
+      sections.push({
+        key: `cat:${cat || 'uncategorized'}`,
+        icon: meta.icon,
+        label: meta.label,
         items: items.sort((a, b) => basename(a.file).localeCompare(basename(b.file)))
-      }))
-  }, [filtered])
+      })
+    }
+    return sections
+  }, [filtered, favorites, recents])
 
   if (!open) return null
 
@@ -166,13 +193,12 @@ export default function LibraryPanel() {
           {groups.length === 0 ? (
             <p className="py-8 text-center text-sm text-hearth-muted">No assets match.</p>
           ) : (
-            groups.map(({ cat, items }) => {
-              const meta = categoryMeta(cat || undefined)
+            groups.map(({ key, icon, label, items }) => {
               return (
-                <section key={cat || 'uncategorized'} className="mb-4">
+                <section key={key} className="mb-4">
                   <h3 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-hearth-muted">
-                    <span>{meta.icon}</span>
-                    {meta.label}
+                    <span>{icon}</span>
+                    {label}
                     <span className="text-hearth-muted/60">{items.length}</span>
                   </h3>
                   <ul className="space-y-1">
@@ -233,6 +259,7 @@ function AssetRow({
   const previewingFile = useStore((s) => s.previewingFile)
   const previewAsset = useStore((s) => s.previewAsset)
   const playing = previewingFile === asset.file
+  const fav = useFavorites().includes(asset.file)
 
   return (
     <li className="flex items-center gap-2 rounded border border-hearth-border/50 bg-hearth-panel2/40 px-2 py-1.5">
@@ -253,6 +280,15 @@ function AssetRow({
           <div className="truncate text-[11px] text-hearth-muted">{asset.tags.join(' · ')}</div>
         )}
       </div>
+      <button
+        onClick={() => toggleFavorite(asset.file)}
+        title={fav ? 'Remove from favorites' : 'Add to favorites'}
+        className={`flex-none px-1 text-base leading-none transition-colors ${
+          fav ? 'text-hearth-ember' : 'text-hearth-muted/40 hover:text-hearth-ember'
+        }`}
+      >
+        {fav ? '★' : '☆'}
+      </button>
       <span className="flex-none rounded bg-hearth-bg px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-hearth-muted">
         {asset.kind}
       </span>

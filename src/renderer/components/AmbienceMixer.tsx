@@ -1,4 +1,5 @@
 import type { Scene } from '../../shared/types'
+import { pushRecent } from '../lib/prefs'
 import { useStore } from '../store'
 import { LoopButton, VolumeFader } from './Mixer'
 import SectionHeader from './SectionHeader'
@@ -43,7 +44,10 @@ export default function AmbienceMixer({ scene }: { scene: Scene }) {
               }`}
             >
               <button
-                onClick={() => toggleAmbience(layer.file)}
+                onClick={() => {
+                  if (!isPlaying) pushRecent(layer.file)
+                  toggleAmbience(layer.file)
+                }}
                 title={isPlaying ? 'Click to stop this bed' : 'Click to play this bed'}
                 className="flex w-48 flex-none items-center gap-2 text-left"
               >

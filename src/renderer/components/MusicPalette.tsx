@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Scene } from '../../shared/types'
+import { pushRecent } from '../lib/prefs'
 import { engine, useStore } from '../store'
 import { LoopButton, VolumeFader } from './Mixer'
 import SectionHeader from './SectionHeader'
@@ -63,7 +64,10 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
               }`}
             >
               <button
-                onClick={() => switchMusic(track.id)}
+                onClick={() => {
+                  switchMusic(track.id)
+                  pushRecent(track.file)
+                }}
                 className={`flex items-center text-left text-sm ${active ? 'text-hearth-ember' : 'text-hearth-text'}`}
               >
                 <span className="mr-1">{active ? '♪' : '▶'}</span>

@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import type { Scene } from '../../shared/types'
+import type { Scene, SfxItem } from '../../shared/types'
+import { pushRecent, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
 import { LoopButton, VolumeFader } from './Mixer'
 import SectionHeader from './SectionHeader'
@@ -10,19 +11,31 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
   const setSfxItemLoop = useStore((s) => s.setSfxItemLoop)
   const loopingSfxIds = useStore((s) => s.status.loopingSfxIds)
   const openLibrary = useStore((s) => s.openLibrary)
+  const recents = useRecents()
   const sfx = scene.sfx ?? []
+
+  const fire = (item: SfxItem) => {
+    playSfx(item.id)
+    pushRecent(item.file)
+  }
+
+  // Recently fired SFX that live on this scene — quick re-fire chips.
+  const recentSfx = recents
+    .map((f) => sfx.find((s) => s.file === f))
+    .filter((s): s is SfxItem => !!s)
 
   // Hotkeys: single-character keys defined on the scene's sfx fire them.
   useEffect(() => {
-    const map = new Map(sfx.filter((s) => s.hotkey).map((s) => [s.hotkey!.toLowerCase(), s.id]))
+    const map = new Map(sfx.filter((s) => s.hotkey).map((s) => [s.hotkey!.toLowerCase(), s]))
     if (map.size === 0) return
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
-      const id = map.get(e.key.toLowerCase())
-      if (id) {
+      const item = map.get(e.key.toLowerCase())
+      if (item) {
         e.preventDefault()
-        playSfx(id)
+        playSfx(item.id)
+        pushRecent(item.file)
       }
     }
     window.addEventListener('keydown', onKey)
@@ -40,6 +53,21 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
           + Add sound
         </button>
       </SectionHeader>
+      {recentSfx.length > 0 && sfx.length > 4 && (
+        <div className="mb-2 flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] uppercase tracking-wider text-hearth-muted/70">Recent</span>
+          {recentSfx.slice(0, 6).map((s) => (
+            <button
+              key={s.id}
+              onClick={() => fire(s)}
+              title="Fire again"
+              className="rounded-full border border-hearth-border bg-hearth-panel2 px-2 py-0.5 text-[11px] text-hearth-muted transition-colors hover:border-hearth-ember hover:text-hearth-ember"
+            >
+              🔊 {s.label}
+            </button>
+          ))}
+        </div>
+      )}
       {sfx.length === 0 ? (
         <p className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 px-3 py-2 text-xs text-hearth-muted">
           No sound effects yet — click <span className="text-hearth-ember">+ Add sound</span> to pull from the library.
@@ -58,7 +86,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
               }`}
             >
               <button
-                onClick={() => playSfx(s.id)}
+                onClick={() => fire(s)}
                 className="flex items-center justify-between text-left text-sm text-hearth-text"
               >
                 <span className="truncate">
