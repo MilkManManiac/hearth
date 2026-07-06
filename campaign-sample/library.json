@@ -882,6 +882,421 @@
       ],
       "source": "OpenGameArt (CC0 wind whoosh loop)",
       "license": "CC0"
+    },
+    {
+      "file": "sfx/dark-magic-spell.mp3",
+      "kind": "sfx",
+      "category": "magic",
+      "tags": [
+        "magic",
+        "dark",
+        "spell",
+        "necrotic",
+        "cast"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/melee-hit.mp3",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "melee",
+        "hit",
+        "punch",
+        "combat",
+        "strike"
+      ],
+      "source": "OpenGameArt / remaxim",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/punch-impact.mp3",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "punch",
+        "hit",
+        "impact",
+        "combat",
+        "fist"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/ghostly-loop.mp3",
+      "kind": "ambience",
+      "category": "horror",
+      "tags": [
+        "ghost",
+        "haunt",
+        "atmosphere",
+        "drone",
+        "horror",
+        "loop"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/leaves-rustle.mp3",
+      "kind": "sfx",
+      "category": "places",
+      "tags": [
+        "leaves",
+        "rustle",
+        "forest",
+        "nature",
+        "movement"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/crunch-impact.mp3",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "break",
+        "crunch",
+        "impact",
+        "destruction",
+        "wood"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/water-dripping.mp3",
+      "kind": "ambience",
+      "category": "water",
+      "tags": [
+        "water",
+        "drip",
+        "cave",
+        "dungeon",
+        "loop",
+        "wet"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/explosion-dull.mp3",
+      "kind": "sfx",
+      "category": "combat",
+      "tags": [
+        "explosion",
+        "boom",
+        "impact",
+        "blast"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/evil-creature.mp3",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "creature",
+        "monster",
+        "evil",
+        "growl",
+        "demon"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/evil-laugh.mp3",
+      "kind": "sfx",
+      "category": "horror",
+      "tags": [
+        "evil",
+        "laugh",
+        "villain",
+        "horror",
+        "cackle"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/ghost-breath.mp3",
+      "kind": "sfx",
+      "category": "horror",
+      "tags": [
+        "ghost",
+        "breath",
+        "haunt",
+        "horror",
+        "whisper"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/beast-growl.mp3",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "growl",
+        "beast",
+        "monster",
+        "creature",
+        "snarl"
+      ],
+      "source": "OpenGameArt / sindwiller",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/heartbeat.mp3",
+      "kind": "sfx",
+      "category": "horror",
+      "tags": [
+        "heartbeat",
+        "pulse",
+        "tension",
+        "horror",
+        "fear"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/ice-spell.mp3",
+      "kind": "sfx",
+      "category": "magic",
+      "tags": [
+        "ice",
+        "frost",
+        "spell",
+        "magic",
+        "cast",
+        "cold"
+      ],
+      "source": "OpenGameArt / bart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/creature-screech.mp3",
+      "kind": "sfx",
+      "category": "creatures",
+      "tags": [
+        "insect",
+        "alien",
+        "screech",
+        "scream",
+        "creature"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/torch-ignite.mp3",
+      "kind": "sfx",
+      "category": "fire",
+      "tags": [
+        "fire",
+        "ignite",
+        "flare",
+        "torch",
+        "whoosh"
+      ],
+      "source": "OpenGameArt / qubodup",
+      "license": "CC0"
+    },
+    {
+      "file": "music/creepy-forest.ogg",
+      "kind": "music",
+      "category": "horror",
+      "tags": [
+        "forest",
+        "creepy",
+        "horror",
+        "eerie",
+        "haunted",
+        "night"
+      ],
+      "source": "OpenGameArt / haeldb",
+      "license": "CC0"
+    },
+    {
+      "file": "music/requiem-choral.ogg",
+      "kind": "music",
+      "category": "somber",
+      "tags": [
+        "choral",
+        "requiem",
+        "somber",
+        "sacred",
+        "latin",
+        "death"
+      ],
+      "source": "OpenGameArt / ceninan",
+      "license": "CC0"
+    },
+    {
+      "file": "music/desert-journey.ogg",
+      "kind": "music",
+      "category": "travel",
+      "tags": [
+        "desert",
+        "travel",
+        "exotic",
+        "journey",
+        "wander"
+      ],
+      "source": "OpenGameArt / yd",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/evil-temple.ogg",
+      "kind": "ambience",
+      "category": "horror",
+      "tags": [
+        "temple",
+        "evil",
+        "dark",
+        "ritual",
+        "ambience",
+        "loop"
+      ],
+      "source": "OpenGameArt / haeldb",
+      "license": "CC0"
+    },
+    {
+      "file": "music/frozen-peaks.ogg",
+      "kind": "music",
+      "category": "travel",
+      "tags": [
+        "ice",
+        "cold",
+        "snow",
+        "mountain",
+        "travel",
+        "winter"
+      ],
+      "source": "OpenGameArt / tinyworlds",
+      "license": "CC0"
+    },
+    {
+      "file": "music/peaceful-meadow.ogg",
+      "kind": "music",
+      "category": "exploration",
+      "tags": [
+        "meadow",
+        "peaceful",
+        "pastoral",
+        "calm",
+        "nature",
+        "travel"
+      ],
+      "source": "OpenGameArt / haeldb",
+      "license": "CC0"
+    },
+    {
+      "file": "music/anticipation.ogg",
+      "kind": "music",
+      "category": "tension",
+      "tags": [
+        "tension",
+        "anticipation",
+        "suspense",
+        "build",
+        "dread"
+      ],
+      "source": "OpenGameArt / yd",
+      "license": "CC0"
+    },
+    {
+      "file": "music/ruined-town.ogg",
+      "kind": "music",
+      "category": "somber",
+      "tags": [
+        "ruins",
+        "desolate",
+        "somber",
+        "aftermath",
+        "exploration"
+      ],
+      "source": "OpenGameArt / haeldb",
+      "license": "CC0"
+    },
+    {
+      "file": "music/tragic-ambient.ogg",
+      "kind": "music",
+      "category": "somber",
+      "tags": [
+        "tragic",
+        "sad",
+        "ambient",
+        "somber",
+        "melancholy"
+      ],
+      "source": "OpenGameArt / haeldb",
+      "license": "CC0"
+    },
+    {
+      "file": "music/chase.ogg",
+      "kind": "music",
+      "category": "tension",
+      "tags": [
+        "chase",
+        "pursuit",
+        "tension",
+        "flee",
+        "danger",
+        "escape"
+      ],
+      "source": "OpenGameArt / haeldb",
+      "license": "CC0"
+    },
+    {
+      "file": "music/hearth-warmth.ogg",
+      "kind": "music",
+      "category": "tavern",
+      "tags": [
+        "warm",
+        "cozy",
+        "tavern",
+        "calm",
+        "fireside",
+        "rest"
+      ],
+      "source": "OpenGameArt / jordan4ibanez",
+      "license": "CC0"
+    },
+    {
+      "file": "music/story-time.ogg",
+      "kind": "music",
+      "category": "tavern",
+      "tags": [
+        "story",
+        "calm",
+        "tavern",
+        "gentle",
+        "rest"
+      ],
+      "source": "OpenGameArt / haeldb",
+      "license": "CC0"
+    },
+    {
+      "file": "music/nature-awakens.ogg",
+      "kind": "music",
+      "category": "exploration",
+      "tags": [
+        "nature",
+        "peaceful",
+        "forest",
+        "calm",
+        "travel"
+      ],
+      "source": "OpenGameArt / arthur",
+      "license": "CC0"
     }
   ]
 }

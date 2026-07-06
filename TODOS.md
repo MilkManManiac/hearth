@@ -193,10 +193,21 @@ Ideas to fix:
 ## 8. Grow the sound + ambience library — a LOT (sourcing → triage → bulk add)
 Notes captured 2026-07-06. **Priority order matters — do 1 before 2 before 3.**
 
-Status: steps 1 + 2 ✅ done 2026-07-06 — see below. Step 3 (the actual bulk
-expansion) is next: download the SOUND-SOURCES.md wave-1 CC0 packs and run them
-through the 📥 Triage inbox. Install **ffmpeg** first (WAV→OGG transcode) and
-**vc_redist.x64** (CLAUDE.md gotcha) while you're at it.
+Status: steps 1 + 2 ✅ done 2026-07-06 — see below. Step 3 (bulk expansion)
+**started 2026-07-06 (wave 4): library 65 → 94** — +29 CC0 assets pulled headless
+from OpenGameArt's advanced-search CC0 filter (SFX + music), curated for D&D fit
+(dropped 8-bit/chiptune/modern), categorized + tagged, credited in CREDITS.md.
+Filled the empty **Water** category + added **Horror SFX/ambience** and mood
+music (tension/chase/somber/travel/horror). These are **un-auditioned** (added
+by license+source+name, not by ear) — cull any duds from the Library browser.
+
+**Still the higher-quality tier (needs you):** the SOUND-SOURCES.md wave-1 itch
+packs (kmontesdev / Nox / Blacis) are **browser-gated** — itch's download
+endpoint refuses headless clients (confirmed 2026-07-06, same wall as Freesound/
+Kenney/Pixabay). To add those: download in a browser → drop in one folder → run
+📥 Triage. Install **ffmpeg** (WAV→OGG) + **vc_redist.x64** (CLAUDE.md gotcha)
+first. OpenGameArt remains the one bundle-safe well fetchable headless, so more
+automated OGA waves are possible on request (fantasy-fit candidates remain).
 
 1. ✅ **Research better sources** — done, see `SOUND-SOURCES.md` (ranked +
    license-verified: 3 big CC0 itch.io packs first, Nakarada CC-BY for mood

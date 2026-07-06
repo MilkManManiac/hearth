@@ -50,6 +50,48 @@ kenney.nl. CC0 requires no attribution, but credit is nice:
   — "Mech Stomp" (CC0), `sfx/magic-cast.ogg` — "Magic Spell SFX" by **JaggedStone** (CC0),
   `sfx/teleport.wav` — "Teleport" by **fins** (CC0) — all OpenGameArt, added 2026-07-06
 
+## 2026-07-06 — OpenGameArt CC0 expansion (wave 4)
+Bulk library growth (65 → 94 assets), all **CC0** from OpenGameArt, harvested
+via the advanced-search CC0 filter and file-resolver (no attribution required;
+listed here for provenance). Filled the empty **Water** category, added **Horror
+SFX + ambience beds**, more **creatures / combat / magic / fire** one-shots, and
+mood music for **tension, chase, somber, travel, and horror**.
+
+_Music_
+- `music/creepy-forest.ogg` — haeldb — CC0 — https://opengameart.org/content/creepy-forest-f
+- `music/requiem-choral.ogg` — ceninan — CC0 — https://opengameart.org/content/breves-dies-hominis
+- `music/desert-journey.ogg` — yd — CC0 — https://opengameart.org/content/desert-theme
+- `music/frozen-peaks.ogg` — tinyworlds — CC0 — https://opengameart.org/content/icy-heights
+- `music/peaceful-meadow.ogg` — haeldb — CC0 — https://opengameart.org/content/lost-in-the-meadows
+- `music/anticipation.ogg` — yd — CC0 — https://opengameart.org/content/loop-anticipation
+- `music/ruined-town.ogg` — haeldb — CC0 — https://opengameart.org/content/town-in-ruins-loop
+- `music/tragic-ambient.ogg` — haeldb — CC0 — https://opengameart.org/content/tragic-ambient-main-menu
+- `music/chase.ogg` — haeldb — CC0 — https://opengameart.org/content/running-from-something
+- `music/hearth-warmth.ogg` — jordan4ibanez — CC0 — https://opengameart.org/content/warmth
+- `music/story-time.ogg` — haeldb — CC0 — https://opengameart.org/content/story-time
+- `music/nature-awakens.ogg` — arthur — CC0 — https://opengameart.org/content/nature-comes
+
+_Ambience (loops)_
+- `ambience/ghostly-loop.mp3` — qubodup — CC0 — https://opengameart.org/content/4-atmospheric-ghostly-loops
+- `ambience/water-dripping.mp3` — qubodup — CC0 — https://opengameart.org/content/dripping-water-loop
+- `ambience/evil-temple.ogg` — haeldb — CC0 — https://opengameart.org/content/evil-temple-ambiance-loop
+
+_Sound effects_
+- `sfx/dark-magic-spell.mp3` — qubodup — CC0 — https://opengameart.org/content/3-dark-magic-spells
+- `sfx/ice-spell.mp3` — bart — CC0 — https://opengameart.org/content/ice-spells
+- `sfx/torch-ignite.mp3` — qubodup — CC0 — https://opengameart.org/content/flare-ignition
+- `sfx/melee-hit.mp3` — remaxim — CC0 — https://opengameart.org/content/3-melee-sounds
+- `sfx/punch-impact.mp3` — qubodup — CC0 — https://opengameart.org/content/37-hitspunches
+- `sfx/crunch-impact.mp3` — qubodup — CC0 — https://opengameart.org/content/5-break-crunch-impacts
+- `sfx/explosion-dull.mp3` — qubodup — CC0 — https://opengameart.org/content/dull-explosion
+- `sfx/evil-creature.mp3` — qubodup — CC0 — https://opengameart.org/content/evil-creature
+- `sfx/beast-growl.mp3` — sindwiller — CC0 — https://opengameart.org/content/growl
+- `sfx/creature-screech.mp3` — qubodup — CC0 — https://opengameart.org/content/insect-or-alien-scream
+- `sfx/evil-laugh.mp3` — qubodup — CC0 — https://opengameart.org/content/evil-laughter
+- `sfx/ghost-breath.mp3` — qubodup — CC0 — https://opengameart.org/content/ghost-breath
+- `sfx/heartbeat.mp3` — qubodup — CC0 — https://opengameart.org/content/heartbeat-single-sound
+- `sfx/leaves-rustle.mp3` — qubodup — CC0 — https://opengameart.org/content/20-rustles-dry-leaves
+
 ## Art
 - `art/*.svg` — generated placeholders (swap for your own maps/handouts)
 
