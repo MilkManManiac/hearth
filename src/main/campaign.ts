@@ -3,7 +3,7 @@ import { promises as fs } from 'fs'
 import * as fsSync from 'fs'
 import * as path from 'path'
 import chokidar, { type FSWatcher } from 'chokidar'
-import type { AssetKind, CampaignState, Library, LibraryAsset, Scene } from '../shared/types'
+import type { AssetKind, CampaignState, Library, LibraryAsset, Scene, SceneImage } from '../shared/types'
 import type { TriageKeepRequest, TriageScan } from '../preload/index'
 import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import { AUTHORING_MD } from './authoring'
@@ -319,6 +319,40 @@ export class CampaignManager {
       JSON.stringify(lib, null, 2)
     )
     return this.load()
+  }
+
+  /**
+   * Pick image files via the OS dialog, COPY them (sources are never touched)
+   * into <campaign>/art/ — appending -2, -3… on filename collision, same
+   * pattern as triageKeep — and append SceneImage entries to the given scene,
+   * saved through the normal scene-save path. Returns null if canceled.
+   */
+  async importSceneImages(
+    sceneId: string
+  ): Promise<{ state: CampaignState; added: number } | null> {
+    const res = await dialog.showOpenDialog({
+      title: 'Import images',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'] }]
+    })
+    if (res.canceled || res.filePaths.length === 0) return null
+
+    const scene = (await this.loadScenes([])).find((s) => s.id === sceneId)
+    if (!scene) throw new Error(`scene "${sceneId}" not found`)
+
+    const destDir = path.join(this.campaignPath, 'art')
+    await fs.mkdir(destDir, { recursive: true })
+    const images: SceneImage[] = []
+    for (const src of res.filePaths) {
+      const ext = path.extname(src).toLowerCase()
+      const stem = slugify(path.basename(src, path.extname(src)))
+      let base = `${stem}${ext}`
+      for (let n = 2; fsSync.existsSync(path.join(destDir, base)); n++) base = `${stem}-${n}${ext}`
+      await fs.copyFile(src, path.join(destDir, base), fsSync.constants.COPYFILE_EXCL)
+      images.push({ file: `art/${base}` })
+    }
+    scene.images = [...(scene.images ?? []), ...images]
+    return { state: await this.saveScene(scene), added: images.length }
   }
 
   // --- Sound triage (review inbox for a drop folder of candidates) ---

@@ -3,21 +3,32 @@ import { useStore } from '../store'
 import { assetUrl } from '../lib/asset'
 
 export default function ImageStrip({ scene }: { scene: Scene }) {
-  const { presenting, showImage, clearImage } = useStore()
+  const { presenting, showImage, clearImage, importSceneImages } = useStore()
   const images = scene.images ?? []
 
   return (
     <section className="flex flex-col">
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">Images</h3>
-        {presenting && (
-          <button onClick={clearImage} className="text-xs text-hearth-muted hover:text-hearth-ember">
-            clear
+        <div className="flex items-center gap-2">
+          {presenting && (
+            <button onClick={clearImage} className="text-xs text-hearth-muted hover:text-hearth-ember">
+              clear
+            </button>
+          )}
+          <button
+            onClick={importSceneImages}
+            title="Import image files — copied into the campaign's art/ folder and added to this scene"
+            className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+          >
+            + Add image
           </button>
-        )}
+        </div>
       </div>
       {images.length === 0 ? (
-        <p className="text-xs text-hearth-muted">No images in this scene.</p>
+        <p className="text-xs text-hearth-muted">
+          No images in this scene — click <span className="text-hearth-ember">+ Add image</span> to import maps or handouts.
+        </p>
       ) : (
         <div className="grid grid-cols-2 gap-2">
           {images.map((img) => {

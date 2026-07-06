@@ -12,6 +12,12 @@ export interface SceneWriteResult {
   sceneId: string
 }
 
+/** Result of importing images into a scene: fresh state + how many were added. */
+export interface ImportImagesResult {
+  state: CampaignState
+  added: number
+}
+
 /** One audio candidate found in a triage drop folder. */
 export interface TriageFile {
   /** Path relative to the drop folder, '/'-separated. */
@@ -45,6 +51,8 @@ const api = {
   chooseCampaign: (): Promise<CampaignState> => ipcRenderer.invoke('campaign:choose'),
   importAssets: (kind: AssetKind): Promise<CampaignState> => ipcRenderer.invoke('campaign:import', kind),
   saveScene: (scene: Scene): Promise<CampaignState> => ipcRenderer.invoke('scene:save', scene),
+  importSceneImages: (sceneId: string): Promise<ImportImagesResult | null> =>
+    ipcRenderer.invoke('scene:import-images', sceneId),
   duplicateScene: (sceneId: string): Promise<SceneWriteResult> =>
     ipcRenderer.invoke('scene:duplicate', sceneId),
   createScene: (templateId: string): Promise<SceneWriteResult> =>

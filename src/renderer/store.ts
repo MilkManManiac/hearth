@@ -141,6 +141,8 @@ interface AppState {
 
   chooseCampaign: () => Promise<void>
   importAssets: (kind: 'music' | 'ambience' | 'sfx') => Promise<void>
+  /** Pick image files via the OS dialog; they're copied into art/ and added to the current scene. */
+  importSceneImages: () => Promise<void>
   revealCampaign: () => void
   openPresenter: () => void
 }
@@ -532,6 +534,19 @@ export const useStore = create<AppState>((set, get) => ({
   importAssets: async (kind) => {
     const c = await window.hearth.importAssets(kind)
     get().setCampaign(c)
+  },
+
+  importSceneImages: async () => {
+    const scene = currentScene(get())
+    if (!scene) return
+    try {
+      const result = await window.hearth.importSceneImages(scene.id)
+      if (!result) return // dialog canceled
+      get().setCampaign(result.state)
+      get().pushToast(`Added ${result.added} image${result.added === 1 ? '' : 's'} to ${scene.name}`, 'info')
+    } catch (err) {
+      get().pushToast(`Image import failed: ${(err as Error).message}`, 'error')
+    }
   },
 
   revealCampaign: () => window.hearth.revealCampaign(),

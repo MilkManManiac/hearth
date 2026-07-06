@@ -26,10 +26,11 @@ structural markdown + `{{cues}}`. Typecheck + build + boot all clean.
   never mid-word) → bold/color a phrase via the bubble menu → add a `❝ Note`
   callout → confirm autosave persists across a scene switch / reload → a
   library asset dropped in shows up in the scene's palette.
-- **Follow-up:** update `campaign-sample/AUTHORING.md` + `src/main/authoring.ts`
-  to document the new markdown `scriptText` syntax + the `ScriptDoc` schema so
-  Claude scene-authoring uses headings/callouts/emphasis (plain prose still
-  works — markdown is a superset, so nothing is broken meanwhile).
+- ~~**Follow-up:** update `campaign-sample/AUTHORING.md` + `src/main/authoring.ts`
+  to document the new markdown `scriptText` syntax + the `ScriptDoc` schema.~~
+  ✅ done 2026-07-06 — both docs synced (they had drifted), syntax derived from
+  the actual compiler (`####`+ is not a heading, `_underscores_` work, any
+  `[!tag]` is stripped, emphasis can't cross a cue).
 
 Original problems (now fixed) in the old contentEditable editor:
 - Dropping into the middle of a word splits the word / inserts stray spaces.
@@ -156,24 +157,59 @@ Ideas to fix:
   SFX can be held as a sustained loop (tap to start/stop). Engine gained
   setActiveMusicVolume/Loop, setAmbienceLayerVolume/Loop, looping-SFX support.
   Overlap confirmed: SFX + ambience layer freely; music stays single-track (by design).
-- **Loudness normalization** on import so tracks aren't wildly different volumes.
+- ✅ **Loudness normalization (2026-07-06):** decode-time RMS normalization in
+  the engine (−18 dBFS target, gain clamped [0.25, 4] + peak-capped so boosts
+  can't clip), cached with the buffer, composed into every play path (music/
+  ambience/SFX/preview) under the authored volumes. `ponytail:` upgrade path
+  noted (true LUFS / EBU R128).
 - **Per-cue options**: a script cue could set volume, or fire+duck depth, or
   choose one-shot vs. start-loop.
-- **Crossfade curve** options (equal-power vs. linear).
-- **Keyboard "teleprompter" mode**: while reading, press Space to fire the next
-  inline cue in order — no mouse needed.
-- **Favorites / recently used** sounds for fast access during play.
-- **Scene templates / duplicate scene** to speed prep.
+- **Crossfade curve** options (equal-power vs. linear) — skipped for now
+  (YAGNI; current fade feels fine — revisit only if it audibly bothers).
+- ✅ **Teleprompter mode (2026-07-06):** in read mode, **Space** fires the next
+  cue in document order (ember ring marks it), Shift+Space/→ skips, pointer
+  resets on scene change; ignores typing contexts (inputs/TipTap).
+- ✅ **Favorites / recents (2026-07-06):** ☆/★ in the Library (Favorites group
+  on top) + last-10 recents captured from SFX/music/ambience/script-cue fires
+  (Recent group in Library; quick re-fire chip row in the SFX grid).
+  localStorage only (`hearth:favorites`/`hearth:recents`), no schema changes.
+- ✅ **Scene templates / duplicate (2026-07-06):** hover ⧉ duplicates a scene
+  (re-reads on-disk JSON, `Copy of X`, slug uniquified); "+ New Scene" with
+  Blank/Tavern/Combat/Dungeon Crawl asset-free skeletons; new scene auto-selected
+  (`scene:duplicate`/`scene:create` IPC). Follow-ups: delete/rename affordances;
+  template ids duplicated as literals in main + SceneList (shared const needs types.ts).
 - **Global hotkeys** that work while Discord is focused (already Phase 5 in GAMEPLAN).
-- **Panic button**: instant fade-all with one key.
+- ✅ **Panic button (2026-07-06):** **Esc** = the Silence fade-all (suppressed
+  while the Library modal is open, where Esc closes the modal).
 - **Tag-based auto-suggest** when building a scene from a description (ties into
   the Claude authoring workflow).
-- Import for **images/handouts** (button + copy into `art/`), not just audio.
+- ✅ **Image/handout import (2026-07-06):** "+ Add image" in the image strip →
+  OS multi-select picker → copies into `art/` (collision `-2/-3`, never moves) →
+  appends `SceneImage`s via the normal `saveScene` path (`scene:import-images`
+  IPC). Follow-ups: caption editing, remove-image affordance.
 
 ---
 
 ## 8. Grow the sound + ambience library — a LOT (sourcing → triage → bulk add)
 Notes captured 2026-07-06. **Priority order matters — do 1 before 2 before 3.**
+
+Status: steps 1 + 2 ✅ done 2026-07-06 — see below. Step 3 (the actual bulk
+expansion) is next: download the SOUND-SOURCES.md wave-1 CC0 packs and run them
+through the 📥 Triage inbox. Install **ffmpeg** first (WAV→OGG transcode) and
+**vc_redist.x64** (CLAUDE.md gotcha) while you're at it.
+
+1. ✅ **Research better sources** — done, see `SOUND-SOURCES.md` (ranked +
+   license-verified: 3 big CC0 itch.io packs first, Nakarada CC-BY for mood
+   gaps, Sonniss GDC as personal-tier ceiling; BBC/Tabletop Audio/Ghelfi are
+   license-excluded).
+2. ✅ **Quick sound-triage tool** — done: 📥 Triage (TopBar) → pick drop folder
+   → auto-audition each candidate → K keep / J reject / ←→ browse → keepers
+   copied into the campaign + appended to `library.json` with kind/category/
+   tags prefilled from the filename and per-session source/license stamped.
+   Sources never modified. Follow-ups: `redistributable`/`attribution` fields
+   need a types.ts extension (ride in the `license` string meanwhile); engine
+   decode cache grows over a multi-GB triage session (add cache-evict later).
+3. (original notes below)
 
 1. **Research better sources FIRST (before mass-adding).** The current mix
    (OpenGameArt / Kenney / Freesound) is fine but limited in fidelity, length,

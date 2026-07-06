@@ -170,6 +170,11 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  ipcMain.handle('scene:import-images', async (_e, sceneId: string) => {
+    const result = await campaign.importSceneImages(sceneId)
+    if (result) broadcast('campaign:changed', result.state)
+    return result
+  })
   ipcMain.handle('scene:duplicate', async (_e, sceneId: string) => {
     const result = await campaign.duplicateScene(sceneId)
     broadcast('campaign:changed', result.state)
