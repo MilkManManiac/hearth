@@ -9,34 +9,47 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
   const setPlaylistEnabled = useStore((s) => s.setPlaylistEnabled)
   const setTrackVolume = useStore((s) => s.setTrackVolume)
   const setTrackLoop = useStore((s) => s.setTrackLoop)
+  const openLibrary = useStore((s) => s.openLibrary)
   const tracks = scene.music ?? []
-  if (tracks.length === 0) return null
-
   const playlistOn = !!scene.playlist?.enabled
 
   return (
     <section>
       <div className="mb-2 flex items-center gap-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">Music</h3>
+        {tracks.length > 0 && (
+          <button
+            onClick={() => setPlaylistEnabled(!playlistOn)}
+            title={
+              playlistOn
+                ? 'Playlist mode: tracks auto-advance in order. Click for palette (tap-to-switch).'
+                : 'Palette mode: tap a track to switch. Click for playlist (auto-advance).'
+            }
+            className={`rounded-full border px-2 py-0.5 text-[11px] transition-colors ${
+              playlistOn
+                ? 'border-hearth-ember bg-hearth-emberdim/30 text-hearth-ember'
+                : 'border-hearth-border text-hearth-muted hover:text-hearth-text'
+            }`}
+          >
+            {playlistOn ? '▤ Playlist' : '▦ Palette'}
+          </button>
+        )}
         <button
-          onClick={() => setPlaylistEnabled(!playlistOn)}
-          title={
-            playlistOn
-              ? 'Playlist mode: tracks auto-advance in order. Click for palette (tap-to-switch).'
-              : 'Palette mode: tap a track to switch. Click for playlist (auto-advance).'
-          }
-          className={`rounded-full border px-2 py-0.5 text-[11px] transition-colors ${
-            playlistOn
-              ? 'border-hearth-ember bg-hearth-emberdim/30 text-hearth-ember'
-              : 'border-hearth-border text-hearth-muted hover:text-hearth-text'
-          }`}
+          onClick={() => openLibrary('music')}
+          title="Add music from the library"
+          className="ml-auto rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
         >
-          {playlistOn ? '▤ Playlist' : '▦ Palette'}
+          + Add music
         </button>
       </div>
 
-      {playlistOn && <NowPlayingStrip scene={scene} />}
+      {playlistOn && tracks.length > 0 && <NowPlayingStrip scene={scene} />}
 
+      {tracks.length === 0 ? (
+        <p className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 px-3 py-2 text-xs text-hearth-muted">
+          No music yet — click <span className="text-hearth-ember">+ Add music</span> to pull tracks from the library.
+        </p>
+      ) : (
       <div className="flex flex-wrap items-start gap-2">
         {tracks.map((track) => {
           const active = status.activeMusicId === track.id
@@ -82,6 +95,7 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
           ⏹ Silence
         </button>
       </div>
+      )}
     </section>
   )
 }

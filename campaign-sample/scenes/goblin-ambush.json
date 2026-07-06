@@ -7,7 +7,7 @@
       "id": "travel",
       "label": "Uneasy travel",
       "file": "music/town.mp3",
-      "volume": 0.9,
+      "volume": 0.2,
       "default": true
     },
     {
@@ -26,8 +26,17 @@
   "ambience": [
     {
       "file": "ambience/forest.mp3",
-      "volume": 0.93,
-      "loop": false
+      "volume": 0.7,
+      "loop": true
+    },
+    {
+      "file": "ambience/campfire.wav",
+      "volume": 0.72,
+      "loop": true
+    },
+    {
+      "file": "ambience/rain-storm.ogg",
+      "volume": 0.83
     }
   ],
   "sfx": [
@@ -51,7 +60,8 @@
       "label": "Worg roar",
       "file": "sfx/monster-roar.ogg",
       "hotkey": "3",
-      "duckMusic": true
+      "duckMusic": true,
+      "volume": 0.38
     },
     {
       "id": "hurt",

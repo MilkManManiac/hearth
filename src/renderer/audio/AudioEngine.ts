@@ -332,6 +332,43 @@ export class AudioEngine {
     this.emit()
   }
 
+  /** Start a single ambience layer (tap-to-play), leaving others untouched. */
+  async startAmbienceLayer(layer: AmbienceLayer, crossfadeMs = 800): Promise<void> {
+    await this.resume()
+    if (this.activeAmbience.some((a) => a.file === layer.file)) return
+    let buffer: AudioBuffer
+    try {
+      buffer = await this.getBuffer(layer.file)
+    } catch (err) {
+      this.emitError(`Ambience "${layer.file}": ${(err as Error).message}`)
+      return
+    }
+    if (this.activeAmbience.some((a) => a.file === layer.file)) return // decoded twice; bail
+    const fade = Math.max(crossfadeMs, 1) / 1000
+    const target = layer.volume ?? DEFAULT_AMB_VOL
+    const t = this.now
+    const gain = this.ctx.createGain()
+    gain.gain.setValueAtTime(0, t)
+    gain.gain.linearRampToValueAtTime(target, t + fade)
+    const source = this.ctx.createBufferSource()
+    source.buffer = buffer
+    source.loop = layer.loop !== false
+    source.connect(gain)
+    gain.connect(this.ambienceBus)
+    source.start()
+    this.activeAmbience.push({ file: layer.file, source, gain })
+    this.emit()
+  }
+
+  /** Stop a single ambience layer (tap-to-stop), leaving others playing. */
+  stopAmbienceLayer(file: string, crossfadeMs = 800): void {
+    const layer = this.activeAmbience.find((a) => a.file === file)
+    if (!layer) return
+    this.fadeOutAndStop(layer, Math.max(crossfadeMs, 1) / 1000)
+    this.activeAmbience = this.activeAmbience.filter((a) => a.file !== file)
+    this.emit()
+  }
+
   async playSfx(sfx: SfxItem): Promise<void> {
     await this.resume()
     // Looping SFX toggle: a second tap on a playing loop stops it.

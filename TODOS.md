@@ -172,6 +172,36 @@ Ideas to fix:
 
 ---
 
+## 8. Grow the sound + ambience library — a LOT (sourcing → triage → bulk add)
+Notes captured 2026-07-06. **Priority order matters — do 1 before 2 before 3.**
+
+1. **Research better sources FIRST (before mass-adding).** The current mix
+   (OpenGameArt / Kenney / Freesound) is fine but limited in fidelity, length,
+   and variety. Spend real time finding *better* stock-sound libraries —
+   higher-quality, larger catalogs, loop-ready ambiences — that are CC0 or
+   clearly royalty-free with usable terms. Sources to vet (verify license each):
+   Sonniss GDC bundles (huge, royalty-free), BBC Sound Effects archive,
+   99Sounds, SoundBible, Mixkit / Uppbeat / ZapSplat (check license tiers),
+   itch.io CC0 SFX/music packs, archive.org public-domain audio, Pixabay,
+   Freesound CC0 packs. **Deliverable:** a short *ranked* list of the best
+   sources + why + license notes, so bulk-adding pulls from good wells.
+2. **Quick sound-triage tool (build after step 1).** A fast keep-or-cull
+   reviewer so vetting a big batch of candidates is quick — e.g. point it at a
+   drop folder, Space to audition, keep / reject with one key, auto-file the
+   keepers into the campaign + `library.json` with kind/category/tags. Could be
+   an in-app "review inbox" or a standalone script. Scope it after step 1.
+3. **THEN bulk-expand the library.** Significantly increase the *quantity* of
+   sounds + ambience across the whole taxonomy (creatures, combat, magic,
+   weather, water, fire, places, objects, horror, UI) and every mood. This is
+   the goal; steps 1–2 make it high-quality and efficient instead of a dump of
+   mediocre files.
+
+Parked: auth-gated finds from the 2026-07-06 research (Kenney / Freesound /
+Pixabay packs that need manual download) are listed in the scratchpad
+`sound-candidates.md`.
+
+---
+
 ## Process: grilling + docs skill
 - We'll likely do a **grill-me** session to pin down specs (esp. the editor
   rewrite and the playlist model) before building.

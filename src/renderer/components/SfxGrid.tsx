@@ -8,6 +8,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
   const setSfxItemVolume = useStore((s) => s.setSfxItemVolume)
   const setSfxItemLoop = useStore((s) => s.setSfxItemLoop)
   const loopingSfxIds = useStore((s) => s.status.loopingSfxIds)
+  const openLibrary = useStore((s) => s.openLibrary)
   const sfx = scene.sfx ?? []
 
   // Hotkeys: single-character keys defined on the scene's sfx fire them.
@@ -27,13 +28,25 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [sfx, playSfx])
 
-  if (sfx.length === 0) return null
-
   return (
     <section>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-hearth-muted">
-        Sound effects
-      </h3>
+      <div className="mb-2 flex items-center gap-3">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">
+          Sound effects
+        </h3>
+        <button
+          onClick={() => openLibrary('sfx')}
+          title="Add a sound effect from the library"
+          className="ml-auto rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+        >
+          + Add sound
+        </button>
+      </div>
+      {sfx.length === 0 ? (
+        <p className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 px-3 py-2 text-xs text-hearth-muted">
+          No sound effects yet — click <span className="text-hearth-ember">+ Add sound</span> to pull from the library.
+        </p>
+      ) : (
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         {sfx.map((s) => {
           const looping = loopingSfxIds.includes(s.id)
@@ -70,6 +83,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
           )
         })}
       </div>
+      )}
     </section>
   )
 }

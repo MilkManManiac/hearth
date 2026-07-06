@@ -1,5 +1,11 @@
 import { create } from 'zustand'
-import { DEFAULT_CROSSFADE_MS, type CampaignState, type CueInline, type Scene } from '../shared/types'
+import {
+  DEFAULT_CROSSFADE_MS,
+  type AssetKind,
+  type CampaignState,
+  type CueInline,
+  type Scene
+} from '../shared/types'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
 
 /** One audio engine per session, shared across the UI. */
@@ -45,6 +51,28 @@ function playlistFade(scene: Scene): number {
   return scene.playlist?.crossfadeMs ?? scene.transition?.crossfadeMs ?? DEFAULT_CROSSFADE_MS
 }
 
+/** Filename without directory or extension, e.g. "music/old-tower-inn.mp3" → "old-tower-inn". */
+function assetStem(file: string): string {
+  return (file.split('/').pop() ?? file).replace(/\.[^.]+$/, '')
+}
+
+/** A readable label from a filename: "old-tower-inn" → "Old Tower Inn". */
+function prettyLabel(file: string): string {
+  return assetStem(file)
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim()
+}
+
+/** A scene-unique id for a newly added asset, based on its filename. */
+function uniqueAssetId(existing: { id: string }[], file: string): string {
+  const base = `lib-${assetStem(file).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
+  if (!existing.some((e) => e.id === base)) return base
+  let n = 2
+  while (existing.some((e) => e.id === `${base}-${n}`)) n++
+  return `${base}-${n}`
+}
+
 interface AppState {
   campaign: CampaignState
   currentSceneId: string | null
@@ -52,6 +80,8 @@ interface AppState {
   presenting: PresentingImage | null
   toasts: Toast[]
   libraryOpen: boolean
+  /** Kind to preselect when the library browser opens (from a section's + Add). */
+  libraryKind: AssetKind | 'all'
   /** Library asset file currently being auditioned, or null. */
   previewingFile: string | null
   /** Track-id play order for the current scene's playlist mode. */
@@ -63,8 +93,10 @@ interface AppState {
   pushToast: (message: string, tone?: Toast['tone']) => void
   dismissToast: (id: number) => void
   probeAssets: () => Promise<void>
-  openLibrary: () => void
+  openLibrary: (kind?: AssetKind) => void
   closeLibrary: () => void
+  /** Add a library asset to the current scene's palette (by its kind). */
+  addAssetToScene: (file: string) => void
   previewAsset: (file: string) => Promise<void>
 
   /** (Re)build the play order and start the scene's playlist from the top. */
@@ -89,6 +121,8 @@ interface AppState {
   setSfxItemLoop: (sfxId: string, loop: boolean) => void
   setAmbienceLayerVolume: (file: string, v: number) => void
   setAmbienceLayerLoop: (file: string, loop: boolean) => void
+  /** Tap an ambience bed on/off independently of the scene's auto-loaded set. */
+  toggleAmbience: (file: string) => void
   showImage: (file: string, caption?: string) => void
   clearImage: () => void
   stopAll: () => void
@@ -133,6 +167,7 @@ export const useStore = create<AppState>((set, get) => ({
   presenting: null,
   toasts: [],
   libraryOpen: false,
+  libraryKind: 'all',
   previewingFile: null,
   playlistOrder: [],
   playlistPos: 0,
@@ -154,11 +189,35 @@ export const useStore = create<AppState>((set, get) => ({
 
   dismissToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
 
-  openLibrary: () => set({ libraryOpen: true }),
+  openLibrary: (kind) => set({ libraryOpen: true, libraryKind: kind ?? 'all' }),
   closeLibrary: () => {
     currentPreviewStop?.()
     currentPreviewStop = null
     set({ libraryOpen: false, previewingFile: null })
+  },
+
+  addAssetToScene: (file) => {
+    const scene = currentScene(get())
+    if (!scene) return
+    const asset = get().campaign.library.assets.find((a) => a.file === file)
+    // Fall back to the top-level folder as the kind for un-indexed files.
+    const kind: AssetKind =
+      asset?.kind ?? ((file.split('/')[0] as AssetKind) || 'sfx')
+    get().updateScene(scene.id, (s) => {
+      if (kind === 'music') {
+        if ((s.music ?? []).some((m) => m.file === file)) return s
+        const id = uniqueAssetId(s.music ?? [], file)
+        return { ...s, music: [...(s.music ?? []), { id, label: prettyLabel(file), file }] }
+      }
+      if (kind === 'ambience') {
+        if ((s.ambience ?? []).some((a) => a.file === file)) return s
+        return { ...s, ambience: [...(s.ambience ?? []), { file }] }
+      }
+      if ((s.sfx ?? []).some((x) => x.file === file)) return s
+      const id = uniqueAssetId(s.sfx ?? [], file)
+      return { ...s, sfx: [...(s.sfx ?? []), { id, label: prettyLabel(file), file }] }
+    })
+    get().pushToast(`Added ${prettyLabel(file)} to ${scene.name}`, 'info')
   },
 
   startPlaylist: () => {
@@ -371,6 +430,13 @@ export const useStore = create<AppState>((set, get) => ({
       ...s,
       ambience: (s.ambience ?? []).map((a) => (a.file === file ? { ...a, loop } : a))
     }))
+  },
+
+  toggleAmbience: (file) => {
+    const layer = currentScene(get())?.ambience?.find((a) => a.file === file)
+    if (!layer) return
+    if (get().status.ambienceFiles.includes(file)) engine.stopAmbienceLayer(file)
+    else engine.startAmbienceLayer(layer)
   },
 
   showImage: (file, caption) => {

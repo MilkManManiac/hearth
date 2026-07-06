@@ -28,10 +28,27 @@ export default function LibraryPanel() {
   const close = useStore((s) => s.closeLibrary)
   const assets = useStore((s) => s.campaign.library.assets)
   const importAssets = useStore((s) => s.importAssets)
+  const libraryKind = useStore((s) => s.libraryKind)
+  const addAssetToScene = useStore((s) => s.addAssetToScene)
+  const scene = useStore((s) => s.campaign.scenes.find((x) => x.id === s.currentSceneId) ?? null)
 
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
   const [category, setCategory] = useState<string | 'all'>('all')
+
+  // Files already on the current scene (any bucket) — to show "in scene" state.
+  const filesInScene = useMemo(() => {
+    const set = new Set<string>()
+    scene?.music?.forEach((m) => set.add(m.file))
+    scene?.ambience?.forEach((a) => set.add(a.file))
+    scene?.sfx?.forEach((s) => set.add(s.file))
+    return set
+  }, [scene])
+
+  // Seed the kind filter when opened from a section's "+ Add".
+  useEffect(() => {
+    if (open) setKind(libraryKind)
+  }, [open, libraryKind])
 
   // Close on Escape.
   useEffect(() => {
@@ -160,7 +177,13 @@ export default function LibraryPanel() {
                   </h3>
                   <ul className="space-y-1">
                     {items.map((a) => (
-                      <AssetRow key={a.file} asset={a} />
+                      <AssetRow
+                        key={a.file}
+                        asset={a}
+                        inScene={filesInScene.has(a.file)}
+                        canAdd={!!scene}
+                        onAdd={() => addAssetToScene(a.file)}
+                      />
                     ))}
                   </ul>
                 </section>
@@ -196,7 +219,17 @@ function FilterChip({
   )
 }
 
-function AssetRow({ asset }: { asset: LibraryAsset }) {
+function AssetRow({
+  asset,
+  inScene,
+  canAdd,
+  onAdd
+}: {
+  asset: LibraryAsset
+  inScene: boolean
+  canAdd: boolean
+  onAdd: () => void
+}) {
   const previewingFile = useStore((s) => s.previewingFile)
   const previewAsset = useStore((s) => s.previewAsset)
   const playing = previewingFile === asset.file
@@ -223,6 +256,23 @@ function AssetRow({ asset }: { asset: LibraryAsset }) {
       <span className="flex-none rounded bg-hearth-bg px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-hearth-muted">
         {asset.kind}
       </span>
+      {canAdd &&
+        (inScene ? (
+          <span
+            className="flex-none rounded border border-hearth-border px-2 py-1 text-xs text-hearth-muted"
+            title="Already on this scene"
+          >
+            ✓ In scene
+          </span>
+        ) : (
+          <button
+            onClick={onAdd}
+            title="Add to the current scene"
+            className="flex-none rounded border border-hearth-ember bg-hearth-ember/15 px-2 py-1 text-xs text-hearth-ember hover:bg-hearth-ember/30"
+          >
+            + Add
+          </button>
+        ))}
     </li>
   )
 }
