@@ -18,6 +18,8 @@ export interface LibraryAsset {
    * "combat", "town". Free-form; see LIBRARY_CATEGORIES for the recommended set.
    */
   category?: string
+  /** Free-text notes: what it sounds like, when to use it, source quirks. */
+  description?: string
   /**
    * Marked as junk: hidden from the cue tray and grouped under "Marked as
    * trash" in the Library, pending real deletion. A soft-delete staging flag.

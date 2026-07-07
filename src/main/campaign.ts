@@ -429,7 +429,7 @@ export class CampaignManager {
    */
   async updateLibraryAsset(
     file: string,
-    patch: Partial<Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash'>>
+    patch: Partial<Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash' | 'description'>>
   ): Promise<CampaignState> {
     const lib = await this.loadLibrary([])
     const asset = lib.assets.find((a) => a.file === file)
@@ -439,8 +439,15 @@ export class CampaignManager {
       else delete asset.name
     }
     if (patch.category !== undefined) {
-      if (patch.category) asset.category = patch.category
+      // Free-form: any label works ("chill", "boss-phase-2"); slugified so
+      // grouping/filtering treat spellings consistently.
+      const cat = patch.category.trim().toLowerCase().replace(/\s+/g, '-')
+      if (cat) asset.category = cat
       else delete asset.category
+    }
+    if (patch.description !== undefined) {
+      if (patch.description.trim()) asset.description = patch.description.trim()
+      else delete asset.description
     }
     if (patch.tags !== undefined) asset.tags = patch.tags
     if (patch.trash !== undefined) {

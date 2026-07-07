@@ -5,7 +5,9 @@ import type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus } from '../mai
 export type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus }
 
 /** Editable slice of a library entry (file/kind stay fixed). */
-export type LibraryAssetPatch = Partial<Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash'>>
+export type LibraryAssetPatch = Partial<
+  Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash' | 'description'>
+>
 
 export interface PresenterPayload {
   file: string | null

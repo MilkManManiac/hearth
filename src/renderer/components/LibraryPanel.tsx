@@ -4,6 +4,7 @@ import { assetDisplayName, CATEGORY_ORDER, categoryMeta } from '../../shared/typ
 import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
 import PreviewScrubber from './PreviewScrubber'
+import GrowArea from './GrowArea'
 
 const KIND_LABELS: Record<AssetKind, string> = {
   music: 'Music',
@@ -88,7 +89,7 @@ export default function LibraryPanel() {
       if (kind !== 'all' && a.kind !== kind) return false
       if (category !== 'all' && (a.category ?? '') !== category) return false
       if (!q) return true
-      const hay = `${a.name ?? ''} ${a.file} ${a.category ?? ''} ${a.tags.join(' ')}`.toLowerCase()
+      const hay = `${a.name ?? ''} ${a.file} ${a.category ?? ''} ${a.description ?? ''} ${a.tags.join(' ')}`.toLowerCase()
       return hay.includes(q)
     })
   }, [assets, query, kind, category])
@@ -212,6 +213,17 @@ export default function LibraryPanel() {
           </div>
         </div>
 
+        {/* Category suggestions for the row editors: the recommended set plus
+            everything already used in this campaign — typing anything new is
+            equally valid (categories are free-form). */}
+        <datalist id="hearth-categories">
+          {[...new Set([...CATEGORY_ORDER, ...categories.filter(Boolean)])].map((c) => (
+            <option key={c} value={c}>
+              {categoryMeta(c).icon} {categoryMeta(c).label}
+            </option>
+          ))}
+        </datalist>
+
         {/* List */}
         <div className="flex-1 overflow-y-auto px-4 py-3">
           {groups.length === 0 ? (
@@ -320,17 +332,19 @@ function AssetRow({
   const updateLibraryAsset = useStore((s) => s.updateLibraryAsset)
   const deleteLibraryAsset = useStore((s) => s.deleteLibraryAsset)
 
-  // Inline metadata editor (rename / recategorize / retag).
+  // Inline metadata editor (rename / recategorize / retag / describe).
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [cat, setCat] = useState('')
   const [tags, setTags] = useState('')
+  const [desc, setDesc] = useState('')
   const nameRef = useRef<HTMLInputElement>(null)
 
   const openEditor = (): void => {
     setName(assetDisplayName(asset))
     setCat(asset.category ?? '')
     setTags(asset.tags.join(', '))
+    setDesc(asset.description ?? '')
     setEditing(true)
   }
   useEffect(() => {
@@ -342,6 +356,7 @@ function AssetRow({
     void updateLibraryAsset(asset.file, {
       name,
       category: cat,
+      description: desc,
       tags: [...new Set(tags.toLowerCase().split(/[,\s]+/).filter(Boolean))]
     })
   }
@@ -370,6 +385,11 @@ function AssetRow({
           </div>
           {asset.tags.length > 0 && (
             <div className="truncate text-[11px] text-hearth-muted">{asset.tags.join(' · ')}</div>
+          )}
+          {asset.description && (
+            <div className="truncate text-[11px] italic text-hearth-muted/80" title={asset.description}>
+              {asset.description}
+            </div>
           )}
         </div>
         <button
@@ -463,14 +483,15 @@ function AssetRow({
             className={`${inputCls} w-44`}
             title="Display name (the file on disk keeps its name — scenes are unaffected)"
           />
-          <select value={cat} onChange={(e) => setCat(e.target.value)} className={inputCls}>
-            <option value="">— no category —</option>
-            {CATEGORY_ORDER.map((c) => (
-              <option key={c} value={c}>
-                {categoryMeta(c).icon} {categoryMeta(c).label}
-              </option>
-            ))}
-          </select>
+          <input
+            value={cat}
+            onChange={(e) => setCat(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
+            list="hearth-categories"
+            placeholder="category (type anything)"
+            className={`${inputCls} w-40`}
+            title="Pick a suggestion or type a brand-new category — it becomes a group + mood tag"
+          />
           <input
             value={tags}
             onChange={(e) => setTags(e.target.value)}
@@ -484,6 +505,12 @@ function AssetRow({
           >
             Save
           </button>
+          <GrowArea
+            value={desc}
+            onChange={setDesc}
+            placeholder="description — what it sounds like, when to use it…"
+            className={`${inputCls} basis-full text-[12px]`}
+          />
         </form>
       )}
     </li>
