@@ -453,6 +453,82 @@ export class CampaignManager {
   }
 
   /**
+   * The blocklist ("never again" list): filename stems of sounds the DM
+   * deleted, kept in <campaign>/blocklist.json so future pack imports and
+   * triage sessions don't re-add culled sounds under the same name.
+   */
+  private blocklistPath(): string {
+    return path.join(this.campaignPath, 'blocklist.json')
+  }
+
+  async readBlocklist(): Promise<{ stem: string; file: string }[]> {
+    try {
+      const raw = JSON.parse(await fs.readFile(this.blocklistPath(), 'utf-8'))
+      return Array.isArray(raw) ? raw : []
+    } catch {
+      return []
+    }
+  }
+
+  private async appendBlocklist(entries: { stem: string; file: string }[]): Promise<void> {
+    const list = await this.readBlocklist()
+    const have = new Set(list.map((e) => e.stem))
+    for (const e of entries) {
+      if (!have.has(e.stem)) {
+        list.push(e)
+        have.add(e.stem)
+      }
+    }
+    await fs.writeFile(this.blocklistPath(), JSON.stringify(list, null, 2))
+    this.markWrite()
+  }
+
+  /** Filename stem used for blocklist identity: "sfx/fapx-troll-roar-2.ogg" → "fapx-troll-roar-2". */
+  private static stemOf(file: string): string {
+    return (file.split('/').pop() ?? file).replace(/\.[^.]+$/, '').toLowerCase()
+  }
+
+  /**
+   * Batch-delete every trash-flagged asset: files → recycle bin, entries
+   * dropped, stems blocklisted. Assets still referenced by a scene are
+   * skipped (reported back) rather than orphaning cues.
+   */
+  async purgeTrash(): Promise<{ state: CampaignState; purged: number; skipped: string[] }> {
+    const lib = await this.loadLibrary([])
+    const scenes = await this.loadScenes([])
+    const referenced = new Set<string>()
+    for (const s of scenes) {
+      s.music?.forEach((m) => referenced.add(m.file))
+      s.ambience?.forEach((a) => referenced.add(a.file))
+      s.sfx?.forEach((x) => referenced.add(x.file))
+    }
+    const skipped: string[] = []
+    const blocked: { stem: string; file: string }[] = []
+    const keep: LibraryAsset[] = []
+    for (const a of lib.assets) {
+      if (!a.trash) {
+        keep.push(a)
+        continue
+      }
+      if (referenced.has(a.file)) {
+        skipped.push(a.file)
+        keep.push(a)
+        continue
+      }
+      const abs = path.resolve(this.campaignPath, a.file)
+      if (abs.startsWith(path.resolve(this.campaignPath) + path.sep) && fsSync.existsSync(abs)) {
+        await shell.trashItem(abs)
+      }
+      blocked.push({ stem: CampaignManager.stemOf(a.file), file: a.file })
+    }
+    lib.assets = keep
+    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    this.markWrite()
+    if (blocked.length > 0) await this.appendBlocklist(blocked)
+    return { state: await this.load(), purged: blocked.length, skipped }
+  }
+
+  /**
    * Delete a library asset for real: refuse if any scene still references the
    * file (deleting would leave dead cues); otherwise move the file to the OS
    * trash and drop the library entry.
@@ -476,6 +552,7 @@ export class CampaignManager {
     lib.assets = lib.assets.filter((a) => a.file !== file)
     await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
     this.markWrite()
+    await this.appendBlocklist([{ stem: CampaignManager.stemOf(file), file }])
     return this.load()
   }
 
@@ -555,6 +632,12 @@ export class CampaignManager {
     if (!src.startsWith(root + path.sep)) throw new Error('candidate outside the drop folder')
     const ext = path.extname(req.rel).toLowerCase()
     const stem = slugify(req.name.trim() || path.basename(req.rel, path.extname(req.rel)))
+    // "Never again": a previously-deleted sound is refused by name — renaming
+    // it in the keep form is the deliberate override.
+    const blocklist = await this.readBlocklist()
+    if (blocklist.some((b) => b.stem === stem.toLowerCase())) {
+      throw new Error(`"${stem}" was deleted before (blocklist.json) — rename it to keep anyway`)
+    }
     const destDir = path.join(this.campaignPath, req.kind)
     await fs.mkdir(destDir, { recursive: true })
     const base = await this.copyUnique(src, destDir, stem, ext)

@@ -35,6 +35,7 @@ export default function LibraryPanel() {
   const importAssets = useStore((s) => s.importAssets)
   const libraryKind = useStore((s) => s.libraryKind)
   const addAssetToScene = useStore((s) => s.addAssetToScene)
+  const purgeTrash = useStore((s) => s.purgeTrash)
   const scene = useStore((s) => s.campaign.scenes.find((x) => x.id === s.currentSceneId) ?? null)
 
   const [query, setQuery] = useState('')
@@ -227,6 +228,23 @@ export default function LibraryPanel() {
                     <span>{icon}</span>
                     {label}
                     <span className="text-hearth-muted/60">{items.length}</span>
+                    {key === 'trash' && (
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `Purge all ${items.length} trashed sound${items.length === 1 ? '' : 's'}? Files go to the recycle bin and their names are blocklisted so future imports skip them. Sounds still used by a scene are kept.`
+                            )
+                          ) {
+                            void purgeTrash()
+                          }
+                        }}
+                        title="Delete everything marked as trash — recycle bin + blocklist"
+                        className="ml-2 rounded border border-red-500/40 bg-red-500/10 px-2 py-0.5 text-[10px] normal-case tracking-normal text-red-300 hover:bg-red-500/25"
+                      >
+                        🗑 Purge all
+                      </button>
+                    )}
                   </h3>
                   <ul className="space-y-1">
                     {shown.map((a) => (

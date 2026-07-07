@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { assetDisplayName, type AssetKind, type PlaylistPreset } from '../../shared/types'
+import { assetDisplayName, categoryMeta, type AssetKind, type PlaylistPreset } from '../../shared/types'
 import { pushRecent, useFavorites } from '../lib/prefs'
 import { engine, useStore } from '../store'
 import { VolumeFader } from './Mixer'
@@ -24,6 +24,21 @@ const KIND_LIT: Record<AssetKind, string> = {
   sfx: 'bg-hearth-gold/20'
 }
 
+export interface Mood {
+  icon: string
+  label: string
+}
+
+/** The category doubles as a mood tag (tension, somber, combat, tavern…). */
+function MoodDot({ mood }: { mood: Mood | null | undefined }) {
+  if (!mood) return null
+  return (
+    <span title={`Mood: ${mood.label}`} aria-label={`Mood: ${mood.label}`} className="-ml-0.5 text-[11px] opacity-80">
+      {mood.icon}
+    </span>
+  )
+}
+
 function RowLabel({ children, title }: { children: React.ReactNode; title?: string }) {
   return (
     <span
@@ -40,6 +55,7 @@ function NowChip({
   icon,
   label,
   className,
+  mood,
   volume,
   defaultVolume,
   onVolume,
@@ -49,6 +65,7 @@ function NowChip({
   icon: string
   label: string
   className: string
+  mood?: Mood | null
   volume: number | undefined
   defaultVolume: number
   onVolume: (v: number) => void
@@ -58,6 +75,7 @@ function NowChip({
   return (
     <span className={`flex items-center gap-1.5 rounded-full border py-1 pl-2.5 pr-1 text-sm transition-colors ${className}`}>
       <span aria-hidden>{icon}</span>
+      <MoodDot mood={mood} />
       <span className="max-w-[10rem] truncate">{label}</span>
       <span className="w-12">
         <VolumeFader value={volume} defaultValue={defaultVolume} onChange={onVolume} />
@@ -78,6 +96,7 @@ function FireChip({
   kind,
   label,
   lit,
+  mood,
   onClick,
   title,
   extra
@@ -85,6 +104,7 @@ function FireChip({
   kind: AssetKind
   label: string
   lit: boolean
+  mood?: Mood | null
   onClick: () => void
   title: string
   extra?: React.ReactNode
@@ -97,6 +117,7 @@ function FireChip({
     >
       <button onClick={onClick} title={title} className="flex items-center gap-1.5 py-1 pl-2.5 pr-2">
         <span aria-hidden>{lit ? '⏹' : KIND_ICON[kind]}</span>
+        <MoodDot mood={mood} />
         <span className="max-w-[9rem] truncate">{label}</span>
       </button>
       {extra}
@@ -157,6 +178,16 @@ export default function SoundConsole() {
   const ambLayer = (file: string) => scenes.flatMap((s) => s.ambience ?? []).find((a) => a.file === file)
   const sfxItem = (id: string) => scenes.flatMap((s) => s.sfx ?? []).find((x) => x.id === id)
 
+  // The library category doubles as the mood tag (tension/somber/combat/
+  // tavern…). Bulk-utility categories aren't moods — skip them.
+  const moodOf = (file: string | null | undefined): Mood | null => {
+    if (!file) return null
+    const c = assets.find((x) => x.file === file)?.category
+    if (!c || c === 'footsteps' || c === 'voices') return null
+    const m = categoryMeta(c)
+    return { icon: m.icon, label: m.label }
+  }
+
   const toggleStaples = (): void => {
     localStorage.setItem('hearth:staplesOpen', staplesOpen ? '0' : '1')
     setStaplesOpen(!staplesOpen)
@@ -175,6 +206,7 @@ export default function SoundConsole() {
               icon="♪"
               label={musicLabel}
               className="border-hearth-ember/60 bg-hearth-ember/10 text-hearth-ember"
+              mood={moodOf(musicTrack?.file ?? (status.activeMusicId?.includes('/') ? status.activeMusicId : null))}
               volume={musicTrack?.volume}
               defaultVolume={0.6}
               onVolume={(v) => engine.setActiveMusicVolume(v)}
@@ -188,6 +220,7 @@ export default function SoundConsole() {
               icon="〜"
               label={stem(file)}
               className="border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
+              mood={moodOf(file)}
               volume={ambLayer(file)?.volume}
               defaultVolume={0.4}
               onVolume={(v) => engine.setAmbienceLayerVolume(file, v)}
@@ -201,6 +234,7 @@ export default function SoundConsole() {
               icon="🔁"
               label={sfxItem(id)?.label ?? id}
               className="border-hearth-gold/60 bg-hearth-gold/10 text-hearth-gold"
+              mood={moodOf(sfxItem(id)?.file)}
               volume={sfxItem(id)?.volume}
               defaultVolume={0.9}
               onVolume={(v) => engine.setSfxLoopVolume(id, v)}
@@ -237,6 +271,7 @@ export default function SoundConsole() {
               key={t.id}
               kind="music"
               label={t.label}
+              mood={moodOf(t.file)}
               lit={status.activeMusicId === t.id}
               onClick={() => {
                 switchMusic(t.id)
@@ -250,6 +285,7 @@ export default function SoundConsole() {
               key={a.file}
               kind="ambience"
               label={stem(a.file)}
+              mood={moodOf(a.file)}
               lit={status.ambienceFiles.includes(a.file)}
               onClick={() => {
                 if (!status.ambienceFiles.includes(a.file)) pushRecent(a.file)
@@ -263,6 +299,7 @@ export default function SoundConsole() {
               key={s.id}
               kind="sfx"
               label={s.label}
+              mood={moodOf(s.file)}
               lit={status.loopingSfxIds.includes(s.id)}
               onClick={() => {
                 playSfx(s.id)
@@ -342,6 +379,7 @@ export default function SoundConsole() {
                   key={a.file}
                   kind={a.kind}
                   label={assetDisplayName(a)}
+                  mood={moodOf(a.file)}
                   lit={lit}
                   onClick={() => {
                     fireFavorite(a.file)

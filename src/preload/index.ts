@@ -70,6 +70,8 @@ const api = {
     ipcRenderer.invoke('library:delete', file),
   savePlaylistPresets: (presets: PlaylistPreset[]): Promise<CampaignState> =>
     ipcRenderer.invoke('library:save-playlists', presets),
+  purgeTrash: (): Promise<{ state: CampaignState; purged: number; skipped: string[] }> =>
+    ipcRenderer.invoke('library:purge-trash'),
   pickTriageFolder: (): Promise<TriageScan | null> => ipcRenderer.invoke('triage:pick'),
   triageKeep: (req: TriageKeepRequest): Promise<CampaignState> =>
     ipcRenderer.invoke('triage:keep', req),

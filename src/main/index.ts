@@ -206,6 +206,11 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  ipcMain.handle('library:purge-trash', async () => {
+    const result = await campaign.purgeTrash()
+    broadcast('campaign:changed', result.state)
+    return result
+  })
   ipcMain.handle('triage:pick', async () => campaign.triagePick())
   ipcMain.handle('triage:keep', async (_e, req: TriageKeepRequest) => {
     const state = await campaign.triageKeep(req)

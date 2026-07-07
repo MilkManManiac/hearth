@@ -134,6 +134,8 @@ interface AppState {
   updateLibraryAsset: (file: string, patch: LibraryAssetPatch) => Promise<void>
   /** Delete an asset for real: file → recycle bin, entry dropped. Blocked while scenes use it. */
   deleteLibraryAsset: (file: string) => Promise<void>
+  /** Batch-delete everything marked as trash (scene-referenced items are skipped). */
+  purgeTrash: () => Promise<void>
   previewAsset: (file: string) => Promise<void>
 
   /** (Re)build the play order and start the scene's playlist from the top. */
@@ -462,9 +464,23 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const state = await window.hearth.deleteLibraryAsset(file)
       get().setCampaign(state)
-      get().pushToast('Sound moved to the recycle bin', 'info')
+      get().pushToast('Sound moved to the recycle bin (and blocklisted)', 'info')
     } catch (err) {
       get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  purgeTrash: async () => {
+    try {
+      const { state, purged, skipped } = await window.hearth.purgeTrash()
+      get().setCampaign(state)
+      get().pushToast(
+        `Purged ${purged} sound${purged === 1 ? '' : 's'} (recycle bin + blocklist)` +
+          (skipped.length ? ` — ${skipped.length} kept, still used by scenes` : ''),
+        'info'
+      )
+    } catch (err) {
+      get().pushToast(`Purge failed: ${(err as Error).message}`, 'error')
     }
   },
 
