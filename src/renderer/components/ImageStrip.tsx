@@ -6,6 +6,7 @@ import { assetUrl } from '../lib/asset'
 export default function ImageStrip({ scene }: { scene: Scene }) {
   const { presenting, showImage, clearImage, importSceneImages, removeImage, setImageCaption } =
     useStore()
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const images = scene.images ?? []
   // Inline caption editing: which image file is being edited + the draft text.
   const [editingFile, setEditingFile] = useState<string | null>(null)
@@ -31,13 +32,15 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
               clear
             </button>
           )}
-          <button
-            onClick={importSceneImages}
-            title="Import image files — copied into the campaign's art/ folder and added to this scene"
-            className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
-          >
-            + Add image
-          </button>
+          {buildMode && (
+            <button
+              onClick={importSceneImages}
+              title="Import image files — copied into the campaign's art/ folder and added to this scene"
+              className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+            >
+              + Add image
+            </button>
+          )}
         </div>
       </div>
       {images.length === 0 ? (
@@ -67,7 +70,13 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
                     className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
                   />
                 </button>
-                {editing ? (
+                {!buildMode ? (
+                  img.caption && (
+                    <span className="absolute inset-x-0 bottom-0 truncate bg-black/60 px-1.5 py-0.5 text-[11px] text-hearth-text">
+                      {img.caption}
+                    </span>
+                  )
+                ) : editing ? (
                   <input
                     ref={captionRef}
                     value={draft}
@@ -99,13 +108,15 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
                     live
                   </span>
                 )}
-                <button
-                  onClick={() => removeImage(img.file)}
-                  title="Remove from this scene (the file stays in art/)"
-                  className="absolute left-1 top-1 hidden h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[11px] text-hearth-text hover:bg-red-500/80 group-hover:flex"
-                >
-                  ✕
-                </button>
+                {buildMode && (
+                  <button
+                    onClick={() => removeImage(img.file)}
+                    title="Remove from this scene (the file stays in art/)"
+                    className="absolute left-1 top-1 hidden h-5 w-5 items-center justify-center rounded-full bg-black/60 text-[11px] text-hearth-text hover:bg-red-500/80 group-hover:flex"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             )
           })}

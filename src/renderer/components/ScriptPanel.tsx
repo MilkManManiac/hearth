@@ -30,6 +30,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   const fireCue = useStore((s) => s.fireCue)
   const updateScene = useStore((s) => s.updateScene)
   const library = useStore((s) => s.campaign.library)
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const [editing, setEditing] = useState(false)
   // Teleprompter pointer: index (in document order) of the next cue Space will fire.
   const [cuePos, setCuePos] = useState(0)
@@ -125,7 +126,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
             <Key>Space</Key> next · <Key>→</Key> skip · <Key>←</Key> back
           </span>
         )}
-        {!editing && (
+        {!editing && buildMode && (
           <button onClick={() => setEditing(true)} className="text-xs text-hearth-muted hover:text-hearth-ember">
             ✎ Edit
           </button>

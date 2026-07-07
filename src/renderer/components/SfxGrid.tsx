@@ -10,6 +10,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
   const setSfxItemVolume = useStore((s) => s.setSfxItemVolume)
   const setSfxItemLoop = useStore((s) => s.setSfxItemLoop)
   const removeSfxItem = useStore((s) => s.removeSfxItem)
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const loopingSfxIds = useStore((s) => s.status.loopingSfxIds)
   const openLibrary = useStore((s) => s.openLibrary)
   const recents = useRecents()
@@ -49,13 +50,15 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
   return (
     <section>
       <SectionHeader icon="🔊" title="Sound effects">
-        <button
-          onClick={() => openLibrary('sfx')}
-          title="Add a sound effect from the library"
-          className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
-        >
-          + Add sound
-        </button>
+        {buildMode && (
+          <button
+            onClick={() => openLibrary('sfx')}
+            title="Add a sound effect from the library"
+            className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+          >
+            + Add sound
+          </button>
+        )}
       </SectionHeader>
       {recentSfx.length > 0 && sfx.length > 4 && (
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
@@ -108,16 +111,18 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
               <div className="flex items-center gap-2">
                 <VolumeFader value={s.volume} defaultValue={0.9} onChange={(v) => setSfxItemVolume(s.id, v)} />
                 <LoopButton on={!!s.loop} onClick={() => setSfxItemLoop(s.id, !s.loop)} title="Loop (hold) this sound" />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    removeSfxItem(s.id)
-                  }}
-                  title="Remove from this scene (the file stays in the library)"
-                  className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
-                >
-                  ✕
-                </button>
+                {buildMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeSfxItem(s.id)
+                    }}
+                    title="Remove from this scene (the file stays in the library)"
+                    className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             </div>
           )

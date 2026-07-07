@@ -21,6 +21,7 @@ export default function SceneList() {
     renameScene,
     createScene
   } = useStore()
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const [picking, setPicking] = useState(false)
   // Inline rename state: which scene row is an input, and its draft text.
   const [renamingId, setRenamingId] = useState<string | null>(null)
@@ -95,7 +96,7 @@ export default function SceneList() {
               ) : (
                 <span className="flex-1 truncate">{scene.name}</span>
               )}
-              {!renaming && (
+              {!renaming && buildMode && (
                 <span className="ml-1 flex flex-none items-center opacity-0 transition-opacity group-hover:opacity-100">
                   <button
                     onClick={(e) => {
@@ -136,6 +137,7 @@ export default function SceneList() {
           )
         })}
       </div>
+      {buildMode && (
       <div className="border-t border-hearth-border p-2">
         {picking && (
           <div className="mb-2 overflow-hidden rounded-md border border-hearth-border bg-hearth-panel2">
@@ -163,6 +165,7 @@ export default function SceneList() {
           + New Scene
         </button>
       </div>
+      )}
       {campaign.errors.length > 0 && (
         <div className="border-t border-hearth-border px-3 py-2 text-[11px] text-red-400">
           <div className="mb-1 font-semibold">Load errors</div>

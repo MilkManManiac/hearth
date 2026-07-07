@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { engine, useStore } from '../store'
 import TriagePanel from './TriagePanel'
 import DiscordPanel from './DiscordPanel'
@@ -52,30 +53,72 @@ function Btn({
   )
 }
 
+/** Prep-vs-table workflow tools, folded behind one button to keep the bar calm. */
+function ToolsMenu() {
+  const [open, setOpen] = useState(false)
+  const importAssets = useStore((s) => s.importAssets)
+  const openTriage = useStore((s) => s.openTriage)
+  const probeAssets = useStore((s) => s.probeAssets)
+  const revealCampaign = useStore((s) => s.revealCampaign)
+
+  const items: { icon: string; label: string; title: string; run: () => void }[] = [
+    { icon: '📥', label: 'Sound triage…', title: 'Review a drop folder of candidates — keep or cull', run: openTriage },
+    { icon: '♪', label: 'Import music…', title: 'Copy music files into the campaign', run: () => importAssets('music') },
+    { icon: '〜', label: 'Import ambience…', title: 'Copy ambience loops into the campaign', run: () => importAssets('ambience') },
+    { icon: '🔊', label: 'Import SFX…', title: 'Copy sound effects into the campaign', run: () => importAssets('sfx') },
+    { icon: '🔎', label: 'Probe assets', title: 'Check every referenced file loads', run: probeAssets },
+    { icon: '📂', label: 'Reveal campaign', title: 'Open the campaign folder on disk', run: revealCampaign }
+  ]
+
+  return (
+    <div className="relative">
+      <Btn onClick={() => setOpen((o) => !o)} title="Prep tools: triage, imports, asset checks">
+        🧰 Tools {open ? '▴' : '▾'}
+      </Btn>
+      {open && (
+        <>
+          {/* click-away layer */}
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full z-50 mt-1 w-52 overflow-hidden rounded-md border border-hearth-border bg-hearth-panel2 shadow-2xl">
+            {items.map((item) => (
+              <button
+                key={item.label}
+                title={item.title}
+                onClick={() => {
+                  setOpen(false)
+                  item.run()
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-hearth-text transition-colors hover:bg-hearth-ember/10 hover:text-hearth-ember"
+              >
+                <span className="w-5 text-center" aria-hidden>
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function TopBar() {
   const {
     campaign,
-    currentSceneId,
     status,
     chooseCampaign,
-    importAssets,
-    revealCampaign,
     openPresenter,
     stopAll,
-    probeAssets,
     openLibrary,
-    openTriage,
     openDiscord,
-    discordStatus
+    discordStatus,
+    uiMode,
+    setUiMode
   } = useStore()
 
   const folderName = campaign.path ? campaign.path.split(/[\\/]/).pop() : 'no campaign'
-
-  // Resolve the active music track's label for the "now playing" indicator.
-  const currentScene = campaign.scenes.find((s) => s.id === currentSceneId)
-  const nowPlaying = status.activeMusicId
-    ? currentScene?.music?.find((m) => m.id === status.activeMusicId)?.label ?? status.activeMusicId
-    : null
+  const run = uiMode === 'run'
 
   return (
     <header className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hearth-border bg-hearth-panel px-4 py-2 shadow-[0_2px_12px_rgba(0,0,0,0.35)]">
@@ -84,35 +127,43 @@ export default function TopBar() {
           <span className="text-base drop-shadow-[0_0_8px_rgba(224,138,60,0.6)]">🔥</span>
           Hearth
         </span>
-        <button
-          onClick={chooseCampaign}
-          title="Choose campaign folder"
-          className="rounded bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:text-hearth-text"
-        >
-          📁 {folderName}
-        </button>
-        {nowPlaying && (
-          <span
-            className="flex items-center gap-1.5 rounded bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-muted"
-            title="Music now playing"
+
+        {/* Build ↔ Run: authoring chrome vs. the clean at-the-table view. */}
+        <div className="flex overflow-hidden rounded-full border border-hearth-border" role="group">
+          <button
+            onClick={() => setUiMode('build')}
+            title="Build mode: full authoring tools — edit scripts, add/remove sounds, manage scenes"
+            className={`px-2.5 py-1 text-xs transition-colors ${
+              !run ? 'bg-hearth-ember/20 text-hearth-ember' : 'text-hearth-muted hover:text-hearth-text'
+            }`}
           >
-            <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-hearth-ember" />
-            <span className="max-w-[12rem] truncate text-hearth-text">{nowPlaying}</span>
-          </span>
-        )}
-        {status.ducked && (
-          <span className="rounded bg-hearth-emberdim/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-hearth-gold">
-            ducking
-          </span>
+            ⚒ Build
+          </button>
+          <button
+            onClick={() => setUiMode('run')}
+            title="Run mode: the at-the-table view — just the read-aloud and fire controls, no authoring chrome"
+            className={`px-2.5 py-1 text-xs transition-colors ${
+              run ? 'bg-hearth-ember/20 text-hearth-ember' : 'text-hearth-muted hover:text-hearth-text'
+            }`}
+          >
+            🎲 Run
+          </button>
+        </div>
+
+        {!run && (
+          <button
+            onClick={chooseCampaign}
+            title="Choose campaign folder"
+            className="rounded bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:text-hearth-text"
+          >
+            📁 {folderName}
+          </button>
         )}
       </div>
 
       <div className="flex items-center gap-2">
         <Btn onClick={openLibrary} title="Browse, search & audition the asset library">📚 Library</Btn>
-        <Btn onClick={openTriage} title="Review a drop folder of sound candidates — keep or cull">📥 Triage</Btn>
-        <Btn onClick={() => importAssets('music')} title="Import music files">+ Music</Btn>
-        <Btn onClick={() => importAssets('ambience')} title="Import ambience loops">+ Ambience</Btn>
-        <Btn onClick={() => importAssets('sfx')} title="Import sound effects">+ SFX</Btn>
+        {!run && <ToolsMenu />}
       </div>
 
       <div className="ml-auto flex flex-col gap-1">
@@ -146,10 +197,9 @@ export default function TopBar() {
           🎧 Discord
         </button>
         <Btn onClick={openPresenter} title="Open the player-facing presenter window">🖥 Presenter</Btn>
-        <Btn onClick={probeAssets} title="Check every referenced asset loads">Probe</Btn>
-        <Btn onClick={revealCampaign} title="Open campaign folder on disk">Reveal</Btn>
         <button
           onClick={stopAll}
+          title="Fade everything out — music, beds, loops, one-shots (Esc)"
           className="rounded border border-hearth-emberdim bg-hearth-emberdim/20 px-3 py-1.5 text-sm text-hearth-gold hover:bg-hearth-emberdim/40"
         >
           ⏹ Stop all

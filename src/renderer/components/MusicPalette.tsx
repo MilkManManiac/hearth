@@ -12,6 +12,7 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
   const setTrackLoop = useStore((s) => s.setTrackLoop)
   const removeTrack = useStore((s) => s.removeTrack)
   const openLibrary = useStore((s) => s.openLibrary)
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const tracks = scene.music ?? []
   const playlistOn = !!scene.playlist?.enabled
 
@@ -35,13 +36,15 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
             {playlistOn ? '▤ Playlist' : '▦ Palette'}
           </button>
         )}
-        <button
-          onClick={() => openLibrary('music')}
-          title="Add music from the library"
-          className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
-        >
-          + Add music
-        </button>
+        {buildMode && (
+          <button
+            onClick={() => openLibrary('music')}
+            title="Add music from the library"
+            className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+          >
+            + Add music
+          </button>
+        )}
       </SectionHeader>
 
       {playlistOn && tracks.length > 0 && <NowPlayingStrip scene={scene} />}
@@ -87,16 +90,18 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
                   onClick={() => setTrackLoop(track.id, track.loop === false)}
                   title="Loop this track"
                 />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    removeTrack(track.id)
-                  }}
-                  title="Remove from this scene (the file stays in the library)"
-                  className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
-                >
-                  ✕
-                </button>
+                {buildMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeTrack(track.id)
+                    }}
+                    title="Remove from this scene (the file stays in the library)"
+                    className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             </div>
           )

@@ -93,6 +93,11 @@ interface AppState {
   /** Discord bridge panel visibility + last known bridge status. */
   discordOpen: boolean
   discordStatus: DiscordStatus | null
+  /**
+   * Build = full authoring chrome. Run = the at-the-table view: read-aloud +
+   * fire controls only, no add/edit/remove affordances. Persisted.
+   */
+  uiMode: 'build' | 'run'
   /** Track-id play order for the current scene's playlist mode. */
   playlistOrder: string[]
   /** Index into playlistOrder of the current/last-started track. */
@@ -109,6 +114,9 @@ interface AppState {
   closeTriage: () => void
   openDiscord: () => void
   closeDiscord: () => void
+  setUiMode: (mode: 'build' | 'run') => void
+  /** Fire a favorited library asset from any scene (music/bed toggle, sfx one-shot). */
+  fireFavorite: (file: string) => void
   /** Add a library asset to the current scene's palette (by its kind). */
   addAssetToScene: (file: string) => void
   /** Edit a library entry (rename / recategorize / retag / trash-flag). */
@@ -223,6 +231,7 @@ export const useStore = create<AppState>((set, get) => ({
   triage: null,
   discordOpen: false,
   discordStatus: null,
+  uiMode: (localStorage.getItem('hearth:uiMode') as 'build' | 'run') ?? 'build',
   playlistOrder: [],
   playlistPos: 0,
 
@@ -308,6 +317,27 @@ export const useStore = create<AppState>((set, get) => ({
 
   openDiscord: () => set({ discordOpen: true }),
   closeDiscord: () => set({ discordOpen: false }),
+
+  setUiMode: (mode) => {
+    localStorage.setItem('hearth:uiMode', mode)
+    set({ uiMode: mode })
+  },
+
+  fireFavorite: (file) => {
+    const asset = get().campaign.library.assets.find((a) => a.file === file)
+    const kind: AssetKind = asset?.kind ?? ((file.split('/')[0] as AssetKind) || 'sfx')
+    const label = asset?.name ?? prettyLabel(file)
+    if (kind === 'music') {
+      // Toggle semantics: tapping the playing staple stops the music.
+      if (get().status.activeMusicId === file) engine.stopMusic()
+      else engine.switchMusic({ id: file, label, file, volume: 0.6 })
+    } else if (kind === 'ambience') {
+      if (get().status.ambienceFiles.includes(file)) engine.stopAmbienceLayer(file)
+      else engine.startAmbienceLayer({ file, volume: 0.4 })
+    } else {
+      engine.playSfx({ id: `fav:${file}`, label, file })
+    }
+  },
 
   addAssetToScene: (file) => {
     const scene = currentScene(get())

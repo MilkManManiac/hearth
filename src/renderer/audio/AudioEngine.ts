@@ -237,6 +237,26 @@ export class AudioEngine {
     return this.ctx.currentTime
   }
 
+  /**
+   * Equal-power fade: sin/cos-shaped so a crossfade holds constant perceived
+   * loudness instead of dipping in the middle (the linear-fade "hole").
+   * Approximated with 8 linear segments rather than setValueCurveAtTime, so a
+   * later live-fader setTargetAtTime can interrupt it without throwing.
+   */
+  private fadeParam(param: AudioParam, from: number, to: number, t0: number, dur: number): void {
+    param.cancelScheduledValues(t0)
+    param.setValueAtTime(from, t0)
+    const N = 8
+    const rising = to > from
+    for (let i = 1; i <= N; i++) {
+      const x = i / N
+      const shaped = rising
+        ? from + (to - from) * Math.sin((x * Math.PI) / 2)
+        : to + (from - to) * Math.cos((x * Math.PI) / 2)
+      param.linearRampToValueAtTime(shaped, t0 + dur * x)
+    }
+  }
+
   /** Browsers start the context suspended; call this from a user gesture. */
   async resume(): Promise<void> {
     if (this.ctx.state !== 'running') {
@@ -354,8 +374,7 @@ export class AudioEngine {
     const t = this.now
 
     const gain = this.ctx.createGain()
-    gain.gain.setValueAtTime(0, t)
-    gain.gain.linearRampToValueAtTime(target, t + fadeIn)
+    this.fadeParam(gain.gain, 0, target, t, fadeIn)
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     const loop = opts?.loop ?? track.loop !== false
@@ -423,9 +442,7 @@ export class AudioEngine {
     }
     const t = this.now
     const g = node.gain.gain
-    g.cancelScheduledValues(t)
-    g.setValueAtTime(g.value, t)
-    g.linearRampToValueAtTime(0, t + fadeSec)
+    this.fadeParam(g, g.value, 0, t, fadeSec)
     const { source, gain } = node
     window.setTimeout(() => {
       try {
@@ -460,8 +477,7 @@ export class AudioEngine {
       const target = (layer.volume ?? DEFAULT_AMB_VOL) * norm
       const t = this.now
       const gain = this.ctx.createGain()
-      gain.gain.setValueAtTime(0, t)
-      gain.gain.linearRampToValueAtTime(target, t + fade)
+      this.fadeParam(gain.gain, 0, target, t, fade)
       const source = this.ctx.createBufferSource()
       source.buffer = buffer
       source.loop = layer.loop !== false
@@ -506,8 +522,7 @@ export class AudioEngine {
     const target = (layer.volume ?? DEFAULT_AMB_VOL) * norm
     const t = this.now
     const gain = this.ctx.createGain()
-    gain.gain.setValueAtTime(0, t)
-    gain.gain.linearRampToValueAtTime(target, t + fade)
+    this.fadeParam(gain.gain, 0, target, t, fade)
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.loop = layer.loop !== false

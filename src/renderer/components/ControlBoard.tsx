@@ -13,6 +13,7 @@ import CastPanel from './CastPanel'
 import Toasts from './Toasts'
 import LibraryPanel from './LibraryPanel'
 import NowSounding from './NowSounding'
+import FavoritesDock from './FavoritesDock'
 
 export default function ControlBoard() {
   const { campaign, currentSceneId, liveSceneId, goLive } = useStore()
@@ -70,6 +71,7 @@ export default function ControlBoard() {
 
         {scene && <RightPanel scene={scene} />}
       </div>
+      <FavoritesDock />
       <NowSounding />
       <LibraryPanel />
       <Toasts />

@@ -17,18 +17,21 @@ export default function AmbienceMixer({ scene }: { scene: Scene }) {
   const toggleAmbience = useStore((s) => s.toggleAmbience)
   const openLibrary = useStore((s) => s.openLibrary)
   const playing = useStore((s) => s.status.ambienceFiles)
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const layers = scene.ambience ?? []
 
   return (
     <section>
       <SectionHeader icon="〜" title="Ambience">
-        <button
-          onClick={() => openLibrary('ambience')}
-          title="Add an ambience bed from the library"
-          className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
-        >
-          + Add ambience
-        </button>
+        {buildMode && (
+          <button
+            onClick={() => openLibrary('ambience')}
+            title="Add an ambience bed from the library"
+            className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+          >
+            + Add ambience
+          </button>
+        )}
       </SectionHeader>
       {layers.length === 0 ? (
         <p className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 px-3 py-2 text-xs text-hearth-muted">
@@ -75,28 +78,32 @@ export default function AmbienceMixer({ scene }: { scene: Scene }) {
                 onClick={() => setLoop(layer.file, layer.loop === false)}
                 title="Loop this ambience bed"
               />
-              <button
-                onClick={() => setAutoplay(layer.file, layer.autoplay === false)}
-                title={
-                  layer.autoplay === false
-                    ? 'Waits for its script cue or a tap — click to auto-start on Go live'
-                    : 'Auto-starts on Go live — click to make it script/tap-driven'
-                }
-                className={`flex-none rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider transition-colors ${
-                  layer.autoplay === false
-                    ? 'text-hearth-muted/60 hover:text-hearth-text'
-                    : 'bg-hearth-ember/15 text-hearth-ember'
-                }`}
-              >
-                auto
-              </button>
-              <button
-                onClick={() => removeLayer(layer.file)}
-                title="Remove from this scene (the file stays in the library)"
-                className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
-              >
-                ✕
-              </button>
+              {buildMode && (
+                <button
+                  onClick={() => setAutoplay(layer.file, layer.autoplay === false)}
+                  title={
+                    layer.autoplay === false
+                      ? 'Waits for its script cue or a tap — click to auto-start on Go live'
+                      : 'Auto-starts on Go live — click to make it script/tap-driven'
+                  }
+                  className={`flex-none rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wider transition-colors ${
+                    layer.autoplay === false
+                      ? 'text-hearth-muted/60 hover:text-hearth-text'
+                      : 'bg-hearth-ember/15 text-hearth-ember'
+                  }`}
+                >
+                  auto
+                </button>
+              )}
+              {buildMode && (
+                <button
+                  onClick={() => removeLayer(layer.file)}
+                  title="Remove from this scene (the file stays in the library)"
+                  className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           )
         })}

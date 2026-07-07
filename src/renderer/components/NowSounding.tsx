@@ -53,9 +53,10 @@ export default function NowSounding() {
 
   // Labels can come from any scene — the sounding item may belong to a scene
   // that is no longer armed (that's exactly when showing it matters most).
+  // Staple music uses the file path as its id; show the stem, not the path.
   const musicLabel = status.activeMusicId
     ? scenes.flatMap((s) => s.music ?? []).find((m) => m.id === status.activeMusicId)?.label ??
-      status.activeMusicId
+      (status.activeMusicId.includes('/') ? stem(status.activeMusicId) : status.activeMusicId)
     : null
   const sfxLabel = (id: string) =>
     scenes.flatMap((s) => s.sfx ?? []).find((x) => x.id === id)?.label ?? id
@@ -94,6 +95,14 @@ export default function NowSounding() {
           stopTitle="Stop this loop"
         />
       ))}
+      {status.ducked && (
+        <span
+          className="rounded bg-hearth-emberdim/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-hearth-gold"
+          title="Music is dipped while a sound effect plays"
+        >
+          ducking
+        </span>
+      )}
       <button
         onClick={stopAll}
         title="Fade everything out (Esc)"
