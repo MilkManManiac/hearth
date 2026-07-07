@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { assetDisplayName, categoryMeta, type AssetKind, type PlaylistPreset } from '../../shared/types'
 import { pushRecent, useFavorites } from '../lib/prefs'
 import { engine, useStore } from '../store'
@@ -59,6 +59,7 @@ function NowChip({
   volume,
   defaultVolume,
   onVolume,
+  onNext,
   onStop,
   stopTitle
 }: {
@@ -69,6 +70,7 @@ function NowChip({
   volume: number | undefined
   defaultVolume: number
   onVolume: (v: number) => void
+  onNext?: () => void
   onStop: () => void
   stopTitle: string
 }) {
@@ -80,6 +82,15 @@ function NowChip({
       <span className="w-12">
         <VolumeFader value={volume} defaultValue={defaultVolume} onChange={onVolume} />
       </span>
+      {onNext && (
+        <button
+          onClick={onNext}
+          title="Next track"
+          className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] leading-none opacity-70 hover:bg-black/30 hover:opacity-100"
+        >
+          ⏭
+        </button>
+      )}
       <button
         onClick={onStop}
         title={stopTitle}
@@ -149,6 +160,7 @@ export default function SoundConsole() {
   const fireFavorite = useStore((s) => s.fireFavorite)
   const togglePresetPlaylist = useStore((s) => s.togglePresetPlaylist)
   const presetStep = useStore((s) => s.presetStep)
+  const playlistStep = useStore((s) => s.playlistStep)
   const deletePlaylistPreset = useStore((s) => s.deletePlaylistPreset)
   const activePresetId = useStore((s) => s.activePresetId)
   const buildMode = !runMode
@@ -159,6 +171,35 @@ export default function SoundConsole() {
   const staples = favorites
     .map((file) => assets.find((a) => a.file === file))
     .filter((a): a is NonNullable<typeof a> => !!a && !a.trash)
+
+  // Run mode hides the SFX grid, so its single-key hotkeys re-home here.
+  useEffect(() => {
+    if (!runMode || !scene) return
+    const map = new Map((scene.sfx ?? []).filter((s) => s.hotkey).map((s) => [s.hotkey!.toLowerCase(), s]))
+    if (map.size === 0) return
+    const onKey = (e: KeyboardEvent) => {
+      const st = useStore.getState()
+      if (st.libraryOpen || st.triage || st.discordOpen) return
+      const target = e.target as HTMLElement
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+      const item = map.get(e.key.toLowerCase())
+      if (item) {
+        e.preventDefault()
+        playSfx(item.id)
+        pushRecent(item.file)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [runMode, scene, playSfx])
+
+  // Next-track control for the playing music chip: preset queue first, then
+  // the scene's own playlist mode.
+  const nextTrack = activePresetId
+    ? () => presetStep(1)
+    : scene?.playlist?.enabled && status.activeMusicId
+      ? () => playlistStep(1)
+      : undefined
 
   const hasNow =
     !!status.activeMusicId || status.ambienceFiles.length > 0 || status.loopingSfxIds.length > 0
@@ -210,6 +251,7 @@ export default function SoundConsole() {
               volume={musicTrack?.volume}
               defaultVolume={0.6}
               onVolume={(v) => engine.setActiveMusicVolume(v)}
+              onNext={nextTrack}
               onStop={() => engine.stopMusic()}
               stopTitle="Fade this track out"
             />

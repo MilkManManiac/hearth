@@ -44,6 +44,7 @@ function CollapsedRail({
 
 export default function ControlBoard() {
   const { campaign, currentSceneId, liveSceneId, goLive } = useStore()
+  const runMode = useStore((s) => s.uiMode === 'run')
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
   const isLive = !!scene && scene.id === liveSceneId
   // Side rails collapse to slim strips (persisted) — full width for the script.
@@ -103,10 +104,19 @@ export default function ControlBoard() {
                   </p>
                 )}
               </div>
-              <MusicPalette scene={scene} />
-              <ScriptPanel key={scene.id} scene={scene} />
-              <SfxGrid scene={scene} />
-              <AmbienceMixer scene={scene} />
+              {/* Run mode: the script owns the screen — ALL sound control
+                  lives in the Sound Console at the bottom. Build mode shows
+                  the full authoring palettes. */}
+              {runMode ? (
+                <ScriptPanel key={scene.id} scene={scene} />
+              ) : (
+                <>
+                  <MusicPalette scene={scene} />
+                  <ScriptPanel key={scene.id} scene={scene} />
+                  <SfxGrid scene={scene} />
+                  <AmbienceMixer scene={scene} />
+                </>
+              )}
             </>
           )}
         </main>
