@@ -59,6 +59,9 @@ function categoryRank(id: string): number {
 
 const IN_SCENE = 'In this scene'
 
+/** Chips rendered per tray category (full-library scope) — search narrows. */
+const TRAY_CAP = 40
+
 /** The slice of a library asset the tray needs. */
 interface TrayLibrary {
   assets: { file: string; kind: string; category?: string; name?: string; trash?: boolean }[]
@@ -380,9 +383,14 @@ export default function ScriptEditor({
               <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
                 <span>{icon}</span>
                 {label}
+                {items.length > TRAY_CAP && (
+                  <span className="normal-case tracking-normal text-hearth-muted/60">
+                    — showing {TRAY_CAP} of {items.length}, search to narrow
+                  </span>
+                )}
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {items.map((item) => (
+                {items.slice(0, TRAY_CAP).map((item) => (
                   <span
                     key={item.key}
                     draggable

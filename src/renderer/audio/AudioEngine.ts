@@ -142,6 +142,15 @@ export class AudioEngine {
   private sfxBus: GainNode
 
   private buffers = new Map<string, Promise<DecodedAudio>>()
+  // Decode-cache LRU bookkeeping. Eviction only drops the *cache* entry — any
+  // playing source keeps its own reference to the AudioBuffer, so evicting
+  // never interrupts audio; the file just re-decodes on its next play.
+  private cacheUse = new Map<string, number>()
+  private cacheBytes = new Map<string, number>()
+  private cacheTotal = 0
+  private cacheSeq = 0
+  /** In-flight one-shot SFX (non-looping), so stopAll can silence them too. */
+  private activeOneShots = new Set<{ source: AudioBufferSourceNode; gain: GainNode }>
   private activeMusic: ActiveMusic | null = null
   private activeAmbience: ActiveAmbience[] = []
   /** Sustained looping SFX, keyed by sfx id (tap to start, tap to stop). */
@@ -203,7 +212,12 @@ export class AudioEngine {
     }
   }
 
+  /** Decoded-audio budget: ~48kHz stereo float ≈ 23 MB/min, so this holds a
+   *  couple hours of material. Past it, least-recently-used entries drop. */
+  private static readonly CACHE_BUDGET = 384 * 1024 * 1024
+
   private getBuffer(file: string): Promise<DecodedAudio> {
+    this.cacheUse.set(file, ++this.cacheSeq)
     let p = this.buffers.get(file)
     if (!p) {
       p = fetch(assetUrl(file))
@@ -214,6 +228,10 @@ export class AudioEngine {
             const buffer = await this.ctx.decodeAudioData(bytes)
             // Loudness measured once at decode and cached with the buffer, so
             // every play path (music, ambience, SFX, preview) gets it free.
+            const size = buffer.length * buffer.numberOfChannels * 4
+            this.cacheBytes.set(file, size)
+            this.cacheTotal += size
+            this.evictIfOverBudget(file)
             return { buffer, norm: computeNormGain(buffer) }
           } catch (e) {
             throw new Error(`decode failed (${(e as Error)?.message || 'unknown'})`)
@@ -223,10 +241,32 @@ export class AudioEngine {
           console.error('[audio] load failed:', file, e)
           throw e
         })
-      p.catch(() => this.buffers.delete(file)) // allow retry on failure
+      p.catch(() => this.dropCacheEntry(file)) // allow retry on failure
       this.buffers.set(file, p)
     }
     return p
+  }
+
+  private dropCacheEntry(file: string): void {
+    this.buffers.delete(file)
+    this.cacheUse.delete(file)
+    const size = this.cacheBytes.get(file)
+    if (size !== undefined) {
+      this.cacheTotal -= size
+      this.cacheBytes.delete(file)
+    }
+  }
+
+  /** LRU-evict decoded audio past the budget (never the file just loaded). */
+  private evictIfOverBudget(justLoaded: string): void {
+    if (this.cacheTotal <= AudioEngine.CACHE_BUDGET) return
+    const byAge = [...this.cacheUse.entries()]
+      .filter(([f]) => f !== justLoaded && this.cacheBytes.has(f))
+      .sort((a, b) => a[1] - b[1])
+    for (const [file] of byAge) {
+      if (this.cacheTotal <= AudioEngine.CACHE_BUDGET) break
+      this.dropCacheEntry(file)
+    }
   }
 
   /** Warm the decode cache for a scene's assets so live triggering is snappy. */
@@ -491,7 +531,10 @@ export class AudioEngine {
     const duck = sfx.duckMusic !== false
     if (duck) this.duckDown()
     source.start()
+    const entry = { source, gain }
+    this.activeOneShots.add(entry)
     source.onended = () => {
+      this.activeOneShots.delete(entry)
       try {
         source.disconnect()
         gain.disconnect()
@@ -555,6 +598,23 @@ export class AudioEngine {
     this.stopMusic(crossfadeMs)
     this.setAmbience([], crossfadeMs)
     this.stopAllSfxLoops(crossfadeMs / 1000)
+    // In-flight one-shots too — "stop all" must mean silence, not "except the
+    // 8-second dragon roar that already fired". stop() fires onended, which
+    // handles duck-release and cleanup.
+    for (const o of [...this.activeOneShots]) {
+      const t = this.now
+      const g = o.gain.gain
+      g.cancelScheduledValues(t)
+      g.setValueAtTime(g.value, t)
+      g.linearRampToValueAtTime(0, t + 0.15)
+      window.setTimeout(() => {
+        try {
+          o.source.stop()
+        } catch {
+          /* already ended */
+        }
+      }, 200)
+    }
   }
 
   /** Stop every sustained looping SFX (used on stop-all and scene go-live). */

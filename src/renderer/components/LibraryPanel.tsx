@@ -10,6 +10,9 @@ const KIND_LABELS: Record<AssetKind, string> = {
   sfx: 'SFX'
 }
 
+/** Rows rendered per group before the "Show all" expander kicks in. */
+const GROUP_CAP = 60
+
 /** Order categories by the recommended list, then unknown ones alphabetically. */
 function categoryRank(id: string): number {
   const i = CATEGORY_ORDER.indexOf(id)
@@ -36,8 +39,15 @@ export default function LibraryPanel() {
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
   const [category, setCategory] = useState<string | 'all'>('all')
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const favorites = useFavorites()
+  const favoriteSet = useMemo(() => new Set(favorites), [favorites])
   const recents = useRecents()
+
+  // New filter/search → collapse the big groups again.
+  useEffect(() => {
+    setExpandedGroups(new Set())
+  }, [query, kind, category])
 
   // Files already on the current scene (any bucket) — to show "in scene" state.
   const filesInScene = useMemo(() => {
@@ -206,6 +216,10 @@ export default function LibraryPanel() {
             <p className="py-8 text-center text-sm text-hearth-muted">No assets match.</p>
           ) : (
             groups.map(({ key, icon, label, items }) => {
+              // Big groups (750 footsteps…) render a capped slice; expanding is
+              // one click. Keeps the panel snappy at library scale.
+              const expanded = expandedGroups.has(key)
+              const shown = expanded ? items : items.slice(0, GROUP_CAP)
               return (
                 <section key={key} className="mb-4">
                   <h3 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-hearth-muted">
@@ -214,16 +228,25 @@ export default function LibraryPanel() {
                     <span className="text-hearth-muted/60">{items.length}</span>
                   </h3>
                   <ul className="space-y-1">
-                    {items.map((a) => (
+                    {shown.map((a) => (
                       <AssetRow
                         key={a.file}
                         asset={a}
+                        fav={favoriteSet.has(a.file)}
                         inScene={filesInScene.has(a.file)}
                         canAdd={!!scene}
                         onAdd={() => addAssetToScene(a.file)}
                       />
                     ))}
                   </ul>
+                  {items.length > shown.length && (
+                    <button
+                      onClick={() => setExpandedGroups((s) => new Set(s).add(key))}
+                      className="mt-1 w-full rounded border border-dashed border-hearth-border px-2 py-1 text-xs text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+                    >
+                      Show all {items.length} — or refine the search
+                    </button>
+                  )}
                 </section>
               )
             })
@@ -262,21 +285,21 @@ const inputCls =
 
 function AssetRow({
   asset,
+  fav,
   inScene,
   canAdd,
   onAdd
 }: {
   asset: LibraryAsset
+  fav: boolean
   inScene: boolean
   canAdd: boolean
   onAdd: () => void
 }) {
-  const previewingFile = useStore((s) => s.previewingFile)
+  const playing = useStore((s) => s.previewingFile === asset.file)
   const previewAsset = useStore((s) => s.previewAsset)
   const updateLibraryAsset = useStore((s) => s.updateLibraryAsset)
   const deleteLibraryAsset = useStore((s) => s.deleteLibraryAsset)
-  const playing = previewingFile === asset.file
-  const fav = useFavorites().includes(asset.file)
 
   // Inline metadata editor (rename / recategorize / retag).
   const [editing, setEditing] = useState(false)
@@ -306,7 +329,7 @@ function AssetRow({
 
   return (
     <li
-      className={`rounded border border-hearth-border/50 px-2 py-1.5 ${
+      className={`rounded border border-hearth-border/50 px-2 py-1.5 [content-visibility:auto] [contain-intrinsic-size:auto_52px] ${
         asset.trash ? 'bg-hearth-bg/60 opacity-70' : 'bg-hearth-panel2/40'
       }`}
     >
