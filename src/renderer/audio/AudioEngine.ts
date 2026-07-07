@@ -747,6 +747,85 @@ export class AudioEngine {
     return () => this.errorListeners.delete(listener)
   }
 
+  // --- Preview / audition (library + triage), with seeking -----------------
+
+  private previewSeq = 0
+  private activePreview: {
+    seq: number
+    file: string
+    buffer: AudioBuffer
+    gain: GainNode
+    source: AudioBufferSourceNode
+    startedAt: number
+    /** Seconds into the buffer where the current source started (seek point). */
+    offset: number
+    onEnded?: () => void
+  } | null = null
+
+  /** Live progress of the current audition, for the scrub bar. */
+  previewProgress(): { file: string; elapsed: number; duration: number } | null {
+    const p = this.activePreview
+    if (!p) return null
+    return {
+      file: p.file,
+      elapsed: Math.min(p.offset + this.now - p.startedAt, p.buffer.duration),
+      duration: p.buffer.duration
+    }
+  }
+
+  /** Jump the current audition to `seconds` — hear the middle before committing. */
+  seekPreview(seconds: number): void {
+    const p = this.activePreview
+    if (!p) return
+    const offset = Math.min(Math.max(seconds, 0), Math.max(p.buffer.duration - 0.05, 0))
+    try {
+      p.source.onended = null
+      p.source.stop()
+      p.source.disconnect()
+    } catch {
+      /* already ended */
+    }
+    const source = this.ctx.createBufferSource()
+    source.buffer = p.buffer
+    source.connect(p.gain)
+    source.start(0, offset)
+    p.source = source
+    p.offset = offset
+    p.startedAt = this.now
+    this.attachPreviewEnd(p)
+  }
+
+  private attachPreviewEnd(p: NonNullable<typeof this.activePreview>): void {
+    const src = p.source
+    src.onended = () => {
+      // Only the still-current source of the still-current preview counts.
+      if (this.activePreview !== p || p.source !== src) return
+      try {
+        src.disconnect()
+        p.gain.disconnect()
+      } catch {
+        /* already gone */
+      }
+      this.activePreview = null
+      p.onEnded?.()
+    }
+  }
+
+  /** Stop the current audition silently (no onEnded callback). */
+  stopPreview(): void {
+    const p = this.activePreview
+    if (!p) return
+    this.activePreview = null
+    try {
+      p.source.onended = null
+      p.source.stop()
+      p.source.disconnect()
+      p.gain.disconnect()
+    } catch {
+      /* already gone */
+    }
+  }
+
   /**
    * Preview an arbitrary asset (library audition button). One-shot, never loops,
    * never ducks the music bus. Returns a stop() handle. On failure, emits an
@@ -754,6 +833,8 @@ export class AudioEngine {
    */
   async preview(file: string, onEnded?: () => void, volume = DEFAULT_MUSIC_VOL): Promise<() => void> {
     await this.resume()
+    this.stopPreview()
+    const seq = ++this.previewSeq
     let buffer: AudioBuffer
     let norm: number
     try {
@@ -763,35 +844,19 @@ export class AudioEngine {
       onEnded?.()
       return () => undefined
     }
+    if (seq !== this.previewSeq) return () => undefined // superseded while decoding
     const gain = this.ctx.createGain()
     gain.gain.value = volume * norm
+    gain.connect(this.sfxBus)
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.connect(gain)
-    gain.connect(this.sfxBus)
-    let stopped = false
-    const disconnect = (): void => {
-      try {
-        source.disconnect()
-        gain.disconnect()
-      } catch {
-        /* already gone */
-      }
-    }
-    // Natural end → notify (so the UI resets); manual stop() suppresses it.
-    source.onended = () => {
-      disconnect()
-      if (!stopped) onEnded?.()
-    }
     source.start()
+    const p = { seq, file, buffer, gain, source, startedAt: this.now, offset: 0, onEnded }
+    this.activePreview = p
+    this.attachPreviewEnd(p)
     return () => {
-      stopped = true
-      try {
-        source.stop()
-      } catch {
-        /* already stopped */
-      }
-      disconnect()
+      if (this.activePreview?.seq === seq) this.stopPreview()
     }
   }
 

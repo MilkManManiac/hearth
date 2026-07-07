@@ -3,6 +3,7 @@ import type { AssetKind, LibraryAsset } from '../../shared/types'
 import { assetDisplayName, CATEGORY_ORDER, categoryMeta } from '../../shared/types'
 import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
+import PreviewScrubber from './PreviewScrubber'
 
 const KIND_LABELS: Record<AssetKind, string> = {
   music: 'Music',
@@ -423,6 +424,9 @@ function AssetRow({
             </button>
           ))}
       </div>
+
+      {/* Audition scrubber — drag into the middle of the track. */}
+      {playing && <PreviewScrubber file={asset.file} />}
 
       {editing && (
         <form

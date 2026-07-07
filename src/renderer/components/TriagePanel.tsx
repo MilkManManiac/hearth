@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { AssetKind } from '../../shared/types'
 import { CATEGORY_ORDER, categoryMeta } from '../../shared/types'
 import { useStore } from '../store'
+import PreviewScrubber from './PreviewScrubber'
 
 /** "creatures/wolf_growl-03.wav" → "wolf_growl-03" */
 function stem(rel: string): string {
@@ -268,7 +269,8 @@ export default function TriagePanel() {
         ) : (
           <div className="flex flex-col gap-3 px-4 py-4">
             {/* Current candidate */}
-            <div className="flex items-center gap-3 rounded border border-hearth-border/50 bg-hearth-panel2/40 px-3 py-3">
+            <div className="rounded border border-hearth-border/50 bg-hearth-panel2/40 px-3 py-3">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => auditionFile && previewAsset(auditionFile)}
                 title={playing ? 'Stop (Space)' : 'Play (Space)'}
@@ -300,6 +302,9 @@ export default function TriagePanel() {
                   {decision === 'kept' ? '✓ kept' : '✗ rejected'}
                 </span>
               )}
+            </div>
+            {/* Audition scrubber — jump into the middle before judging. */}
+            {playing && auditionFile && <PreviewScrubber file={auditionFile} />}
             </div>
 
             {formOpen ? (
