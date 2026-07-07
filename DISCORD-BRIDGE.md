@@ -1,8 +1,12 @@
 # Discord audio bridge (Phase 2) — design
 
-Status 2026-07-06: **groundwork built, experimental — first end-to-end test
-pending a bot token.** This documents the architecture so the next session (or
-the first live test) has the full picture.
+Status 2026-07-07: **WORKING — first end-to-end test passed** (bot connected,
+joined a voice channel, streamed the mix, audio confirmed by ear on the
+Discord side; davey loaded fine, no vc_redist needed). A local monitor-mute
+(🔊 Local in the TopBar) silences the DM's speakers while streaming so the
+bot's playback isn't heard twice — the tap branches off `master` before the
+monitor stage. Remaining open items below are now optimizations, not
+unknowns.
 
 ## Goal
 
