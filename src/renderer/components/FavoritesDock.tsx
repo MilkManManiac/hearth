@@ -15,6 +15,9 @@ const KIND_LIT: Record<AssetKind, string> = {
   sfx: ''
 }
 
+/** Stable empty fallback — see the selector note below. */
+const NO_PRESETS: import('../../shared/types').PlaylistPreset[] = []
+
 /**
  * The Staples dock: every ★-favorited library asset, fireable from ANY scene
  * with zero setup — the DM's go-to beds/tracks/stingers for improv moments.
@@ -23,7 +26,11 @@ const KIND_LIT: Record<AssetKind, string> = {
 export default function FavoritesDock() {
   const favorites = useFavorites()
   const assets = useStore((s) => s.campaign.library.assets)
-  const presets = useStore((s) => s.campaign.library.playlists ?? [])
+  // NOTE: select the raw (stable) reference — `?? []` inside a selector mints
+  // a new array every snapshot, which React treats as an infinite loop and
+  // crashes the tree (the blank-screen bug).
+  const presetsRaw = useStore((s) => s.campaign.library.playlists)
+  const presets = presetsRaw ?? NO_PRESETS
   const fireFavorite = useStore((s) => s.fireFavorite)
   const togglePresetPlaylist = useStore((s) => s.togglePresetPlaylist)
   const presetStep = useStore((s) => s.presetStep)
