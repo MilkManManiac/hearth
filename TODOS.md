@@ -267,6 +267,17 @@ Parked: auth-gated finds from the 2026-07-06 research (Kenney / Freesound /
 Pixabay packs that need manual download) are listed in the scratchpad
 `sound-candidates.md`.
 
+**Wave 7 (2026-07-06): FULL DUMP — library 165 → 2,171.** Everything left in
+the user's downloaded packs imported at their direction (`fapx-`/`noxx-`/
+`mp1-` prefixes), auto-categorized (incl. free-form `footsteps` ×750,
+`voices` ×653, `electronic`, `festive`), WAV→OGG, display names cleaned.
+Files are **local-only/gitignored** (~750 MB; mp1 also has no license file —
+private demo use only). The 📚 Library's edit/trash/delete tools + the
+scene-first cue tray are how this stays navigable — expect heavy culling of
+footsteps/voices variants via 🚮. Note: engine decode cache still never
+evicts; with a 2k-asset library, a long audition session grows memory (the
+cache-evict TODO from #8.2 is now more relevant).
+
 ---
 
 ## 9. Project review → live-trust overhaul — ✅ Tiers 1–3 done (2026-07-06)

@@ -4,3 +4,15 @@ dist/
 *.log
 .DS_Store
 .vite/
+
+# Bulk sound dump (2026-07-06): ~2000 local-only files from the full pack
+# imports — too large for the repo, and music pack 1 has no license file.
+# library.json references them; a fresh clone will show them as missing
+# (re-run the dump script or use Probe to see the gaps).
+campaign-sample/music/mp1-*
+campaign-sample/music/fapx-*
+campaign-sample/music/noxx-*
+campaign-sample/ambience/fapx-*
+campaign-sample/ambience/noxx-*
+campaign-sample/sfx/fapx-*
+campaign-sample/sfx/noxx-*

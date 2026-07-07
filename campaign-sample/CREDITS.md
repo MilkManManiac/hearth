@@ -141,6 +141,21 @@ _Ambience beds (all loop-authored):_ `nox-cave-dark.ogg`, `nox-cave-deep.ogg`,
 _Sound effects (NPC combat vocals):_ `nox-attack-male.ogg`, `nox-pain-male.ogg`,
 `nox-attack-female.ogg`, `nox-pain-female.ogg`
 
+## 2026-07-06 — full pack dump (wave 7, LOCAL-ONLY)
+User-directed bulk import of everything remaining in the downloaded packs:
+**2,006 files (library 165 → 2,171)**, auto-categorized by folder/filename,
+WAVs transcoded to OGG. These files are **gitignored** (~750 MB — see
+`.gitignore`); a fresh clone won't have them.
+
+- `fapx-*` — kmontesdev Fantasy Ambient Pack, full remainder (~400) — **CC0**.
+- `noxx-*` — Nox_Sound Essentials, full remainder (~1,375: all footsteps
+  surfaces, all voice takes, Iceland/Azores recordings; vehicle +
+  electromagnetic folders excluded as not-D&D) — **CC0**.
+- `mp1-*` — "music pack 1" by Oliver Siimon (231 tracks) — **⚠ NO LICENSE FILE
+  in the archive**. Imported at the user's direction for private tech-demo use
+  only. Do not redistribute; excluded from the repo. Each entry is tagged
+  `license: "UNKNOWN — do not redistribute"` in library.json.
+
 ## Art
 - `art/*.svg` — generated placeholders (swap for your own maps/handouts)
 
