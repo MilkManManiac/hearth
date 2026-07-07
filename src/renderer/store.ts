@@ -306,6 +306,9 @@ export const useStore = create<AppState>((set, get) => ({
         void engine.startTap((chunk) => window.hearth.discordSendPcm(chunk))
       } else {
         engine.stopTap()
+        // Local-mute exists to avoid hearing the bot twice — once the stream
+        // ends, silence would just look broken. Restore the room audio.
+        if (engine.status().monitorMuted) engine.setMonitorMuted(false)
       }
     }
     window.hearth.onDiscordStatus(syncDiscord)

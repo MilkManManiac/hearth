@@ -149,6 +149,8 @@ export interface EngineStatus {
   ambienceVolume: number
   sfxVolume: number
   ducked: boolean
+  /** Local speakers muted (the Discord tap still hears everything). */
+  monitorMuted: boolean
 }
 
 type Listener = (status: EngineStatus) => void
@@ -170,6 +172,13 @@ type ErrorListener = (message: string) => void
 export class AudioEngine {
   private ctx: AudioContext
   private master: GainNode
+  /**
+   * Local speaker stage, AFTER the Discord tap branch: master → monitor →
+   * destination. Muting it kills the room audio while the stream keeps
+   * flowing — the DM's "no dupes while the bot plays" switch.
+   */
+  private monitor: GainNode
+  private monitorMuted = false
   private musicBus: GainNode
   private musicDuck: GainNode
   private ambienceBus: GainNode
@@ -215,12 +224,14 @@ export class AudioEngine {
     // resampling; decodeAudioData resamples assets to the context rate anyway.
     this.ctx = new AudioContext({ sampleRate: 48000 })
     this.master = this.ctx.createGain()
+    this.monitor = this.ctx.createGain()
     this.musicBus = this.ctx.createGain()
     this.musicDuck = this.ctx.createGain()
     this.ambienceBus = this.ctx.createGain()
     this.sfxBus = this.ctx.createGain()
 
     this.master.gain.value = this.masterVolume
+    this.monitor.gain.value = 1
     this.musicBus.gain.value = this.musicVolume
     this.musicDuck.gain.value = 1
     this.ambienceBus.gain.value = this.ambienceVolume
@@ -230,7 +241,16 @@ export class AudioEngine {
     this.musicBus.connect(this.master)
     this.ambienceBus.connect(this.master)
     this.sfxBus.connect(this.master)
-    this.master.connect(this.ctx.destination)
+    // The Discord tap branches off `master`; only `monitor` feeds the room.
+    this.master.connect(this.monitor)
+    this.monitor.connect(this.ctx.destination)
+  }
+
+  /** Mute/unmute the local speakers only — the Discord tap is unaffected. */
+  setMonitorMuted(muted: boolean): void {
+    this.monitorMuted = muted
+    this.monitor.gain.setTargetAtTime(muted ? 0 : 1, this.now, 0.02)
+    this.emit()
   }
 
   private get now(): number {
@@ -731,7 +751,8 @@ export class AudioEngine {
       musicVolume: this.musicVolume,
       ambienceVolume: this.ambienceVolume,
       sfxVolume: this.sfxVolume,
-      ducked: this.duckCount > 0
+      ducked: this.duckCount > 0,
+      monitorMuted: this.monitorMuted
     }
   }
 

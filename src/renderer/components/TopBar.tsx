@@ -198,6 +198,21 @@ export default function TopBar() {
         </button>
         <Btn onClick={openPresenter} title="Open the player-facing presenter window">🖥 Presenter</Btn>
         <button
+          onClick={() => engine.setMonitorMuted(!status.monitorMuted)}
+          title={
+            status.monitorMuted
+              ? 'Local speakers muted (the Discord stream still plays) — click to unmute. Auto-unmutes when you leave the voice channel.'
+              : 'Mute your local speakers while streaming — players still hear everything, you stop hearing it twice'
+          }
+          className={`rounded border px-3 py-1.5 text-sm transition-colors ${
+            status.monitorMuted
+              ? 'border-red-500/60 bg-red-500/15 text-red-300'
+              : 'border-hearth-border bg-hearth-panel2 text-hearth-text hover:border-hearth-ember hover:text-hearth-ember'
+          }`}
+        >
+          {status.monitorMuted ? '🔇 Local' : '🔊 Local'}
+        </button>
+        <button
           onClick={stopAll}
           title="Fade everything out — music, beds, loops, one-shots (Esc)"
           className="rounded border border-hearth-emberdim bg-hearth-emberdim/20 px-3 py-1.5 text-sm text-hearth-gold hover:bg-hearth-emberdim/40"

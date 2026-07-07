@@ -292,6 +292,14 @@ export default function SoundConsole() {
               ducking
             </span>
           )}
+          {status.monitorMuted && (
+            <span
+              className="rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-red-300"
+              title="Your speakers are muted — the Discord stream still carries everything (🔊 Local in the top bar to unmute)"
+            >
+              🔇 local muted
+            </span>
+          )}
           <button
             onClick={stopAll}
             title="Fade everything out (Esc)"
