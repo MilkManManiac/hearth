@@ -190,20 +190,60 @@ export default function ScriptEditor({
   }
 
   const tray = useMemo(() => buildTray(scene, library), [scene, library])
-  const groups = useMemo(() => {
+  // Tray scope: default to the scene's own sounds (the DM stocks the scene
+  // first, then wires cues) — the full library is one toggle away.
+  const [scope, setScope] = useState<'scene' | 'library'>('scene')
+  const sceneCount = useMemo(() => tray.filter((t) => t.category === IN_SCENE).length, [tray])
+
+  interface TrayGroup {
+    key: string
+    icon: string
+    label: string
+    items: TrayItem[]
+  }
+
+  const groups = useMemo<TrayGroup[]>(() => {
     const q = query.trim().toLowerCase()
-    const filtered = q ? tray.filter((t) => t.label.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)) : tray
+    const matches = (t: TrayItem) =>
+      !q || t.label.toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
+
+    if (scope === 'scene') {
+      // Group the scene's own cues by kind — small list, easy to scan.
+      const KINDS: { kind: CueKind; icon: string; label: string }[] = [
+        { kind: 'music', icon: '♪', label: 'Music' },
+        { kind: 'sfx', icon: '🔊', label: 'Sound effects' },
+        { kind: 'amb', icon: '〜', label: 'Ambience beds' },
+        { kind: 'image', icon: '🖼', label: 'Images' }
+      ]
+      const own = tray.filter((t) => t.category === IN_SCENE && matches(t))
+      return KINDS.map(({ kind, icon, label }) => ({
+        key: `kind:${kind}`,
+        icon,
+        label,
+        items: own.filter((t) => t.kind === kind)
+      })).filter((g) => g.items.length > 0)
+    }
+
+    const filtered = tray.filter(matches)
     const byCat = new Map<string, TrayItem[]>()
     for (const t of filtered) {
       if (!byCat.has(t.category)) byCat.set(t.category, [])
       byCat.get(t.category)!.push(t)
     }
-    return [...byCat.entries()].sort(([a], [b]) => {
-      if (a === IN_SCENE) return -1
-      if (b === IN_SCENE) return 1
-      return categoryRank(a) - categoryRank(b) || a.localeCompare(b)
-    })
-  }, [tray, query])
+    return [...byCat.entries()]
+      .sort(([a], [b]) => {
+        if (a === IN_SCENE) return -1
+        if (b === IN_SCENE) return 1
+        return categoryRank(a) - categoryRank(b) || a.localeCompare(b)
+      })
+      .map(([cat, items]) => {
+        const meta =
+          cat === IN_SCENE
+            ? { icon: '🎬', label: IN_SCENE }
+            : categoryMeta(cat === 'uncategorized' ? undefined : cat)
+        return { key: `cat:${cat}`, icon: meta.icon, label: meta.label, items }
+      })
+  }, [tray, query, scope])
 
   return (
     <div className="space-y-3">
@@ -278,10 +318,36 @@ export default function ScriptEditor({
 
       <EditorContent editor={editor} />
 
-      {/* Cue tray: scene assets + full library */}
+      {/* Cue tray: scene-first, full library one toggle away */}
       <div className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 p-2">
         <div className="mb-2 flex items-center gap-2">
           <span className="text-[11px] uppercase tracking-wider text-hearth-muted">Cues — drag in or click</span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setScope('scene')}
+              title="Only the sounds/images already on this scene — stock the scene first, then wire cues from here"
+              className={`rounded-full border px-2 py-0.5 text-[11px] transition-colors ${
+                scope === 'scene'
+                  ? 'border-hearth-ember bg-hearth-emberdim/30 text-hearth-ember'
+                  : 'border-hearth-border text-hearth-muted hover:text-hearth-text'
+              }`}
+            >
+              🎬 This scene{sceneCount > 0 ? ` (${sceneCount})` : ''}
+            </button>
+            <button
+              type="button"
+              onClick={() => setScope('library')}
+              title="Everything in the campaign library — dropping an item auto-adds it to the scene"
+              className={`rounded-full border px-2 py-0.5 text-[11px] transition-colors ${
+                scope === 'library'
+                  ? 'border-hearth-ember bg-hearth-emberdim/30 text-hearth-ember'
+                  : 'border-hearth-border text-hearth-muted hover:text-hearth-text'
+              }`}
+            >
+              📚 Full library
+            </button>
+          </div>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -291,36 +357,49 @@ export default function ScriptEditor({
         </div>
         <div className="max-h-40 space-y-2 overflow-y-auto pr-1">
           {groups.length === 0 && (
-            <p className="py-3 text-center text-xs text-hearth-muted">No cues match.</p>
+            <p className="py-3 text-center text-xs text-hearth-muted">
+              {scope === 'scene' ? (
+                sceneCount === 0 ? (
+                  <>
+                    Nothing on this scene yet — use the <span className="text-hearth-ember">+ Add</span> buttons
+                    on each section, or switch to <button type="button" onClick={() => setScope('library')} className="text-hearth-ember underline">Full library</button>.
+                  </>
+                ) : (
+                  <>
+                    No match in this scene — try{' '}
+                    <button type="button" onClick={() => setScope('library')} className="text-hearth-ember underline">Full library</button>.
+                  </>
+                )
+              ) : (
+                'No cues match.'
+              )}
+            </p>
           )}
-          {groups.map(([cat, catItems]) => {
-            const meta = cat === IN_SCENE ? { icon: '🎬', label: IN_SCENE } : categoryMeta(cat === 'uncategorized' ? undefined : cat)
-            return (
-              <div key={cat}>
-                <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
-                  <span>{meta.icon}</span>
-                  {meta.label}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {catItems.map((item) => (
-                    <span
-                      key={item.key}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('application/x-cue', JSON.stringify(item))
-                        e.dataTransfer.effectAllowed = 'copy'
-                      }}
-                      onClick={() => insertItem(item)}
-                      title={item.register ? 'Adds to this scene when used' : item.ref}
-                      className="tray-chip cursor-grab select-none rounded border border-hearth-border bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-text hover:border-hearth-ember"
-                    >
-                      {item.label}
-                    </span>
-                  ))}
-                </div>
+          {groups.map(({ key, icon, label, items }) => (
+            <div key={key}>
+              <div className="mb-1 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+                <span>{icon}</span>
+                {label}
               </div>
-            )
-          })}
+              <div className="flex flex-wrap gap-1.5">
+                {items.map((item) => (
+                  <span
+                    key={item.key}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('application/x-cue', JSON.stringify(item))
+                      e.dataTransfer.effectAllowed = 'copy'
+                    }}
+                    onClick={() => insertItem(item)}
+                    title={item.register ? 'Adds to this scene when used' : item.ref}
+                    className="tray-chip cursor-grab select-none rounded border border-hearth-border bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-text hover:border-hearth-ember"
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
