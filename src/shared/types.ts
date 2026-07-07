@@ -75,8 +75,20 @@ export function categoryMeta(id: string | undefined): LibraryCategoryMeta {
   return { label, icon: '📁' }
 }
 
+/**
+ * A campaign-wide named music playlist ("Tavern Nights", "Combat Bangers"),
+ * playable from any scene. Stored in library.json alongside the assets.
+ */
+export interface PlaylistPreset {
+  id: string
+  name: string
+  /** Campaign-relative music files, in play order. */
+  files: string[]
+}
+
 export interface Library {
   assets: LibraryAsset[]
+  playlists?: PlaylistPreset[]
 }
 
 export interface MusicTrack {

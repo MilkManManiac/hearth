@@ -9,7 +9,7 @@ const TEMPLATES = [
   { id: 'dungeon', icon: '🕯️', label: 'Dungeon Crawl' }
 ]
 
-export default function SceneList() {
+export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
   const {
     campaign,
     currentSceneId,
@@ -39,8 +39,17 @@ export default function SceneList() {
 
   return (
     <aside className="flex w-60 flex-col border-r border-hearth-border bg-hearth-panel">
-      <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-hearth-muted">
+      <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-hearth-muted">
         Scenes ({campaign.scenes.length})
+        {onCollapse && (
+          <button
+            onClick={onCollapse}
+            title="Collapse this panel"
+            className="ml-auto px-1 text-hearth-muted transition-colors hover:text-hearth-ember"
+          >
+            ◂
+          </button>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto">
         {campaign.scenes.length === 0 && (

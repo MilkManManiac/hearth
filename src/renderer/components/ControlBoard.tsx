@@ -15,16 +15,59 @@ import LibraryPanel from './LibraryPanel'
 import NowSounding from './NowSounding'
 import FavoritesDock from './FavoritesDock'
 
+/** A collapsed side rail: a slim strip that re-expands its panel. */
+function CollapsedRail({
+  side,
+  icon,
+  title,
+  onClick
+}: {
+  side: 'left' | 'right'
+  icon: string
+  title: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={`flex w-7 flex-none flex-col items-center gap-2 bg-hearth-panel pt-3 text-hearth-muted transition-colors hover:text-hearth-ember ${
+        side === 'left' ? 'border-r border-hearth-border' : 'border-l border-hearth-border'
+      }`}
+    >
+      <span className="text-xs">{side === 'left' ? '▸' : '◂'}</span>
+      <span className="text-sm" aria-hidden>
+        {icon}
+      </span>
+    </button>
+  )
+}
+
 export default function ControlBoard() {
   const { campaign, currentSceneId, liveSceneId, goLive } = useStore()
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
   const isLive = !!scene && scene.id === liveSceneId
+  // Side rails collapse to slim strips (persisted) — full width for the script.
+  const [leftOpen, setLeftOpen] = useState(localStorage.getItem('hearth:leftRail') !== '0')
+  const [rightOpen, setRightOpen] = useState(localStorage.getItem('hearth:rightRail') !== '0')
+  const toggleLeft = () => {
+    localStorage.setItem('hearth:leftRail', leftOpen ? '0' : '1')
+    setLeftOpen(!leftOpen)
+  }
+  const toggleRight = () => {
+    localStorage.setItem('hearth:rightRail', rightOpen ? '0' : '1')
+    setRightOpen(!rightOpen)
+  }
 
   return (
     <div className="hearth-ambient flex h-full flex-col text-hearth-text">
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
-        <SceneList />
+        {leftOpen ? (
+          <SceneList onCollapse={toggleLeft} />
+        ) : (
+          <CollapsedRail side="left" icon="🎬" title="Show scenes" onClick={toggleLeft} />
+        )}
 
         <main className="flex-1 space-y-6 overflow-y-auto p-6">
           {!scene ? (
@@ -69,7 +112,12 @@ export default function ControlBoard() {
           )}
         </main>
 
-        {scene && <RightPanel scene={scene} />}
+        {scene &&
+          (rightOpen ? (
+            <RightPanel scene={scene} onCollapse={toggleRight} />
+          ) : (
+            <CollapsedRail side="right" icon="🗂" title="Show images / ideas / cast" onClick={toggleRight} />
+          ))}
       </div>
       <FavoritesDock />
       <NowSounding />
@@ -81,7 +129,7 @@ export default function ControlBoard() {
 
 type Tab = 'images' | 'ideas' | 'cast'
 
-function RightPanel({ scene }: { scene: Scene }) {
+function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => void }) {
   const [tab, setTab] = useState<Tab>('images')
   const ideaCount = scene.ideas?.length ?? 0
   const castCount = scene.entities?.length ?? 0
@@ -108,6 +156,13 @@ function RightPanel({ scene }: { scene: Scene }) {
             {t.label}
           </button>
         ))}
+        <button
+          onClick={onCollapse}
+          title="Collapse this panel"
+          className="border-b-2 border-transparent px-2 text-xs text-hearth-muted hover:text-hearth-ember"
+        >
+          ▸
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">

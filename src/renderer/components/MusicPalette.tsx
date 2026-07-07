@@ -12,9 +12,20 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
   const setTrackLoop = useStore((s) => s.setTrackLoop)
   const removeTrack = useStore((s) => s.removeTrack)
   const openLibrary = useStore((s) => s.openLibrary)
+  const savePlaylistPreset = useStore((s) => s.savePlaylistPreset)
   const buildMode = useStore((s) => s.uiMode === 'build')
   const tracks = scene.music ?? []
   const playlistOn = !!scene.playlist?.enabled
+  // Inline "save these tracks as a campaign-wide playlist" mini-form.
+  const [savingPreset, setSavingPreset] = useState(false)
+  const [presetName, setPresetName] = useState('')
+  const commitPreset = (): void => {
+    if (presetName.trim()) {
+      void savePlaylistPreset(presetName, tracks.map((t) => t.file))
+    }
+    setSavingPreset(false)
+    setPresetName('')
+  }
 
   return (
     <section>
@@ -44,6 +55,31 @@ export default function MusicPalette({ scene }: { scene: Scene }) {
           >
             + Add music
           </button>
+        )}
+        {buildMode && tracks.length > 0 && (
+          savingPreset ? (
+            <input
+              autoFocus
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              onBlur={commitPreset}
+              onKeyDown={(e) => {
+                e.stopPropagation()
+                if (e.key === 'Enter') commitPreset()
+                if (e.key === 'Escape') setSavingPreset(false)
+              }}
+              placeholder="playlist name…"
+              className="w-36 rounded-full border border-hearth-ember bg-hearth-bg px-2 py-0.5 text-[11px] text-hearth-text focus:outline-none"
+            />
+          ) : (
+            <button
+              onClick={() => setSavingPreset(true)}
+              title="Save these tracks as a campaign-wide playlist, playable from the dock in any scene"
+              className="rounded-full border border-hearth-border px-2 py-0.5 text-[11px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+            >
+              💾 Save as playlist
+            </button>
+          )
         )}
       </SectionHeader>
 

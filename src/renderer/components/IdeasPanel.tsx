@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Scene, SceneIdea } from '../../shared/types'
 import { useStore } from '../store'
+import GrowArea from './GrowArea'
 
 export default function IdeasPanel({ scene }: { scene: Scene }) {
   const updateScene = useStore((s) => s.updateScene)
@@ -71,18 +72,19 @@ function IdeaRow({
 }) {
   const [text, setText] = useState(idea.text)
   return (
-    <li className="group flex items-center gap-2">
+    <li className="group flex items-start gap-2 rounded px-1 py-0.5 transition-colors hover:bg-hearth-panel2/40">
       <input
         type="checkbox"
         checked={!!idea.done}
         onChange={onToggle}
-        className="h-3.5 w-3.5 shrink-0 accent-hearth-ember"
+        className="mt-1 h-3.5 w-3.5 shrink-0 accent-hearth-ember"
       />
-      <input
+      {/* Wrapping, growing text — long ideas stay fully readable. */}
+      <GrowArea
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={setText}
         onBlur={() => text !== idea.text && onEdit(text)}
-        className={`min-w-0 flex-1 bg-transparent text-sm focus:outline-none ${
+        className={`min-w-0 flex-1 text-sm leading-snug ${
           idea.done ? 'text-hearth-muted line-through' : 'text-hearth-text'
         }`}
       />

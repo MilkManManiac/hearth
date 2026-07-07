@@ -3,7 +3,15 @@ import { promises as fs } from 'fs'
 import * as fsSync from 'fs'
 import * as path from 'path'
 import chokidar, { type FSWatcher } from 'chokidar'
-import type { AssetKind, CampaignState, Library, LibraryAsset, Scene, SceneImage } from '../shared/types'
+import type {
+  AssetKind,
+  CampaignState,
+  Library,
+  LibraryAsset,
+  PlaylistPreset,
+  Scene,
+  SceneImage
+} from '../shared/types'
 import type { TriageKeepRequest, TriageScan } from '../preload/index'
 import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import { AUTHORING_MD } from './authoring'
@@ -467,6 +475,21 @@ export class CampaignManager {
     const lib = await this.loadLibrary([])
     lib.assets = lib.assets.filter((a) => a.file !== file)
     await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    this.markWrite()
+    return this.load()
+  }
+
+  /** Replace the campaign's playlist presets (stored in library.json). */
+  async savePlaylistPresets(presets: PlaylistPreset[]): Promise<CampaignState> {
+    const libPath = path.join(this.campaignPath, 'library.json')
+    let raw: Library = { assets: [] }
+    try {
+      raw = JSON.parse(await fs.readFile(libPath, 'utf-8')) as Library
+    } catch {
+      /* fresh library */
+    }
+    raw.playlists = presets
+    await fs.writeFile(libPath, JSON.stringify(raw, null, 2))
     this.markWrite()
     return this.load()
   }

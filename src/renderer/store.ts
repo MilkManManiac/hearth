@@ -117,6 +117,17 @@ interface AppState {
   setUiMode: (mode: 'build' | 'run') => void
   /** Fire a favorited library asset from any scene (music/bed toggle, sfx one-shot). */
   fireFavorite: (file: string) => void
+
+  // Campaign-wide playlist presets (stored in library.json), playable anywhere.
+  /** Id of the preset currently driving music, or null. */
+  activePresetId: string | null
+  presetPos: number
+  savePlaylistPreset: (name: string, files: string[]) => Promise<void>
+  deletePlaylistPreset: (id: string) => Promise<void>
+  /** Start a preset from the top (or stop it if it's the active one). */
+  togglePresetPlaylist: (id: string) => void
+  /** Advance the active preset by ±1 (wraps). */
+  presetStep: (dir: 1 | -1) => void
   /** Add a library asset to the current scene's palette (by its kind). */
   addAssetToScene: (file: string) => void
   /** Edit a library entry (rename / recategorize / retag / trash-flag). */
@@ -197,6 +208,26 @@ function resolveAmbLayer(scene: Scene | null, ref: string) {
   return layers.find((a) => a.file === ref) ?? layers.find((a) => assetStem(a.file).toLowerCase() === stem)
 }
 
+/** Start the preset-playlist track at `pos` (wrapping), wiring auto-advance. */
+function playPresetTrack(get: () => AppState, pos: number): void {
+  const st = get()
+  const preset = st.campaign.library.playlists?.find((p) => p.id === st.activePresetId)
+  if (!preset || preset.files.length === 0) {
+    engine.stopMusic()
+    return
+  }
+  const len = preset.files.length
+  const file = preset.files[((pos % len) + len) % len]
+  const asset = st.campaign.library.assets.find((a) => a.file === file)
+  // Same-track wrap: switchMusic no-ops on an identical id, so force a restart.
+  if (engine.status().activeMusicId === file) engine.stopMusic(DEFAULT_CROSSFADE_MS)
+  engine.switchMusic(
+    { id: file, label: asset?.name ?? prettyLabel(file), file, volume: 0.6 },
+    DEFAULT_CROSSFADE_MS,
+    { loop: false, onEnding: () => get().presetStep(1) }
+  )
+}
+
 /** Start the playlist track at `pos`, wiring auto-advance into the engine. */
 function playPlaylistTrack(get: () => AppState, pos: number): void {
   const state = get()
@@ -232,6 +263,8 @@ export const useStore = create<AppState>((set, get) => ({
   discordOpen: false,
   discordStatus: null,
   uiMode: (localStorage.getItem('hearth:uiMode') as 'build' | 'run') ?? 'build',
+  activePresetId: null,
+  presetPos: 0,
   playlistOrder: [],
   playlistPos: 0,
 
@@ -328,6 +361,7 @@ export const useStore = create<AppState>((set, get) => ({
     const kind: AssetKind = asset?.kind ?? ((file.split('/')[0] as AssetKind) || 'sfx')
     const label = asset?.name ?? prettyLabel(file)
     if (kind === 'music') {
+      set({ activePresetId: null }) // manual music supersedes a preset run
       // Toggle semantics: tapping the playing staple stops the music.
       if (get().status.activeMusicId === file) engine.stopMusic()
       else engine.switchMusic({ id: file, label, file, volume: 0.6 })
@@ -337,6 +371,57 @@ export const useStore = create<AppState>((set, get) => ({
     } else {
       engine.playSfx({ id: `fav:${file}`, label, file })
     }
+  },
+
+  savePlaylistPreset: async (name, files) => {
+    const presets = [...(get().campaign.library.playlists ?? [])]
+    const base =
+      name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'playlist'
+    let id = base
+    for (let n = 2; presets.some((p) => p.id === id); n++) id = `${base}-${n}`
+    presets.push({ id, name: name.trim() || id, files })
+    try {
+      const state = await window.hearth.savePlaylistPresets(presets)
+      get().setCampaign(state)
+      get().pushToast(`Playlist "${name.trim() || id}" saved — play it from the dock`, 'info')
+    } catch (err) {
+      get().pushToast(`Save failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  deletePlaylistPreset: async (id) => {
+    const presets = (get().campaign.library.playlists ?? []).filter((p) => p.id !== id)
+    if (get().activePresetId === id) set({ activePresetId: null })
+    try {
+      const state = await window.hearth.savePlaylistPresets(presets)
+      get().setCampaign(state)
+    } catch (err) {
+      get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  togglePresetPlaylist: (id) => {
+    if (get().activePresetId === id) {
+      set({ activePresetId: null })
+      engine.stopMusic()
+      return
+    }
+    set({ activePresetId: id, presetPos: 0 })
+    playPresetTrack(get, 0)
+  },
+
+  presetStep: (dir) => {
+    const st = get()
+    if (!st.activePresetId) return
+    const preset = st.campaign.library.playlists?.find((p) => p.id === st.activePresetId)
+    const len = preset?.files.length ?? 0
+    if (!preset || len === 0) {
+      set({ activePresetId: null })
+      return
+    }
+    const next = (((st.presetPos + dir) % len) + len) % len
+    set({ presetPos: next })
+    playPresetTrack(get, next)
   },
 
   addAssetToScene: (file) => {
@@ -501,7 +586,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (!scene) return
     // Held loops belong to the outgoing atmosphere — never carry them across.
     engine.stopAllSfxLoops()
-    set({ liveSceneId: scene.id })
+    set({ liveSceneId: scene.id, activePresetId: null })
     if (scene.playlist?.enabled && (scene.music?.length ?? 0) > 0) {
       // Playlist mode: the store drives music; the engine only handles ambience.
       await engine.setAmbience(
@@ -529,6 +614,7 @@ export const useStore = create<AppState>((set, get) => ({
     const scene = currentScene(get())
     const track = scene?.music?.find((m) => m.id === trackId)
     if (!track || !scene) return
+    set({ activePresetId: null }) // manual music supersedes a preset run
     if (scene.playlist?.enabled) {
       // In playlist mode a palette/cue tap jumps the queue to that track. If
       // the track isn't in the order (added after the playlist started),
@@ -661,7 +747,10 @@ export const useStore = create<AppState>((set, get) => ({
     window.hearth.presenterShow({ file: null })
   },
 
-  stopAll: () => engine.stopAll(),
+  stopAll: () => {
+    set({ activePresetId: null })
+    engine.stopAll()
+  },
 
   removeTrack: (trackId) => {
     const scene = currentScene(get())

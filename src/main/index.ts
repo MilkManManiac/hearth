@@ -3,7 +3,7 @@ import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
 import { DiscordBridge } from './discord'
-import type { AssetKind, LibraryAsset, Scene } from '../shared/types'
+import type { AssetKind, LibraryAsset, PlaylistPreset, Scene } from '../shared/types'
 import type { TriageKeepRequest } from '../preload/index'
 
 const MIME: Record<string, string> = {
@@ -198,6 +198,11 @@ function registerIpc(): void {
   })
   ipcMain.handle('library:delete', async (_e, file: string) => {
     const state = await campaign.deleteLibraryAsset(file)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('library:save-playlists', async (_e, presets: PlaylistPreset[]) => {
+    const state = await campaign.savePlaylistPresets(presets)
     broadcast('campaign:changed', state)
     return state
   })

@@ -23,14 +23,20 @@ const KIND_LIT: Record<AssetKind, string> = {
 export default function FavoritesDock() {
   const favorites = useFavorites()
   const assets = useStore((s) => s.campaign.library.assets)
+  const presets = useStore((s) => s.campaign.library.playlists ?? [])
   const fireFavorite = useStore((s) => s.fireFavorite)
+  const togglePresetPlaylist = useStore((s) => s.togglePresetPlaylist)
+  const presetStep = useStore((s) => s.presetStep)
+  const deletePlaylistPreset = useStore((s) => s.deletePlaylistPreset)
+  const activePresetId = useStore((s) => s.activePresetId)
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const status = useStore((s) => s.status)
   const [open, setOpen] = useState(localStorage.getItem('hearth:staplesOpen') !== '0')
 
   const items = favorites
     .map((file) => assets.find((a) => a.file === file))
     .filter((a): a is NonNullable<typeof a> => !!a && !a.trash)
-  if (items.length === 0) return null
+  if (items.length === 0 && presets.length === 0) return null
 
   const toggleOpen = (): void => {
     const next = !open
@@ -39,7 +45,54 @@ export default function FavoritesDock() {
   }
 
   return (
-    <div className="border-t border-hearth-border bg-hearth-panel/70 px-4 py-1.5">
+    <div className="space-y-1 border-t border-hearth-border bg-hearth-panel/70 px-4 py-1.5">
+      {presets.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-gold">🎜 Playlists</span>
+          {presets.map((p) => {
+            const active = p.id === activePresetId
+            return (
+              <span
+                key={p.id}
+                className={`group flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs transition-colors ${
+                  active
+                    ? 'border-hearth-ember bg-hearth-ember/20 text-hearth-ember shadow-ember'
+                    : 'border-hearth-ember/50 bg-hearth-panel2/60 text-hearth-ember/90 hover:bg-hearth-ember/15'
+                }`}
+              >
+                <button
+                  onClick={() => togglePresetPlaylist(p.id)}
+                  title={active ? `Stop "${p.name}"` : `Play "${p.name}" (${p.files.length} tracks, auto-advances, works in any scene)`}
+                  className="flex items-center gap-1"
+                >
+                  <span aria-hidden>{active ? '⏹' : '▶'}</span>
+                  <span className="max-w-[10rem] truncate">{p.name}</span>
+                  <span className="text-hearth-muted/70">{p.files.length}</span>
+                </button>
+                {active && (
+                  <button onClick={() => presetStep(1)} title="Next track" className="px-0.5 hover:text-hearth-gold">
+                    ⏭
+                  </button>
+                )}
+                {buildMode && !active && (
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Delete playlist "${p.name}"? (Tracks stay in the library.)`)) {
+                        void deletePlaylistPreset(p.id)
+                      }
+                    }}
+                    title="Delete this playlist"
+                    className="px-0.5 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                  >
+                    ✕
+                  </button>
+                )}
+              </span>
+            )
+          })}
+        </div>
+      )}
+      {items.length > 0 && (
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={toggleOpen}
@@ -81,6 +134,7 @@ export default function FavoritesDock() {
           <span className="text-[10px] text-hearth-muted/60">★ assets in the Library to add more</span>
         )}
       </div>
+      )}
     </div>
   )
 }

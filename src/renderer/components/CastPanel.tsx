@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { EntityType, Scene, SceneEntity } from '../../shared/types'
 import { useStore } from '../store'
+import GrowArea from './GrowArea'
 
 const TYPES: { type: EntityType; label: string; icon: string }[] = [
   { type: 'npc', label: 'NPCs', icon: '🧑' },
@@ -167,13 +168,16 @@ function EntityRow({
           ×
         </button>
       </div>
-      <input
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        onBlur={() => note !== (entity.note ?? '') && onEdit({ note })}
-        placeholder="note…"
-        className="mt-1 w-full bg-transparent pl-7 text-xs text-hearth-muted placeholder:text-hearth-muted/50 focus:outline-none"
-      />
+      {/* Wrapping, growing note — long stat/behavior notes stay readable. */}
+      <div className="pl-7">
+        <GrowArea
+          value={note}
+          onChange={setNote}
+          onBlur={() => note !== (entity.note ?? '') && onEdit({ note })}
+          placeholder="note…"
+          className="mt-1 text-[13px] leading-snug text-hearth-muted placeholder:text-hearth-muted/50"
+        />
+      </div>
     </li>
   )
 }

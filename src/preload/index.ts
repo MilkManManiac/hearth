@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AssetKind, CampaignState, LibraryAsset, Scene } from '../shared/types'
+import type { AssetKind, CampaignState, LibraryAsset, PlaylistPreset, Scene } from '../shared/types'
 import type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus } from '../main/discord'
 
 export type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus }
@@ -68,6 +68,8 @@ const api = {
     ipcRenderer.invoke('library:update', file, patch),
   deleteLibraryAsset: (file: string): Promise<CampaignState> =>
     ipcRenderer.invoke('library:delete', file),
+  savePlaylistPresets: (presets: PlaylistPreset[]): Promise<CampaignState> =>
+    ipcRenderer.invoke('library:save-playlists', presets),
   pickTriageFolder: (): Promise<TriageScan | null> => ipcRenderer.invoke('triage:pick'),
   triageKeep: (req: TriageKeepRequest): Promise<CampaignState> =>
     ipcRenderer.invoke('triage:keep', req),
