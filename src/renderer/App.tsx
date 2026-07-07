@@ -23,7 +23,7 @@ function MainApp() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       const s = useStore.getState()
-      if (s.libraryOpen || s.triage) return
+      if (s.libraryOpen || s.triage || s.discordOpen) return
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) {
         t.blur()

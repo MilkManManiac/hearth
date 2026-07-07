@@ -2,6 +2,7 @@ import { app, BrowserWindow, protocol, ipcMain, shell } from 'electron'
 import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
+import { DiscordBridge } from './discord'
 import type { AssetKind, LibraryAsset, Scene } from '../shared/types'
 import type { TriageKeepRequest } from '../preload/index'
 
@@ -52,6 +53,7 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 let mainWindow: BrowserWindow | null = null
 let presenterWindow: BrowserWindow | null = null
 let campaign: CampaignManager
+let discord: DiscordBridge
 
 const isDev = !!process.env['ELECTRON_RENDERER_URL']
 const preloadPath = path.join(__dirname, '../preload/index.js')
@@ -210,6 +212,20 @@ function registerIpc(): void {
     const err = await shell.openPath(campaign.path)
     if (err) throw new Error(err)
   })
+  // --- Discord voice bridge (experimental — see DISCORD-BRIDGE.md) ---
+  ipcMain.handle('discord:status', () => discord.getStatus())
+  ipcMain.handle('discord:set-token', (_e, token: string) => discord.setToken(token))
+  ipcMain.handle('discord:connect', () => discord.connect())
+  ipcMain.handle('discord:disconnect', () => discord.disconnect())
+  ipcMain.handle('discord:guilds', () => discord.listGuilds())
+  ipcMain.handle('discord:channels', (_e, guildId: string) => discord.listChannels(guildId))
+  ipcMain.handle('discord:join', (_e, guildId: string, channelId: string) =>
+    discord.join(guildId, channelId)
+  )
+  ipcMain.handle('discord:leave', () => discord.leave())
+  // High-rate PCM sink — fire-and-forget send, not invoke.
+  ipcMain.on('discord:pcm', (_e, chunk: ArrayBuffer) => discord.pushPcm(chunk))
+
   ipcMain.handle('presenter:open', async () => {
     ensurePresenterWindow()
   })
@@ -230,6 +246,7 @@ app.whenReady().then(async () => {
   registerIpc()
 
   campaign = new CampaignManager((state) => broadcast('campaign:changed', state))
+  discord = new DiscordBridge((status) => broadcast('discord:status-changed', status))
   const initial = await campaign.init()
   console.log(
     `[hearth] campaign: ${campaign.path}\n[hearth] scenes: ${initial.scenes.length}, ` +

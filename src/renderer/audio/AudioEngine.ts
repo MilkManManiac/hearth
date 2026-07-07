@@ -63,6 +63,40 @@ function assetUrl(file: string): string {
   return `asset:///${file.split('/').map(encodeURIComponent).join('/')}`
 }
 
+/**
+ * AudioWorklet processor for the Discord tap: interleaves the master mix into
+ * 960-frame (20ms @ 48kHz) Int16 stereo chunks and posts them (transferred).
+ * Kept as an inline Blob so the bundler needs no worklet-specific handling.
+ */
+const TAP_WORKLET_SRC = `
+class HearthTap extends AudioWorkletProcessor {
+  constructor() {
+    super()
+    this.buf = new Int16Array(960 * 2)
+    this.pos = 0
+  }
+  process(inputs) {
+    const input = inputs[0]
+    if (!input || input.length === 0) return true
+    const L = input[0]
+    const R = input[1] || input[0]
+    for (let i = 0; i < L.length; i++) {
+      let l = L[i]; if (l > 1) l = 1; else if (l < -1) l = -1
+      let r = R[i]; if (r > 1) r = 1; else if (r < -1) r = -1
+      this.buf[this.pos * 2] = (l * 32767) | 0
+      this.buf[this.pos * 2 + 1] = (r * 32767) | 0
+      if (++this.pos === 960) {
+        this.port.postMessage(this.buf.buffer, [this.buf.buffer])
+        this.buf = new Int16Array(960 * 2)
+        this.pos = 0
+      }
+    }
+    return true
+  }
+}
+registerProcessor('hearth-tap', HearthTap)
+`
+
 interface ActiveMusic {
   trackId: string
   source: AudioBufferSourceNode
@@ -177,7 +211,9 @@ export class AudioEngine {
   private errorListeners = new Set<ErrorListener>()
 
   constructor() {
-    this.ctx = new AudioContext()
+    // Pinned to 48 kHz: Discord voice is 48 kHz, so the bridge tap needs no
+    // resampling; decodeAudioData resamples assets to the context rate anyway.
+    this.ctx = new AudioContext({ sampleRate: 48000 })
     this.master = this.ctx.createGain()
     this.musicBus = this.ctx.createGain()
     this.musicDuck = this.ctx.createGain()
@@ -766,6 +802,57 @@ export class AudioEngine {
       })
     )
     return failures
+  }
+
+  // --- Discord bridge tap (see DISCORD-BRIDGE.md) ------------------------
+
+  private tapNode: AudioWorkletNode | null = null
+  private tapSink: GainNode | null = null
+  private tapModuleLoaded = false
+
+  /**
+   * Start streaming the post-master mix as ~20ms chunks of s16le 48kHz stereo
+   * PCM. Runs continuously (silence streams as zeros) so the consumer's audio
+   * pipeline never underruns. The Master fader shapes this feed too.
+   */
+  async startTap(onChunk: (chunk: ArrayBuffer) => void): Promise<void> {
+    await this.resume()
+    if (this.tapNode) return
+    if (!this.tapModuleLoaded) {
+      const url = URL.createObjectURL(new Blob([TAP_WORKLET_SRC], { type: 'application/javascript' }))
+      await this.ctx.audioWorklet.addModule(url)
+      URL.revokeObjectURL(url)
+      this.tapModuleLoaded = true
+    }
+    const node = new AudioWorkletNode(this.ctx, 'hearth-tap', {
+      numberOfInputs: 1,
+      numberOfOutputs: 1,
+      channelCount: 2,
+      channelCountMode: 'explicit'
+    })
+    node.port.onmessage = (e) => onChunk(e.data as ArrayBuffer)
+    // A muted sink keeps the worklet pulled by the graph without doubling audio.
+    const sink = this.ctx.createGain()
+    sink.gain.value = 0
+    this.master.connect(node)
+    node.connect(sink)
+    sink.connect(this.ctx.destination)
+    this.tapNode = node
+    this.tapSink = sink
+  }
+
+  stopTap(): void {
+    if (!this.tapNode) return
+    this.tapNode.port.onmessage = null
+    try {
+      this.master.disconnect(this.tapNode)
+      this.tapNode.disconnect()
+      this.tapSink?.disconnect()
+    } catch {
+      /* graph already torn down */
+    }
+    this.tapNode = null
+    this.tapSink = null
   }
 
   private emit(): void {

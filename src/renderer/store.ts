@@ -7,7 +7,7 @@ import {
   type Scene
 } from '../shared/types'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
-import type { LibraryAssetPatch, TriageScan } from '../preload/index'
+import type { DiscordStatus, LibraryAssetPatch, TriageScan } from '../preload/index'
 
 /** One audio engine per session, shared across the UI. */
 export const engine = new AudioEngine()
@@ -90,6 +90,9 @@ interface AppState {
   previewingFile: string | null
   /** Active sound-triage session (drop-folder review inbox), or null. */
   triage: TriageScan | null
+  /** Discord bridge panel visibility + last known bridge status. */
+  discordOpen: boolean
+  discordStatus: DiscordStatus | null
   /** Track-id play order for the current scene's playlist mode. */
   playlistOrder: string[]
   /** Index into playlistOrder of the current/last-started track. */
@@ -104,6 +107,8 @@ interface AppState {
   /** Pick a drop folder via the OS dialog and open the triage review inbox. */
   openTriage: () => Promise<void>
   closeTriage: () => void
+  openDiscord: () => void
+  closeDiscord: () => void
   /** Add a library asset to the current scene's palette (by its kind). */
   addAssetToScene: (file: string) => void
   /** Edit a library entry (rename / recategorize / retag / trash-flag). */
@@ -216,6 +221,8 @@ export const useStore = create<AppState>((set, get) => ({
   libraryKind: 'all',
   previewingFile: null,
   triage: null,
+  discordOpen: false,
+  discordStatus: null,
   playlistOrder: [],
   playlistPos: 0,
 
@@ -248,6 +255,17 @@ export const useStore = create<AppState>((set, get) => ({
     })
     engine.onError((message) => get().pushToast(message, 'error'))
     window.hearth.onCampaignChanged((c) => get().setCampaign(c))
+    // Discord bridge: mirror status; the tap streams only while in a channel.
+    const syncDiscord = (status: DiscordStatus) => {
+      set({ discordStatus: status })
+      if (status.state === 'joined') {
+        void engine.startTap((chunk) => window.hearth.discordSendPcm(chunk))
+      } else {
+        engine.stopTap()
+      }
+    }
+    window.hearth.onDiscordStatus(syncDiscord)
+    window.hearth.discordStatus().then(syncDiscord)
     const campaign = await window.hearth.getCampaign()
     get().setCampaign(campaign)
   },
@@ -287,6 +305,9 @@ export const useStore = create<AppState>((set, get) => ({
     currentPreviewStop = null
     set({ triage: null, previewingFile: null })
   },
+
+  openDiscord: () => set({ discordOpen: true }),
+  closeDiscord: () => set({ discordOpen: false }),
 
   addAssetToScene: (file) => {
     const scene = currentScene(get())

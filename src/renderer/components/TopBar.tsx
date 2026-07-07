@@ -1,5 +1,6 @@
 import { engine, useStore } from '../store'
 import TriagePanel from './TriagePanel'
+import DiscordPanel from './DiscordPanel'
 
 function Slider({
   label,
@@ -63,7 +64,9 @@ export default function TopBar() {
     stopAll,
     probeAssets,
     openLibrary,
-    openTriage
+    openTriage,
+    openDiscord,
+    discordStatus
   } = useStore()
 
   const folderName = campaign.path ? campaign.path.split(/[\\/]/).pop() : 'no campaign'
@@ -124,6 +127,24 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          onClick={openDiscord}
+          title={
+            discordStatus?.state === 'joined'
+              ? `Streaming to ${discordStatus.guildName} / ${discordStatus.channelName}`
+              : 'Stream the mix into a Discord voice channel (experimental)'
+          }
+          className={`flex items-center gap-1.5 rounded border px-3 py-1.5 text-sm transition-colors ${
+            discordStatus?.state === 'joined'
+              ? 'border-hearth-ember bg-hearth-ember/15 text-hearth-ember'
+              : 'border-hearth-border bg-hearth-panel2 text-hearth-text hover:border-hearth-ember hover:text-hearth-ember'
+          }`}
+        >
+          {discordStatus?.state === 'joined' && (
+            <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-hearth-ember" />
+          )}
+          🎧 Discord
+        </button>
         <Btn onClick={openPresenter} title="Open the player-facing presenter window">🖥 Presenter</Btn>
         <Btn onClick={probeAssets} title="Check every referenced asset loads">Probe</Btn>
         <Btn onClick={revealCampaign} title="Open campaign folder on disk">Reveal</Btn>
@@ -135,9 +156,11 @@ export default function TopBar() {
         </button>
       </div>
 
-      {/* Triage review inbox (fixed-position modal; lives here because the
-          board root is LibraryPanel's home and the button is ours). */}
+      {/* Triage review inbox + Discord bridge (fixed-position modals; live
+          here because the board root is LibraryPanel's home and the buttons
+          are ours). */}
       <TriagePanel />
+      <DiscordPanel />
     </header>
   )
 }

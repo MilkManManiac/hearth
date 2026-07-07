@@ -14,6 +14,7 @@
     "start": "electron ."
   },
   "dependencies": {
+    "@discordjs/voice": "^0.19.2",
     "@tiptap/extension-color": "^2.27.2",
     "@tiptap/extension-highlight": "^2.27.2",
     "@tiptap/extension-text-style": "^2.27.2",
@@ -21,6 +22,8 @@
     "@tiptap/react": "^2.27.2",
     "@tiptap/starter-kit": "^2.27.2",
     "chokidar": "^4.0.3",
+    "discord.js": "^14.26.4",
+    "opusscript": "^0.0.8",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

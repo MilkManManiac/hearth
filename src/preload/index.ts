@@ -1,5 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AssetKind, CampaignState, LibraryAsset, Scene } from '../shared/types'
+import type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus } from '../main/discord'
+
+export type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus }
 
 /** Editable slice of a library entry (file/kind stay fixed). */
 export type LibraryAssetPatch = Partial<Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash'>>
@@ -71,6 +74,25 @@ const api = {
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),
+
+  // --- Discord voice bridge (experimental) ---
+  discordStatus: (): Promise<DiscordStatus> => ipcRenderer.invoke('discord:status'),
+  discordSetToken: (token: string): Promise<void> => ipcRenderer.invoke('discord:set-token', token),
+  discordConnect: (): Promise<void> => ipcRenderer.invoke('discord:connect'),
+  discordDisconnect: (): Promise<void> => ipcRenderer.invoke('discord:disconnect'),
+  discordGuilds: (): Promise<DiscordGuildInfo[]> => ipcRenderer.invoke('discord:guilds'),
+  discordChannels: (guildId: string): Promise<DiscordChannelInfo[]> =>
+    ipcRenderer.invoke('discord:channels', guildId),
+  discordJoin: (guildId: string, channelId: string): Promise<void> =>
+    ipcRenderer.invoke('discord:join', guildId, channelId),
+  discordLeave: (): Promise<void> => ipcRenderer.invoke('discord:leave'),
+  /** High-rate raw PCM (s16le 48kHz stereo interleaved) — fire-and-forget. */
+  discordSendPcm: (chunk: ArrayBuffer): void => ipcRenderer.send('discord:pcm', chunk),
+  onDiscordStatus: (cb: (status: DiscordStatus) => void): (() => void) => {
+    const listener = (_e: unknown, status: DiscordStatus) => cb(status)
+    ipcRenderer.on('discord:status-changed', listener)
+    return () => ipcRenderer.removeListener('discord:status-changed', listener)
+  },
 
   onCampaignChanged: (cb: (state: CampaignState) => void): (() => void) => {
     const listener = (_e: unknown, state: CampaignState) => cb(state)

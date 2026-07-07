@@ -65,7 +65,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== ' ' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage) return // a modal owns the keyboard
+      if (st.libraryOpen || st.triage || st.discordOpen) return // a modal owns the keyboard
       const t = e.target as HTMLElement | null
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
       e.preventDefault() // no page scroll, no re-firing a focused button
