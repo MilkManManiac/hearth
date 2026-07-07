@@ -51,7 +51,7 @@ Scenes are `scenes/*.json`; assets live in `music/ambience/sfx/art/`; `library.j
 - **Ideas** (`IdeasPanel.tsx`) and **Cast & Loot** (`CastPanel.tsx`): per-scene checklists (`scene.ideas`, `scene.entities`) in the tabbed right panel. Edits persist via `store.updateScene()` → `window.hearth.saveScene()` → `campaign.saveScene()`, which writes the scene JSON (as structured `script`, dropping `scriptText`) and the folder watcher reloads.
 
 ## Phase status
-Phase 1 (local scene player) is built, plus in-app scene editing (drag-drop sound cues, editable read-aloud) and per-scene Ideas + Cast/Loot tracking. Sample campaign uses real CC0 audio from OpenGameArt (see `campaign-sample/CREDITS.md`). Phases 2–5 (Discord audio bridge, images to players, D&D Beyond dashboard, remaining QoL) are not started — see GAMEPLAN.md §3.
+Phase 1 (local scene player) is built and heavily extended: rich-text script editor with cue chips (`{{music/sfx/image/amb:...}}`), arm-vs-**Go live** scene flow, Now Sounding strip, live mini-mixers, teleprompter, library management (rename/recategorize/trash/delete), sound-triage inbox, and a ~2,170-asset library (bulk audio is **gitignored** — a fresh clone is missing those files; see `.gitignore`). **Phase 2 (Discord audio bridge) groundwork is BUILT but experimental** — architecture + open items in `DISCORD-BRIDGE.md`; untested until a bot token is supplied (🎧 Discord button in the TopBar). Phases 3–5 (images to players beyond the presenter window, D&D Beyond dashboard, remaining QoL) not started — see GAMEPLAN.md §3.
 
 ## Canonical location
 This project lives at `C:\Users\weshu\CodeProjects\Hearth`. An earlier copy at `C:\Users\weshu\CodeProjects\dnd` is superseded and can be deleted.
