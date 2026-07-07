@@ -12,8 +12,7 @@ import IdeasPanel from './IdeasPanel'
 import CastPanel from './CastPanel'
 import Toasts from './Toasts'
 import LibraryPanel from './LibraryPanel'
-import NowSounding from './NowSounding'
-import FavoritesDock from './FavoritesDock'
+import SoundConsole from './SoundConsole'
 
 /** A collapsed side rail: a slim strip that re-expands its panel. */
 function CollapsedRail({
@@ -119,8 +118,7 @@ export default function ControlBoard() {
             <CollapsedRail side="right" icon="🗂" title="Show images / ideas / cast" onClick={toggleRight} />
           ))}
       </div>
-      <FavoritesDock />
-      <NowSounding />
+      <SoundConsole />
       <LibraryPanel />
       <Toasts />
     </div>
