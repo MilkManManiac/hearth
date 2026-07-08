@@ -1,0 +1,41 @@
+appId: com.hearth.dmcompanion
+productName: Hearth
+
+# electron-vite emits the runnable bundles into out/. That plus the pruned
+# production node_modules is the entire app; everything else (src, docs, the
+# huge local campaign-sample audio) is excluded so the artifact stays small.
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - out/**
+  - package.json
+  # Explicitly keep the big local campaign out of the app bundle. The campaign
+  # (scenes + ~2000 audio files) travels separately and is selected in-app via
+  # the 📁 folder picker. See DEPLOY.md.
+  - '!campaign-sample/**'
+  - '!campaigns/**'
+  - '!**/*.md'
+  - '!scripts/**'
+  - '!Elor Campaign Import/**'
+
+# Pure-JS/optional deps only (opusscript for Opus, prism-media) — no native
+# compilation — so the app is portable across Windows machines as-is.
+asar: true
+
+win:
+  # dir  -> release/win-unpacked/Hearth.exe  (self-contained folder, no install)
+  # portable -> release/Hearth <ver>.exe     (single self-extracting exe)
+  target:
+    - dir
+    - portable
+  artifactName: ${productName}-${version}-portable.${ext}
+
+portable:
+  # Portable exe unpacks to a stable per-user dir instead of a fresh temp folder
+  # each launch, so subsequent starts are fast.
+  unpackDirName: Hearth
+
+# No app icon committed yet — electron-builder falls back to the default
+# Electron icon. Drop a 256×256 build/icon.ico here to brand it.

@@ -11,7 +11,9 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
-    "start": "electron ."
+    "start": "electron .",
+    "pack": "electron-vite build && electron-builder --dir -c.directories.output=\"%LOCALAPPDATA%\\hearth-release\"",
+    "dist": "electron-vite build && electron-builder --win -c.directories.output=\"%LOCALAPPDATA%\\hearth-release\""
   },
   "dependencies": {
     "@discordjs/voice": "^0.19.2",
@@ -34,6 +36,7 @@
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.5.2",
     "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "postcss": "^8.5.16",
     "react": "^19.2.7",
