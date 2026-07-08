@@ -1,0 +1,10 @@
+{
+  "id": "cumb",
+  "kind": "npc",
+  "title": "Cumb",
+  "bodyText": "Goblin. Was *inside* the party's captured Bag of Holding; negotiated survival by organizing its contents while wearing a french maid outfit. Feed twice a day. Found the two S-marked bodies in the bag. Has some connection to **Trunks**. Portrait: art/cumb.png (has a character sheet PDF in the import archive).\n\n# Threads\n[[thread-mr-spells]] · [[pc-trunks]]",
+  "tags": [
+    "party-adjacent"
+  ],
+  "createdAt": "2026-07-08T04:24:37.760Z"
+}

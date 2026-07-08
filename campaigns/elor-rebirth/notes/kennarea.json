@@ -1,0 +1,11 @@
+{
+  "id": "kennarea",
+  "kind": "npc",
+  "title": "Kennarea — \"Kena\"",
+  "bodyText": "Drow druid of the grove — vine-limbed, silver-eyed, mood-lit fungi in her hair. **Met in S14**; the grove is a breathing amphitheater of myconids at the heart of the vine network.\n\n# Current truth (table knows most of this now)\n- From **Ungethal**... or per the S14/15 notes, \"the lost city of **Vylindar**\" — she gave the party the latter. Fled Lolth with Eilistraee's visions, bore the same mark as Varen, **cut off her own arm** to escape it after killing assassins.\n- **Confirmed to the party she caused the Koviz sickness** (S15) — drow magic in myconid spores, visions of topside safety (the DM Guide adds: *and deadly visions of staying underground*). Her goal is exodus, not murder — but the kill-count is real.\n- **The deal**: vines withdrawn + sickness ended in exchange for **removing Root**. The party delivered; **she honored it** (daylight returned, S23).\n- Raised **Eira**; released her to the party with a protection ultimatum. Michael the myconid also traveled with them.\n- Teleports via trees; controls the Faerzress crystals near the grove.\n\n> [!dm] Still unplayed from her key points: she **\"has Tad\"** (!!), she's attacked by many groups (Thundrak Dûrn, Koviz dwarves, the pool, Lolth's stalkers), and her wishlist: stop Root ✓, **find Eilistraee, kill Lolth**. She knows the gods' power shift ([[thread-gods-shift]]).\n\n# Threads\n[[the-sickness]] · [[thread-tad-missing]] · [[eilistraee]] · [[kenas-grove]]",
+  "tags": [
+    "underdark",
+    "ally?"
+  ],
+  "createdAt": "2026-07-08T04:24:37.760Z"
+}

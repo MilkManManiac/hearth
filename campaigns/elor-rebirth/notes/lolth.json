@@ -1,0 +1,11 @@
+{
+  "id": "lolth",
+  "kind": "npc",
+  "title": "Lolth",
+  "bodyText": "The Spider Queen; the drow god. Matriarchal, cruel, and **personally invested in punishing deserters**. \"The dark lady is trying to find you. **Each of her legs is coming for you**\" — Ms. Judy to Varen. Her eight legs = **eight assassins** ([[the-eight-legs]]). Art: art/lolth.jpg",
+  "tags": [
+    "god",
+    "antagonist"
+  ],
+  "createdAt": "2026-07-08T04:24:37.760Z"
+}

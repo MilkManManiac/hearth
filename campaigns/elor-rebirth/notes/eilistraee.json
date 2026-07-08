@@ -1,0 +1,10 @@
+{
+  "id": "eilistraee",
+  "kind": "npc",
+  "title": "Eilistraee",
+  "bodyText": "Chaotic-good drow goddess — **daughter of Lolth** — whose whole purpose is freeing the drow from their mother's webbed underground prison: bring them topside, smell the flowers, dance in the moonlight. 9ft glossy-skinned drow, ankle-length silver hair, silver radiance. Goddess of swordwork and song. A solitary dance in her honor may turn your hair radiant silver. Art: art/eilistraee.jpg, art/eilistraee-projection.jpg\n\n# Current truth\n- Helped **Varen** escape his city (visions of a path out, moonlight, dancing). Her converts' price: **the black spot** — the mark of those who turned from Lolth (or Lolth's brand on the deserters; the docs deliberately leave it ambiguous).\n- Kena had the same visions and mark, long before Varen.\n\n> [!dm] Varen's theme song is queued in the PC guide (a YouTube link). The orb in his trances may be her — or Leliana. The two \"caged lady\" candidates are deliberately entangled; decide when the party gets close.\n\n# Threads\n[[thread-varens-mark]] · [[thread-orb]] · [[lolth]]",
+  "tags": [
+    "god"
+  ],
+  "createdAt": "2026-07-08T04:24:37.760Z"
+}

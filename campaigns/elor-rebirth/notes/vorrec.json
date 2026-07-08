@@ -1,0 +1,10 @@
+{
+  "createdAt": "2026-07-08T05:29:18.540Z",
+  "id": "vorrec",
+  "kind": "npc",
+  "title": "Vorrec",
+  "bodyText": "Old dwarf cleric who attended Sellie's fatal delivery and told Root both mother and daughter died — \"birth went wrong, twisted magic involved, bodies burned, no viewing\" ([[roots-journal]]).\n\n> [!dm] Except Eira lived. Vorrec either lied, was deceived, or did something. He's the loose thread on which the whole Darkpass family truth hangs — and nobody has thought to find him yet.",
+  "tags": [
+    "stonemasons"
+  ]
+}

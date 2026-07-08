@@ -1,0 +1,11 @@
+{
+  "id": "gabriel",
+  "kind": "npc",
+  "title": "Gabriel",
+  "bodyText": "Early-30s dwarf, red beard with braided mustache, always smiling, tankard in hand. Runs **Gond's Craft** (the brewery) for the Monk Guild — and doesn't give a damn about Gond or guild orders. Felson's brewing mentor and the closest thing he has to a fun uncle.\n\n# Current truth\n- Cured by Eddy during the plague (S08); in thanks/parting he gave Felson **Gabriel's Keg** ([[gabriels-keg]]) — his months-long project combining a small keg with **mithril** as an amplifying ingredient. \"If you lose it, I will find you and kill you.\"\n- Inscription on the keg: *\"Learn where you come from, uncover what you hold dear, and share all the joy you can.\"*",
+  "tags": [
+    "koviz",
+    "monk-guild"
+  ],
+  "createdAt": "2026-07-08T04:24:37.760Z"
+}

@@ -21,3 +21,12 @@ campaign-sample/sfx/noxx-*
 /Elor Campaign Import/
 # Session recordings (The Chronicler)
 campaign-sample/recordings/
+
+# Review campaigns: keep notes + docs, NEVER commit audio or bulk library
+campaigns/*/music/
+campaigns/*/ambience/
+campaigns/*/sfx/
+campaigns/*/art/
+campaigns/*/recordings/
+campaigns/*/library.json
+campaigns/*/blocklist.json

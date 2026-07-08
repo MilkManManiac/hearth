@@ -1,0 +1,11 @@
+{
+  "createdAt": "2026-07-08T05:29:18.540Z",
+  "id": "michael-myconid",
+  "kind": "npc",
+  "title": "Michael",
+  "bodyText": "The little myconid the party saved from the gelatinous cube (S10) — the grove's \"child.\" Guided them to Kena's gates (S14), traveled with them after (\"I may be different after we go in there. But… thank you for helping me.\"), communicates via spore-snorts. Cumb's buddy. Not on the S24 roster — presumably back at the grove or in Koviz; record it.",
+  "tags": [
+    "party-adjacent",
+    "grove"
+  ]
+}

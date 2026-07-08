@@ -1,0 +1,67 @@
+{
+  "id": "soni",
+  "kind": "npc",
+  "title": "Soni Pekhi",
+  "tags": [
+    "koviz",
+    "shepherds"
+  ],
+  "createdAt": "2026-07-08T04:24:37.760Z",
+  "body": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Early-40s human woman, leader of "
+        },
+        {
+          "type": "text",
+          "text": "(",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "education/healing/religion guild) and the Koviz clinic. White robe, brown-gold belt. Tired, competent, honest. Knows Varen a little from the library/schools. Portrait: art/soni.png"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "Current truth"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- Sent the party to Ms. Judy (S03) and later commissioned the real quest: "
+        },
+        {
+          "type": "text",
+          "text": "find and stop the source of the sickness",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " (S08), with the town's resources behind them. Coordinates the tincture distribution and the house-to-house healer rounds."
+        }
+      ]
+    }
+  ],
+  "updatedAt": "2026-07-08T06:37:36.175Z"
+}

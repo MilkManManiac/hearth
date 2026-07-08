@@ -1,0 +1,7 @@
+{
+  "id": "gabriels-keg",
+  "kind": "item",
+  "title": "Gabriel’s Keg",
+  "bodyText": "Wondrous item (rare, attunement) — polished oak, gear emblem of Gond. *\"Learn where you come from, uncover what you hold dear, and share all the joy you can.\"* Endless basic ale; add ingredients to brew magic (1/short rest, serves 4, 10 min to brew, 1 action to drink).\n\n# Ingredient effects\n- **Calmcap Mushroom** (1gp): vividly relive your last beautiful/peaceful memory.\n- **Charred Mossroot** (3gp): heal 4d4.\n- **Ruby Crystals** (5gp): +2 attack & damage, 1 hr.\n- **Giant Bat Wing** (13gp): fly 30ft, 1 hr *(used in S13!)*.\n- **Mithril Flakes** (50gp): +2 AC & saves, magic attacks, 1d6 force aura, one 30-ft shockwave (DC15 STR, 4d10 force, prone). **Death = dissolve into liquid mithril** (Wish to resurrect). Overuse (>1/week): creeping mithril petrification (DC14 CON).",
+  "createdAt": "2026-07-08T04:26:45.904Z"
+}

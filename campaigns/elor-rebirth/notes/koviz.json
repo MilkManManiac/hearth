@@ -1,0 +1,10 @@
+{
+  "id": "koviz",
+  "kind": "location",
+  "title": "Koviz",
+  "bodyText": "Small underground city — central commercial hub + guild-run districts, semi-communal: the guild leaders vote on everything. Daylight spells light the \"day\"; every sound echoes. Currently in **plague lockdown**. Art: art/koviz-city-1.jpg, art/koviz-city-2.jpeg, art/koviz-town-square.jpg, festival shots, night view.\n\n# The guilds (leaders vote as the government)\n- **Koviz Concordus** (Monks) — Elara Bernardus. Unskilled labor, the orphanage, everyday ale.\n- **The Craftsmen** (Dwarf Stonemasons) — **Root Darkpass**. Building, mining. Private; now sealed off. See [[root-darkpass]].\n- **The Freemasonry** (Gnome Stonemasons) — Willy Thistlecraft. The dwarves' friendlier rivals.\n- **Harvest Haven** (Agriculture) — Von Stodrov. Crops + livestock.\n- **The Watch** (Security) — **Lorian** (female drow). Perimeter first, crime second.\n- **The Shepherds** (Education/Healing/Religion) — **Soni Pekhi**. The clinic + schools.\n- **Guild of the Virtuoso** (Artisans) — Tully TookTak (halfling). Morale.\n- **The Stewards** (Treasury/Admin) — Jonatan Zicosti. Not a guild; elected distributors.\n- **The Sacred Enclave** (Druids) — Sylra Autumnfell (elf). Very private; recruit from the orphanage.\n- **The Winged Syndicate** (Communications) — Arlen Daecan (high elf). News to Koviz + distant towns. (Portrait: art/arlen.png)\n- **The Old Guard** (Thieves) — **Havier \"Javier\" Spells**. Outskirts of the hub. See [[spells-family]].\n\n# Race vibes\nHumans/halflings: no trade focus, unhappy underground. Elves: nearly none; magic + crops. Dwarves & gnomes: mining/stonework, 50/50 on underground life; dwarves famously prioritize dwarves. Drow: a decent share of The Watch.\n\n# Current state (plague)\nEveryone in the central city infected; candle in a window = a corpse for collection; monks run doorstep food; healers do remove-disease rounds; the Stonemasons sealed their gate. The party's tincture bought ~a week.",
+  "createdAt": "2026-07-08T04:26:45.904Z",
+  "tags": [
+    "home-base"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "createdAt": "2026-07-08T05:29:18.540Z",
+  "id": "ghruom",
+  "kind": "npc",
+  "title": "Capt. Ghruom",
+  "bodyText": "Dwarven fighter, Root loyalist, one of three leaders scrapping for the Stonemasons' guild in the vacuum (with clerics **Gilly** and **Drumnar**). Led the march on town with Gilly (S23) — talked down, not fought. **Has vowed to find Root's killer.** Portrait: art/ghruom.jpg\n\n# Threads\n[[thread-ghruoms-vendetta]]",
+  "tags": [
+    "stonemasons",
+    "antagonist?"
+  ]
+}

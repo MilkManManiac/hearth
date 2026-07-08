@@ -1,0 +1,7 @@
+{
+  "id": "the-underdark",
+  "kind": "location",
+  "title": "The Underdark",
+  "bodyText": "Vast labyrinth of caverns beneath the caverns — perpetual dark, bioluminescent fungi, Faerzress (\"Formite\") zones that warp magic (divination/conjuration especially; teleport at your peril). Home of drow, duergar, kuo-toa, myconids, and everything with too many teeth. The party entered via the Stonemasons' reckless dig.\n\n# Encountered so far\nGrick + giant spiders (S09–10) · the **Primordial Gelatinous Cube** (S11) · bog predators (S13) · the guiding **vines** (Kena's network) · myconids · Tad's abandoned camp.\n\n# Reference (from the world doc)\n- **Passive flora**: Glowcaps (dim 5ft light), Crystal Moss, Zurkhwood (giant timber-fungus), Rippleleaf, Ice Mushrooms, Faerzress Pygmywort (eat → *Reduce*).\n- **Dangerous flora**: Shriekers (30ft alarm-scream), Bloodthorn Vines (+5, 1d8+1d6 necrotic, grapple DC13), Corpsebloom (DC14 WIS charm), Darkroot Brambles (poison sap), **Gas Spores** (fake beholders).\n- **Creatures**: fire beetles, rothe, darkmantles, shadow dragons; drow, duergar, kuo-toa, quaggoths, enslaved umber hulks, myconids; spiders, rust monsters, hook horrors, gricks, ropers, grell, neothelids, aboleths, beholders, cloakers, gibbering mouthers, **gelatinous cubes — \"this is how pools are growing!\"**\n- Stat-block art for most of these is in the import archive (Locations/Underdark/Fauna…).",
+  "createdAt": "2026-07-08T04:26:45.904Z"
+}
