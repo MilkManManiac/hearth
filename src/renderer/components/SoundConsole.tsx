@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   assetCategories,
   assetDisplayName,
@@ -101,6 +102,102 @@ function RowLabel({ children, title }: { children: React.ReactNode; title?: stri
   )
 }
 
+/** The tracks of the currently-playing queue, for the ≡ jump menu. */
+export interface QueueInfo {
+  tracks: string[]
+  /** Index of the track currently sounding. */
+  current: number
+  /** Jump straight to a track (crossfades). */
+  onJump: (index: number) => void
+}
+
+/**
+ * ≡ button + popover listing the active queue's tracks — click one to jump.
+ * The whole point of this addition: pick a specific song in a playlist instead
+ * of only being able to skip forward. The list renders in a portal (fixed,
+ * anchored above the button) so it escapes the console's `overflow` clipping
+ * and floats over the script area instead of being cut off.
+ */
+function QueueMenu({ queue }: { queue: QueueInfo }) {
+  const [open, setOpen] = useState(false)
+  const btnRef = useRef<HTMLButtonElement | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+  const [pos, setPos] = useState<{ right: number; bottom: number } | null>(null)
+
+  const place = () => {
+    const r = btnRef.current?.getBoundingClientRect()
+    if (r) setPos({ right: window.innerWidth - r.right, bottom: window.innerHeight - r.top + 6 })
+  }
+
+  useEffect(() => {
+    if (!open) return
+    place()
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node
+      if (btnRef.current?.contains(t) || menuRef.current?.contains(t)) return
+      setOpen(false)
+    }
+    const onScrollOrResize = () => place()
+    document.addEventListener('pointerdown', onDown)
+    window.addEventListener('resize', onScrollOrResize)
+    // Capture-phase scroll so the console scrolling repositions the menu too.
+    window.addEventListener('scroll', onScrollOrResize, true)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('resize', onScrollOrResize)
+      window.removeEventListener('scroll', onScrollOrResize, true)
+    }
+  }, [open])
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={() => setOpen((o) => !o)}
+        title="Pick a track in this playlist"
+        className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] leading-none hover:bg-black/30 hover:opacity-100 ${
+          open ? 'opacity-100' : 'opacity-70'
+        }`}
+      >
+        ☰
+      </button>
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{ position: 'fixed', right: pos.right, bottom: pos.bottom }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="z-50 flex max-h-72 w-64 flex-col overflow-y-auto rounded-md border border-hearth-border bg-hearth-panel2 py-1 shadow-2xl"
+          >
+            <div className="px-2.5 pb-1 pt-0.5 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+              Jump to track
+            </div>
+            {queue.tracks.map((file, i) => (
+              <button
+                key={`${file}:${i}`}
+                onClick={() => {
+                  queue.onJump(i)
+                  setOpen(false)
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 text-left text-xs transition-colors hover:bg-hearth-ember/15 ${
+                  i === queue.current ? 'text-hearth-ember' : 'text-hearth-text'
+                }`}
+                title={file}
+              >
+                <span className="w-4 flex-none text-center" aria-hidden>
+                  {i === queue.current ? '▶' : ''}
+                </span>
+                <span className="truncate">{stem(file)}</span>
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
+    </>
+  )
+}
+
 /** A playing item: name + a small (deliberately imprecise) fader + kill. */
 function NowChip({
   kind,
@@ -113,7 +210,8 @@ function NowChip({
   onVolume,
   onNext,
   onStop,
-  stopTitle
+  stopTitle,
+  queue
 }: {
   kind: AssetKind
   /** Show the loop marker (a held SFX loop). */
@@ -127,6 +225,8 @@ function NowChip({
   onNext?: () => void
   onStop: () => void
   stopTitle: string
+  /** When this chip is a playlist/preset, the queue for the ≡ track picker. */
+  queue?: QueueInfo
 }) {
   return (
     <span className={`flex items-center gap-1.5 rounded-full border py-1 pl-2.5 pr-1 text-sm transition-colors ${className}`}>
@@ -141,6 +241,7 @@ function NowChip({
       <span className="w-12">
         <VolumeFader value={volume} defaultValue={defaultVolume} onChange={onVolume} />
       </span>
+      {queue && queue.tracks.length > 1 && <QueueMenu queue={queue} />}
       {onNext && (
         <button
           onClick={onNext}
@@ -234,6 +335,8 @@ export default function SoundConsole() {
   const fireFavorite = useStore((s) => s.fireFavorite)
   const togglePresetPlaylist = useStore((s) => s.togglePresetPlaylist)
   const presetStep = useStore((s) => s.presetStep)
+  const presetJump = useStore((s) => s.presetJump)
+  const presetPos = useStore((s) => s.presetPos)
   const playlistStep = useStore((s) => s.playlistStep)
   const deletePlaylistPreset = useStore((s) => s.deletePlaylistPreset)
   const activePresetId = useStore((s) => s.activePresetId)
@@ -281,6 +384,13 @@ export default function SoundConsole() {
     : scene?.playlist?.enabled && status.activeMusicId
       ? () => playlistStep(1)
       : undefined
+
+  // When a campaign preset is driving music, expose its full track list so the
+  // Now chip's ☰ menu can jump straight to any song.
+  const activePreset = presets.find((p) => p.id === activePresetId)
+  const musicQueue: QueueInfo | undefined = activePreset
+    ? { tracks: activePreset.files, current: presetPos, onJump: presetJump }
+    : undefined
 
   const hasNow =
     !!status.activeMusicId || status.ambienceFiles.length > 0 || status.loopingSfxIds.length > 0
@@ -339,6 +449,7 @@ export default function SoundConsole() {
               defaultVolume={0.6}
               onVolume={(v) => engine.setActiveMusicVolume(v)}
               onNext={nextTrack}
+              queue={musicQueue}
               onStop={() => engine.stopMusic()}
               stopTitle="Fade this track out"
             />

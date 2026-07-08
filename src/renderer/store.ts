@@ -141,6 +141,8 @@ interface AppState {
   togglePresetPlaylist: (id: string) => void
   /** Advance the active preset by ±1 (wraps). */
   presetStep: (dir: 1 | -1) => void
+  /** Jump the active preset straight to a specific track index (crossfades). */
+  presetJump: (pos: number) => void
   /** Add a library asset to the current scene's palette (by its kind). */
   addAssetToScene: (file: string) => void
   /** Edit a library entry (rename / recategorize / retag / trash-flag). */
@@ -472,6 +474,20 @@ export const useStore = create<AppState>((set, get) => ({
     const next = (((st.presetPos + dir) % len) + len) % len
     set({ presetPos: next })
     playPresetTrack(get, next)
+  },
+
+  presetJump: (pos) => {
+    const st = get()
+    if (!st.activePresetId) return
+    const preset = st.campaign.library.playlists?.find((p) => p.id === st.activePresetId)
+    const len = preset?.files.length ?? 0
+    if (!preset || len === 0) {
+      set({ activePresetId: null })
+      return
+    }
+    const target = ((pos % len) + len) % len
+    set({ presetPos: target })
+    playPresetTrack(get, target)
   },
 
   addAssetToScene: (file) => {
