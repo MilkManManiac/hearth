@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import {
   scriptHighlightColor,
   scriptTextColor,
@@ -8,8 +8,9 @@ import {
   type ScriptDoc,
   type ScriptInline
 } from '../../shared/types'
+import { blurNonTypingFocus, isTypingTarget } from '../lib/keys'
 import { pushRecent } from '../lib/prefs'
-import { useStore } from '../store'
+import { engine, resolveAmbLayer, useStore } from '../store'
 import ScriptEditor, { type EnsureAsset } from './ScriptEditor'
 import SectionHeader from './SectionHeader'
 
@@ -35,16 +36,43 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   // Teleprompter pointer: index (in document order) of the next cue Space will fire.
   const [cuePos, setCuePos] = useState(0)
 
+  // Section-scoped beds this teleprompter started: file → the section it
+  // belongs to + how fast to fade it out when the pointer leaves that section.
+  const sectionBeds = useRef(new Map<string, { section: number; fadeOutMs?: number }>())
+
   // Leave edit mode and rewind the teleprompter when switching scenes.
   useEffect(() => {
     setEditing(false)
     setCuePos(0)
+    sectionBeds.current.clear() // beds keep playing; the console still owns them
   }, [scene.id])
 
   const script: ScriptDoc = scene.script ?? []
 
+  // Fade out every tracked bed from a section earlier than the one the
+  // pointer just moved into. This is the `until: 'section'` lifecycle.
+  const stopExpiredBeds = (section: number) => {
+    for (const [file, info] of sectionBeds.current) {
+      if (info.section < section) {
+        engine.stopAmbienceLayer(file, info.fadeOutMs)
+        sectionBeds.current.delete(file)
+      }
+    }
+  }
+
   // Fire a cue and record it in the recently-used list (audio cues only).
-  const fire = (n: CueInline) => {
+  const fire = (n: CueInline, section?: number) => {
+    // Section-scoped amb bookkeeping happens BEFORE firing: the cue is a
+    // toggle, so "was it playing" decides whether this starts or stops it.
+    if (n.kind === 'amb') {
+      const file = resolveAmbLayer(scene, n.ref)?.file
+      if (file) {
+        const wasPlaying = useStore.getState().status.ambienceFiles.includes(file)
+        if (wasPlaying) sectionBeds.current.delete(file) // cue is stopping it
+        else if (n.until === 'section' && section !== undefined)
+          sectionBeds.current.set(file, { section, fadeOutMs: n.fadeOutMs })
+      }
+    }
     fireCue(n)
     const file =
       n.kind === 'music'
@@ -52,13 +80,15 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
         : n.kind === 'sfx'
           ? scene.sfx?.find((t) => t.id === n.ref)?.file
           : n.kind === 'amb'
-            ? scene.ambience?.find((a) => a.file === n.ref)?.file
+            ? resolveAmbLayer(scene, n.ref)?.file
             : undefined
     if (file) pushRecent(file)
   }
 
   // Teleprompter: Space fires the next cue, Shift+Space / ArrowRight skips it,
-  // ArrowLeft rewinds the pointer (without firing anything).
+  // ArrowLeft rewinds the pointer (without firing anything). Runs in the
+  // CAPTURE phase so a focused button/fader never sees the key — the timeline
+  // owns Space and the arrows no matter what was last clicked.
   useEffect(() => {
     if (editing) return
     const cues = flattenCues(script)
@@ -66,20 +96,24 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== ' ' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen) return // a modal owns the keyboard
-      const t = e.target as HTMLElement | null
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen)
+        return // a modal owns the keyboard
+      if (isTypingTarget(e.target)) return // typing is the one thing that outranks the timeline
+      blurNonTypingFocus() // a clicked mute button / volume slider must not hold the keyboard
       e.preventDefault() // no page scroll, no re-firing a focused button
+      e.stopPropagation()
       if (e.key === 'ArrowLeft') {
         setCuePos(Math.max(0, cuePos - 1))
         return
       }
       if (cuePos >= cues.length) return
-      if (e.key === ' ' && !e.shiftKey) fire(cues[cuePos])
+      const { cue, section } = cues[cuePos]
+      stopExpiredBeds(section) // crossing into a new section retires its beds
+      if (e.key === ' ' && !e.shiftKey) fire(cue, section)
       setCuePos(cuePos + 1)
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
   }, [editing, script, cuePos, fire])
 
   // Autosave path — persist the doc, stay in edit mode.
@@ -105,7 +139,8 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   }
 
   const isEmpty = script.length === 0 || (script.length === 1 && script[0].type === 'paragraph' && script[0].content.length === 0)
-  const cueCount = flattenCues(script).length
+  const flatCues = flattenCues(script)
+  const cueCount = flatCues.length
 
   // Mutable document-order cue counter for this render pass; `next` gets the ring.
   const cueCtx: CueCtx = { i: 0, next: cuePos }
@@ -114,7 +149,9 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   // it — so a manual tap (or a jump back to an earlier cue) puts Space back on
   // track from that point in the story.
   const fireAt = (n: CueInline, idx: number) => {
-    fire(n)
+    const section = flatCues[idx]?.section ?? 0
+    stopExpiredBeds(section)
+    fire(n, section)
     setCuePos(idx + 1)
   }
 
@@ -163,13 +200,22 @@ function Key({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** All cues in the doc, in document order (descending into callouts). */
-function flattenCues(doc: ScriptDoc): CueInline[] {
-  const out: CueInline[] = []
+/**
+ * All cues in the doc, in document order (descending into callouts), each
+ * stamped with its section index. A heading (any level) starts a new section —
+ * this is what `until: 'section'` amb cues live and die by.
+ */
+function flattenCues(doc: ScriptDoc): { cue: CueInline; section: number }[] {
+  const out: { cue: CueInline; section: number }[] = []
+  let section = 0
   const walk = (blocks: ScriptBlock[]): void => {
     for (const b of blocks) {
-      if (b.type === 'callout') walk(b.content)
-      else for (const n of b.content) if (n.type === 'cue') out.push(n)
+      if (b.type === 'callout') {
+        walk(b.content)
+        continue
+      }
+      if (b.type === 'heading') section++
+      for (const n of b.content) if (n.type === 'cue') out.push({ cue: n, section })
     }
   }
   walk(doc)
@@ -178,6 +224,17 @@ function flattenCues(doc: ScriptDoc): CueInline[] {
 
 /** Render-pass cue counter: `i` mutates as cues render; the cue at `next` gets the ring. */
 type CueCtx = { i: number; next: number }
+
+/** Tooltip suffix describing an amb cue's lifecycle options. */
+function ambLifecycleHint(n: CueInline): string {
+  if (n.kind !== 'amb') return ''
+  const bits: string[] = []
+  if (n.volume !== undefined) bits.push(`to ${Math.round(n.volume * 100)}%`)
+  if (n.fadeInMs) bits.push(`in ${n.fadeInMs / 1000}s`)
+  if (n.fadeOutMs) bits.push(`out ${n.fadeOutMs / 1000}s`)
+  if (n.until === 'section') bits.push('until section end')
+  return bits.length ? ` (${bits.join(', ')})` : ''
+}
 
 function inlineFormat(node: Extract<ScriptInline, { type: 'text' }>): { className: string; style: CSSProperties } {
   const cls = ['whitespace-pre-wrap']
@@ -213,9 +270,14 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, i
       className={`mx-1 inline-flex items-center gap-1 rounded border px-2 py-0.5 align-middle text-sm transition-colors ${CUE_STYLE[node.kind]} ${
         isNext ? 'ring-1 ring-hearth-ember/80 ring-offset-2 ring-offset-hearth-panel shadow-[0_0_10px_rgba(255,140,60,0.35)]' : ''
       }`}
-      title={`${node.kind}: ${node.ref}${isNext ? ' — next (Space)' : ''}`}
+      title={`${node.kind}: ${node.ref}${ambLifecycleHint(node)}${isNext ? ' — next (Space)' : ''}`}
     >
       {node.label ?? node.ref}
+      {node.kind === 'amb' && node.until === 'section' && (
+        <span aria-hidden className="text-[10px] opacity-70" title="Fades out at the end of this section">
+          §
+        </span>
+      )}
     </button>
   )
 }

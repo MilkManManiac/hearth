@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AssetKind, LibraryAsset } from '../../shared/types'
-import { assetDisplayName, CATEGORY_ORDER, categoryMeta } from '../../shared/types'
+import {
+  assetCategories,
+  assetDisplayName,
+  assetPrimaryCategory,
+  CATEGORY_ORDER,
+  categoryMeta
+} from '../../shared/types'
 import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
 import PreviewScrubber from './PreviewScrubber'
@@ -76,10 +82,14 @@ export default function LibraryPanel() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open, close])
 
-  // Categories present in the library, ordered.
+  // Categories present in the library (all of an asset's categories), ordered.
   const categories = useMemo(() => {
     const set = new Set<string>()
-    for (const a of assets) set.add(a.category ?? '')
+    for (const a of assets) {
+      const cats = assetCategories(a)
+      if (cats.length === 0) set.add('')
+      for (const c of cats) set.add(c)
+    }
     return [...set].sort((a, b) => categoryRank(a) - categoryRank(b) || a.localeCompare(b))
   }, [assets])
 
@@ -87,9 +97,13 @@ export default function LibraryPanel() {
     const q = query.trim().toLowerCase()
     return assets.filter((a) => {
       if (kind !== 'all' && a.kind !== kind) return false
-      if (category !== 'all' && (a.category ?? '') !== category) return false
+      // Multi-category: the filter matches if ANY of the asset's categories hit.
+      if (category !== 'all') {
+        const cats = assetCategories(a)
+        if (category === '' ? cats.length > 0 : !cats.includes(category)) return false
+      }
       if (!q) return true
-      const hay = `${a.name ?? ''} ${a.file} ${a.category ?? ''} ${a.description ?? ''} ${a.tags.join(' ')}`.toLowerCase()
+      const hay = `${a.name ?? ''} ${a.file} ${assetCategories(a).join(' ')} ${a.description ?? ''} ${a.tags.join(' ')}`.toLowerCase()
       return hay.includes(q)
     })
   }, [assets, query, kind, category])
@@ -119,7 +133,9 @@ export default function LibraryPanel() {
 
     const byCat = new Map<string, LibraryAsset[]>()
     for (const a of live) {
-      const c = a.category ?? ''
+      // Grouped under the PRIMARY category only (no duplicate rows); the
+      // category filter above still finds it via any of its categories.
+      const c = assetPrimaryCategory(a) ?? ''
       if (!byCat.has(c)) byCat.set(c, [])
       byCat.get(c)!.push(a)
     }
@@ -342,7 +358,7 @@ function AssetRow({
 
   const openEditor = (): void => {
     setName(assetDisplayName(asset))
-    setCat(asset.category ?? '')
+    setCat(assetCategories(asset).join(', '))
     setTags(asset.tags.join(', '))
     setDesc(asset.description ?? '')
     setEditing(true)
@@ -382,6 +398,14 @@ function AssetRow({
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm text-hearth-text" title={asset.file}>
             {assetDisplayName(asset)}
+            {assetCategories(asset).length > 1 && (
+              <span
+                className="ml-2 text-[10px] uppercase tracking-wide text-hearth-muted/70"
+                title="All categories (grouped under the first)"
+              >
+                {assetCategories(asset).join(' · ')}
+              </span>
+            )}
           </div>
           {asset.tags.length > 0 && (
             <div className="truncate text-[11px] text-hearth-muted">{asset.tags.join(' · ')}</div>
@@ -488,9 +512,9 @@ function AssetRow({
             onChange={(e) => setCat(e.target.value)}
             onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
             list="hearth-categories"
-            placeholder="category (type anything)"
+            placeholder="categories (comma separated)"
             className={`${inputCls} w-40`}
-            title="Pick a suggestion or type a brand-new category — it becomes a group + mood tag"
+            title="One or more, comma separated — 'combat, tension, nature' files it under all three (first = main group + mood tag)"
           />
           <input
             value={tags}

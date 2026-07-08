@@ -16,3 +16,8 @@ campaign-sample/ambience/fapx-*
 campaign-sample/ambience/noxx-*
 campaign-sample/sfx/fapx-*
 campaign-sample/sfx/noxx-*
+
+# Campaign source-material dumps (large, personal)
+/Elor Campaign Import/
+# Session recordings (The Chronicler)
+campaign-sample/recordings/

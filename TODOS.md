@@ -3,6 +3,40 @@
 Captured for later. Not being worked on yet. We'll likely run a **grill-me**
 session (see bottom) to turn the big ones into concrete specs before building.
 
+## 🔔 Standing reminders (surface these regularly)
+
+**DM's own todo (not Claude's):**
+- [ ] **Categorize + mood-tag the sound library.** Every song / SFX / ambience
+  needs categories (comma-separated in the Library ✎ editor — multi-category
+  works now, e.g. `combat, tension, nature`) and a mood/vibe. The console's
+  dim `?` badge marks untagged assets; the Library groups the rest under
+  "Uncategorized". ~2,170 assets, mostly untagged from waves 4–7 — chip away.
+- [ ] **Grill session on the Elor campaign** (next Claude session, Opus or
+  Sonnet, `/grill-me`): get grilled on the very basic concepts of the campaign
+  to triage the notebook — what's useful, what gets merked, what stays.
+  Targets: the 12 threads, the Ideas Parking Lot, the flagged contradictions
+  (Sellie/Eira truth, S22/S23 blur, where Brolin/Eira/Michael stayed), and the
+  unfired hooks (Kena has Tad, the guild leader who knows topside is safe,
+  Mr. Spells' want). **Then**: a thorough review with Claude + brainstorm
+  campaign ideas where the DM wants help.
+- [ ] **Campaign vibe/direction review — POSTPONED to next session (2026-07-09).**
+  Claude has 4 questions queued: Pool-arc tone (horror vs levity), the Pool's
+  endgame role, how much Root's assassination should cost the party, and where
+  "Rebirth" actually ends. Act summary already delivered 2026-07-08.
+- ℹ️ **Downloader is actively adding files** to `Downloads\Hearth YT Downloads`
+  (separate Claude session). Check the folder next session — may be ready for
+  a triage/import pass into Elor Rebirth.
+
+**Claude's queue (rough priority):** N3 wiki-links + backlinks (#11) → user
+fills Session 14's actual events in the Elor campaign → hand-verify pass
+(#10, N1/N2, Chronicler live test next session) → #12 mac/packaging last.
+
+**Built 2026-07-08:** the **Elor: Rebirth campaign folder**
+(`C:\Users\weshu\Campaigns\Elor Rebirth` — 61 notes: 13 sessions, 5 PCs,
+17 NPCs/gods, locations/factions/threads/items, ideas quarantine, 34 art
+files) and **🪶 The Chronicler** (per-speaker session recorder in the Discord
+panel — see DISCORD-BRIDGE.md).
+
 ---
 
 ## 1. Design / visual upgrades
@@ -267,6 +301,21 @@ Parked: auth-gated finds from the 2026-07-06 research (Kenney / Freesound /
 Pixabay packs that need manual download) are listed in the scratchpad
 `sound-candidates.md`.
 
+**New source (2026-07-08): the `downloader/` tool** (built in a separate Claude
+session — see `downloader/README.md`). `python downloader/hearth.py` = GUI that
+takes Spotify/YouTube links (spotDL + yt-dlp) and drops tagged m4a/mp3 into
+**`C:\Users\weshu\Downloads\Hearth YT Downloads`**. Sync into the game either
+way:
+- **DM-driven:** 📥 Triage (TopBar) → pick that folder → K/J audition → keepers
+  auto-filed into the campaign + library.json.
+- **Claude-driven:** ask Claude to bulk-import headless (like waves 4–7),
+  optionally transcoding m4a→ogg — **ffmpeg is now properly installed**
+  (`winget install Gyan.FFmpeg`, on PATH), so the old "no ffmpeg" caveat is gone.
+- **License note:** YouTube/Spotify rips are *personal-table use only* — same
+  bucket as the mp1 pack. Stamp `source: youtube`/`spotify` and
+  `license: private` at import; never redistribute; keep them out of git (bulk
+  audio is already gitignored).
+
 **Wave 7 (2026-07-06): FULL DUMP — library 165 → 2,171.** Everything left in
 the user's downloaded packs imported at their direction (`fapx-`/`noxx-`/
 `mp1-` prefixes), auto-categorized (incl. free-form `footsteps` ×750,
@@ -325,6 +374,158 @@ unified empty-state component, cue color-map dedupe (ScriptPanel vs CueChip),
 template ids shared const (main + SceneList), symlink-hardening the asset://
 path checks (realpath), engine decode-cache eviction, one-shot SFX not
 stopped by Stop all.
+
+---
+
+## 10. Run-mode live-control ideas — ✅ ALL FOUR BUILT (2026-07-07, verify by hand)
+Raised after the first real Discord-bridge session; built same day. Typecheck +
+build + boot + compiler smoke test clean. **Verify by hand:** ①click 🔊 Local /
+a console fader, then Space still advances the timeline; ②an
+`{{amb:...|vol=35%|in=4s|until=section}}` cue fades in to 35% and dies when
+Space crosses the next heading; ③console chips read MUS/AMB/SFX + mood words,
+untagged assets show `?`; ④comma-separated categories in the Library ✎ editor
+filter/group correctly.
+
+### How each landed (2026-07-07)
+- **10.1** `lib/keys.ts` (`isTypingTarget`/`blurNonTypingFocus`); teleprompter
+  keys now capture-phase + only true text entry swallows them; global
+  click→blur on buttons/faders in App.tsx; SfxGrid/SoundConsole hotkeys same.
+- **10.2** `CueInline` gained `volume/fadeInMs/fadeOutMs/until:'section'`;
+  scriptText syntax `{{amb:ref|vol=35%|in=4s|out=8s|until=section}}` (compiler
+  ignores bad opts); teleprompter tracks section-scoped beds and fades them out
+  when the pointer crosses the next heading (§ marker on the chip); ⚙ popover
+  on amb chips in the editor sets all four; AUTHORING.md + seed doc'd.
+  Deliberate limits: options are amb-only; beds past the last cue of the doc
+  never auto-stop (no boundary left to cross); ArrowLeft never restarts a bed.
+- **10.3** SoundConsole: MUS/AMB/SFX text badges (title explains each kind's
+  behavior), mood = category labels as words (max 2, utility cats skipped),
+  dim `?` badge = untagged (the "needs a sorting pass" flag).
+- **10.4** `LibraryAsset.categories?: string[]` (primary first; legacy
+  `category` mirrors `[0]`); Library ✎ category field takes commas; filter
+  matches any, grouping by primary; `assetCategories()/assetPrimaryCategory()`
+  helpers. Triage still stamps a single category (fine — it's the primary).
+
+### Original notes (kept for reference)
+
+### 10.1 Keyboard scope in run mode — Space / arrows must only drive the timeline (bug)
+- Symptom: while DMing, clicking a UI control **steals keyboard focus** from the
+  teleprompter, so Space / arrows stop advancing the script.
+  - Clicked **🔊 Local** (monitor mute) → Space no longer advanced the timeline.
+  - Clicked a sound in the bottom section (Now Sounding / SFX) → Space after that
+    didn't progress the timeline either.
+- Want: in run mode, **Space + arrow keys are owned by the teleprompter/timeline**
+  regardless of what was last clicked. Clicking a button/sound should fire that
+  control but **not** capture the transport keys (or should immediately hand focus
+  back). Text inputs / TipTap editing stay exempt (existing carve-out).
+- Likely a `.blur()` after click, or route transport keys at the document level
+  and let buttons be `tabindex=-1` / not focus-holding. Confirm against the
+  existing teleprompter key handling + modal-suppression logic (see #9 Tier-1
+  "Keyboard scoping").
+
+### 10.2 Ambience/atmosphere lifecycle in the timeline — explicit on/off + fade + target volume
+Right now it's unclear **how and when a bed turns off**. Design a clear model:
+- **When does a bed stop?** Options floated: at the next paragraph/section
+  boundary, or only when the next song/bed starts. User leans toward
+  **paragraph/section-scoped** as the default mental model.
+- **Fade timing:** let the author set fade-in / fade-out duration per bed
+  (some infra already exists — `fadeInMs`/`fadeOutMs` on tracks from #6; extend
+  the idea to ambience cues / sections).
+- **Target volume:** pre-set the volume a bed fades **up to**, so the DM doesn't
+  mix live while talking. Example: campfire slightly louder than rain, both
+  pre-balanced.
+- **Delivery idea:** a **per-section / per-paragraph editor** you can toggle open
+  to set these (which beds are active in this section, their fade + target
+  volume). Explicitly **optional, not required** — for tightly-directed scenes.
+  Casual scenes still work with plain cues.
+
+### 10.3 Bottom sound section (scene + favorites) — better identification at a glance
+The bottom strip's sounds are hard to read live. The emojis don't carry meaning.
+- **Show kind clearly:** obvious visual distinction between **music / SFX /
+  ambience** (not a cryptic emoji).
+- **Show mood:** surface the mood tag(s) on the chip somehow.
+- Goal: while planning *or* improvising, instantly see what a sound is and its
+  vibe. This also makes it easy to spot which assets still **need** categ/mood
+  info — a clean way to flag the un-tagged ones for a sorting pass. (Ties into
+  the huge un-auditioned wave-4–7 backlog in #8 — most of those 2k assets were
+  filed by filename, not by ear.)
+
+### 10.4 Multiple categories / tags per sound
+- A sound can belong to several buckets at once — e.g. one cue is **combat** *and*
+  **anticipation** *and* **nature**. Support **multiple categories** (or lean on
+  multi-tag) per asset so a search surfaces it from any angle.
+- Payoff: good labels → fast retrieval both when **planning** and for **on-the-spot
+  improv** ("give me anything tense + nature").
+- Schema note: `LibraryAsset.category` is currently singular
+  (`src/shared/types.ts`); this likely means category → `string[]` (or formalize
+  tags as the multi-axis and keep category as a coarse primary). Decide in the
+  grill pass; touches `library.json`, the Library browser filters (#4), and the
+  cue tray grouping.
+
+---
+
+## 11.5 Notes readability pass (captured 2026-07-08)
+The DM finds the generated Elor notes **hard to read / decipher** — formatting
+and wording, not content. Cleanup ideas for a future pass (pair with the grill
+session so we only polish what survives):
+- Shorter paragraphs, more bullets; front-load the one-line "who/what is this."
+- Fewer mid-sentence [[links]] and session references; move citations to a
+  compact "History" line at the bottom.
+- Consistent section skeleton per kind (NPC: Who / Wants / Knows / Secrets;
+  Session: What happened / Loose ends).
+- Possibly render `> [!dm]` callouts more distinctly in NoteBody/NoteView, and
+  bigger line-height/measure in the notes reader.
+- Wording: plainer, punchier — write for 2am-mid-session skimming, not prose.
+
+## 11. Note-taking one-stop shop (THE next big direction — captured 2026-07-07)
+**Goal:** Hearth + D&D Beyond are the only two things a DM needs open (Discord
+on the side for players). Maps/pics/rules live in D&D Beyond; **all sound and
+ALL notes live in Hearth.** No more tab-hopping and folder-hunting mid-session.
+
+The user's sketch: campaign root = "Elor: Rebirth" → inside it Sessions
+(Session 1 holding multiple scenes), plus Locations, NPCs, Enemies… "Maybe
+it's not folders — I'm sure there is a better way — but easy to note, find,
+search." Requirements distilled:
+- **Fast capture** — adding a note mid-session must be near-zero friction.
+- **Fast retrieval** — global search across everything; browse structure too.
+- **Organization** — sessions group scenes; entity-ish notes (locations/NPCs/
+  enemies) exist campaign-wide, not per-scene.
+- Research + gameplan done (2 subagents: tool survey + code map), design
+  grounded in the DM's real Elor session doc. Plan: `NOTES-PLAN.md`.
+
+**Status: N1 (foundation) ✅ BUILT 2026-07-07 — verify by hand.** `notes/*.json`
+(CampaignNote: kind session/npc/pc/location/faction/item/thread/note, ScriptDoc
+body, bodyText authoring path), loader/watcher/save/create/delete cloned from
+the scenes pipeline, `note:*` IPC, 📓 Notes tab in the left rail (grouped by
+kind, + New note kind picker), NoteView (rename, retype kind, thread
+open/resolved, session date, trash-delete), NoteEditor = script editor minus
+cue tray. Kind starters incl. Lazy-DM session skeleton. AUTHORING.md + seed
+document the format; demo note `barkeep-tobble` in campaign-sample.
+**N2 (sessions + retrieval) ✅ BUILT 2026-07-07 — verify by hand.**
+`Scene.session` (session-note id) groups the scene list under 📅 session
+headers (newest first, Unfiled last; header click opens the session note;
+hover 📅 on a scene row = assign/unfile popover). Session notes show their
+scenes as chips (click = arm). **Ctrl+K** quick switcher: fuzzy titles over
+notes+scenes (subsequence match), 3+ letters also searches inside bodies/
+scripts; Enter opens (run mode → note lands in the right panel, script stays).
+**Ctrl+J** quick capture: one-liner → timestamped line appended to the armed
+scene's session note (else newest session; creates "Session Log" if none).
+Right panel gained a read-only 📓 tab (NoteBody renderer + grouped picker)
+that auto-follows note selection. Switcher/capture registered as
+keyboard-owning modals in every hotkey guard. AUTHORING.md documents
+`session`. **Next: N3** [[links]] + autocomplete + backlinks, then N4 secrets
+carry-forward / promote-from-Cast / docx import of Elor sessions.
+
+## 12. Mac support / packaging + distribution (parked until we're happy with everything else)
+The app is already mac-compatible (no Windows-specific code; davey has mac
+prebuilds; the vc_redist saga is Windows-only). What's missing is DISTRIBUTION
+— there's currently no installer for ANY platform (dev-mode only):
+- Add **electron-builder** (or Forge) config: mac `.dmg`/`.zip` + Windows
+  `.exe` targets.
+- Mac builds must be built on macOS — set up **GitHub Actions** (macos runner).
+- Unsigned mac builds hit Gatekeeper (right-click → Open workaround) unless
+  notarized (Apple Developer, $99/yr) — decide later.
+- Remember: bulk audio is gitignored — a packaged app still needs the campaign
+  folder copied separately (or build a campaign export/import).
 
 ---
 

@@ -4,6 +4,7 @@
 import { app } from 'electron'
 import * as path from 'path'
 import * as fsSync from 'fs'
+import { promises as fs } from 'fs'
 import { PassThrough } from 'stream'
 import type { Client, VoiceBasedChannel } from 'discord.js'
 import type { AudioPlayer, VoiceConnection } from '@discordjs/voice'
@@ -19,6 +20,12 @@ export interface DiscordStatus {
   guildName?: string
   channelName?: string
   error?: string
+  /** The Chronicler: recording per-speaker audio in the joined channel. */
+  chronicling?: boolean
+  /** Where the current chronicle session is being written. */
+  chronicleDir?: string
+  /** Utterances captured so far this session. */
+  utterances?: number
 }
 
 export interface DiscordGuildInfo {
@@ -54,6 +61,61 @@ function writeToken(token: string | undefined): void {
   fsSync.writeFileSync(CONFIG_FILE(), JSON.stringify(cfg, null, 2))
 }
 
+/**
+ * Streaming WAV writer: 44-byte placeholder header, raw s16le appended, sizes
+ * patched on close. Zero dependencies — utterance files open anywhere.
+ */
+class WavWriter {
+  private fd: number
+  private dataBytes = 0
+
+  constructor(
+    public readonly filePath: string,
+    private sampleRate = 48000,
+    private channels = 2
+  ) {
+    this.fd = fsSync.openSync(filePath, 'w')
+    fsSync.writeSync(this.fd, this.header(0))
+  }
+
+  private header(dataBytes: number): Buffer {
+    const h = Buffer.alloc(44)
+    const byteRate = this.sampleRate * this.channels * 2
+    h.write('RIFF', 0)
+    h.writeUInt32LE(36 + dataBytes, 4)
+    h.write('WAVE', 8)
+    h.write('fmt ', 12)
+    h.writeUInt32LE(16, 16) // PCM chunk size
+    h.writeUInt16LE(1, 20) // PCM format
+    h.writeUInt16LE(this.channels, 22)
+    h.writeUInt32LE(this.sampleRate, 24)
+    h.writeUInt32LE(byteRate, 28)
+    h.writeUInt16LE(this.channels * 2, 32) // block align
+    h.writeUInt16LE(16, 34) // bits per sample
+    h.write('data', 36)
+    h.writeUInt32LE(dataBytes, 40)
+    return h
+  }
+
+  write(chunk: Buffer): void {
+    fsSync.writeSync(this.fd, chunk)
+    this.dataBytes += chunk.length
+  }
+
+  /** Patch the header sizes and close. Returns seconds of audio written. */
+  close(): number {
+    const h = this.header(this.dataBytes)
+    fsSync.writeSync(this.fd, h, 0, 44, 0)
+    fsSync.closeSync(this.fd)
+    return this.dataBytes / (this.sampleRate * this.channels * 2)
+  }
+}
+
+/** Windows-safe filename fragment from a Discord username. */
+function safeName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_-]+/g, '_').slice(0, 32) || 'unknown'
+}
+
 /** Humanize the errors a DM will actually hit. */
 function friendly(err: Error): string {
   const m = err.message
@@ -71,6 +133,15 @@ export class DiscordBridge {
   private player: AudioPlayer | null = null
   private pcm: PassThrough | null = null
   private status: DiscordStatus = { state: 'idle', hasToken: !!readToken() }
+
+  // --- The Chronicler (per-speaker session recorder) ---
+  private chronicleDir: string | null = null
+  private chronicleStart = 0
+  private chronicleCount = 0
+  private chronicleSpeakingHandler: ((userId: string) => void) | null = null
+  /** Users with an active utterance capture (one stream per speaker at a time). */
+  private capturing = new Set<string>()
+  private usernames = new Map<string, string>()
 
   constructor(private onStatus: (s: DiscordStatus) => void) {}
 
@@ -151,7 +222,8 @@ export class DiscordBridge {
         channelId,
         guildId,
         adapterCreator: guild.voiceAdapterCreator,
-        selfDeaf: true
+        // NOT deafened: The Chronicler needs to hear the channel to record it.
+        selfDeaf: false
       })
       await entersState(connection, VoiceConnectionStatus.Ready, 20_000)
 
@@ -191,7 +263,116 @@ export class DiscordBridge {
     pcm.write(Buffer.from(chunk))
   }
 
+  // --- The Chronicler ------------------------------------------------------
+
+  /**
+   * Start recording the joined channel, one file per utterance per speaker:
+   * `<offsetMs>-<username>.wav` (48kHz stereo s16le) plus `manifest.jsonl`
+   * (one line per utterance: user, start/end offsets, duration, file). The
+   * per-speaker split is the whole point — future transcripts get perfect
+   * speaker attribution instead of diarization guesswork.
+   */
+  async startChronicle(dir: string): Promise<void> {
+    if (!this.connection) throw new Error('Join a voice channel first')
+    if (this.chronicleDir) return // already rolling
+    await fs.mkdir(dir, { recursive: true })
+    this.chronicleDir = dir
+    this.chronicleStart = Date.now()
+    this.chronicleCount = 0
+    const receiver = this.connection.receiver
+    const handler = (userId: string) => void this.captureUtterance(userId)
+    this.chronicleSpeakingHandler = handler
+    receiver.speaking.on('start', handler)
+    await fs.writeFile(
+      path.join(dir, 'session.json'),
+      JSON.stringify(
+        {
+          startedAt: new Date(this.chronicleStart).toISOString(),
+          guild: this.status.guildName,
+          channel: this.status.channelName,
+          format: 'wav s16le 48kHz stereo; offsets in ms from startedAt'
+        },
+        null,
+        2
+      )
+    )
+    this.setStatus({ chronicling: true, chronicleDir: dir, utterances: 0 })
+  }
+
+  /** Capture one speaking burst from one user into its own WAV. */
+  private async captureUtterance(userId: string): Promise<void> {
+    const dir = this.chronicleDir
+    const receiver = this.connection?.receiver
+    if (!dir || !receiver || this.capturing.has(userId)) return
+    this.capturing.add(userId)
+    try {
+      let name = this.usernames.get(userId)
+      if (!name) {
+        try {
+          name = (await this.client?.users.fetch(userId))?.username ?? userId
+        } catch {
+          name = userId
+        }
+        this.usernames.set(userId, name)
+      }
+      const { EndBehaviorType } = await import('@discordjs/voice')
+      const prism = await import('prism-media')
+      const startMs = Date.now() - this.chronicleStart
+      const file = `${String(startMs).padStart(9, '0')}-${safeName(name)}.wav`
+      const wav = new WavWriter(path.join(dir, file))
+
+      const opusStream = receiver.subscribe(userId, {
+        end: { behavior: EndBehaviorType.AfterSilence, duration: 800 }
+      })
+      // opusscript-backed decode — no native deps (same policy as playback).
+      const decoder = new prism.opus.Decoder({ rate: 48000, channels: 2, frameSize: 960 })
+      opusStream.pipe(decoder)
+      decoder.on('data', (chunk: Buffer) => wav.write(chunk))
+
+      await new Promise<void>((resolve) => {
+        const done = () => resolve()
+        decoder.once('end', done)
+        decoder.once('close', done)
+        opusStream.once('error', done)
+        decoder.once('error', done)
+      })
+
+      const seconds = wav.close()
+      // Sub-quarter-second blips are keyboard noise, not speech — drop them.
+      if (seconds < 0.25) {
+        await fs.unlink(wav.filePath).catch(() => {})
+        return
+      }
+      this.chronicleCount++
+      const line = JSON.stringify({
+        user: name,
+        userId,
+        startMs,
+        endMs: startMs + Math.round(seconds * 1000),
+        seconds: Math.round(seconds * 100) / 100,
+        file
+      })
+      await fs.appendFile(path.join(dir, 'manifest.jsonl'), line + '\n')
+      this.setStatus({ utterances: this.chronicleCount })
+    } catch {
+      /* a dropped utterance must never take down the bridge */
+    } finally {
+      this.capturing.delete(userId)
+    }
+  }
+
+  stopChronicle(): void {
+    if (!this.chronicleDir) return
+    if (this.connection && this.chronicleSpeakingHandler) {
+      this.connection.receiver.speaking.off('start', this.chronicleSpeakingHandler)
+    }
+    this.chronicleSpeakingHandler = null
+    this.chronicleDir = null
+    this.setStatus({ chronicling: false, chronicleDir: undefined })
+  }
+
   leave(): void {
+    this.stopChronicle()
     this.pcm?.end()
     this.player?.stop()
     try {

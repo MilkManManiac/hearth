@@ -7,20 +7,28 @@
       "id": "held",
       "label": "Held breath",
       "file": "music/market.mp3",
-      "volume": 0.39,
+      "volume": 0.55,
       "default": true
     },
     {
       "id": "rise",
       "label": "The dead rise",
       "file": "music/battle.mp3",
-      "volume": 0.16
+      "volume": 0.73
+    },
+    {
+      "id": "lib-horror-oldschool",
+      "label": "horror-oldschool",
+      "file": "music/horror-oldschool.ogg"
     }
   ],
   "ambience": [
     {
       "file": "ambience/dungeon.ogg",
       "volume": 1
+    },
+    {
+      "file": "ambience/campfire.wav"
     }
   ],
   "sfx": [
@@ -65,6 +73,13 @@
       "file": "sfx/gem.ogg",
       "hotkey": "6",
       "duckMusic": false
+    },
+    {
+      "id": "lib-deep-monster-roar",
+      "label": "deep-monster-roar",
+      "file": "sfx/deep-monster-roar.wav",
+      "volume": 0.54,
+      "loop": false
     }
   ],
   "images": [
@@ -165,7 +180,17 @@
         },
         {
           "type": "text",
-          "text": " At the chamber's heart, a bone altar cradles a single violet gem that pulses like a slow heartbeat. "
+          "text": " At the chamber's heart, a bone altar"
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "wight",
+          "label": "🔊 wight"
+        },
+        {
+          "type": "text",
+          "text": " cradles a single violet gem that pulses like a slow heartbeat. "
         },
         {
           "type": "cue",
@@ -190,8 +215,23 @@
         {
           "type": "cue",
           "kind": "sfx",
-          "ref": "wight",
-          "label": "🔊 wight"
+          "ref": "lib-deep-monster-roar",
+          "label": "🔊 deep-monster-roar"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "lib-deep-monster-roar",
+          "label": "🔊 deep-monster-roar"
         }
       ]
     }

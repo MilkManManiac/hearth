@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store'
+import { LeftTabSwitch } from './NotesRail'
 
 /** Built-in starting points; ids must match SCENE_TEMPLATES in main/campaign.ts. */
 const TEMPLATES = [
@@ -19,14 +20,46 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
     duplicateScene,
     deleteScene,
     renameScene,
-    createScene
+    createScene,
+    updateScene,
+    selectNote,
+    setLeftTab
   } = useStore()
   const buildMode = useStore((s) => s.uiMode === 'build')
   const [picking, setPicking] = useState(false)
   // Inline rename state: which scene row is an input, and its draft text.
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
+  // Which scene row has the session-assign popover open.
+  const [assigningId, setAssigningId] = useState<string | null>(null)
   const renameRef = useRef<HTMLInputElement>(null)
+
+  // Sessions group the scene list (Scene.session → a kind:"session" note).
+  // Newest session first; scenes without one land in Unfiled at the bottom.
+  const sessionNotes = campaign.notes
+    .filter((n) => n.kind === 'session')
+    .sort(
+      (a, b) =>
+        (b.date ?? b.createdAt ?? '').localeCompare(a.date ?? a.createdAt ?? '') ||
+        a.title.localeCompare(b.title)
+    )
+  const groups = sessionNotes
+    .map((sn) => ({
+      id: sn.id as string | null,
+      title: sn.title,
+      items: campaign.scenes.filter((s) => s.session === sn.id)
+    }))
+    .filter((g) => g.items.length > 0)
+  const filed = new Set(groups.flatMap((g) => g.items.map((s) => s.id)))
+  const unfiled = campaign.scenes.filter((s) => !filed.has(s.id))
+  if (unfiled.length > 0) {
+    groups.push({ id: null, title: groups.length > 0 ? 'Unfiled' : '', items: unfiled })
+  }
+
+  const assignSession = (sceneId: string, sessionId: string | undefined): void => {
+    setAssigningId(null)
+    void updateScene(sceneId, (s) => ({ ...s, session: sessionId }))
+  }
 
   useEffect(() => {
     if (renamingId) renameRef.current?.select()
@@ -40,7 +73,8 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
   return (
     <aside className="flex w-60 flex-col border-r border-hearth-border bg-hearth-panel">
       <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-hearth-muted">
-        Scenes ({campaign.scenes.length})
+        <LeftTabSwitch />
+        <span className="ml-1 text-hearth-muted/60">{campaign.scenes.length}</span>
         {onCollapse && (
           <button
             onClick={onCollapse}
@@ -58,14 +92,36 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
             automatically.
           </p>
         )}
-        {campaign.scenes.map((scene) => {
+        {groups.map((group) => (
+          <div key={group.id ?? 'unfiled'}>
+            {group.title && (
+              <button
+                onClick={() => {
+                  // A session header opens its session note (prep lives there).
+                  if (group.id) {
+                    selectNote(group.id)
+                    setLeftTab('notes')
+                  }
+                }}
+                disabled={!group.id}
+                title={group.id ? `Open the "${group.title}" session note` : undefined}
+                className={`flex w-full items-center gap-1.5 px-3 pb-0.5 pt-2 text-left text-[10px] font-semibold uppercase tracking-wider text-hearth-muted ${
+                  group.id ? 'hover:text-hearth-ember' : ''
+                }`}
+              >
+                {group.id && <span aria-hidden>📅</span>}
+                {group.title}
+                <span className="text-hearth-muted/60">{group.items.length}</span>
+              </button>
+            )}
+            {group.items.map((scene) => {
           const active = scene.id === currentSceneId
           const live = scene.id === liveSceneId
           const renaming = scene.id === renamingId
           return (
-            // div, not button: the row holds nested action buttons.
+            <div key={scene.id}>
+            {/* div, not button: the row holds nested action buttons. */}
             <div
-              key={scene.id}
               role="button"
               tabIndex={0}
               onClick={() => !renaming && selectScene(scene.id)}
@@ -131,6 +187,16 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
+                      setAssigningId(assigningId === scene.id ? null : scene.id)
+                    }}
+                    title="Assign to a session"
+                    className="rounded px-1 text-xs text-hearth-muted hover:text-hearth-ember"
+                  >
+                    📅
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
                       if (window.confirm(`Delete "${scene.name}"? The file moves to the recycle bin.`)) {
                         deleteScene(scene.id)
                       }
@@ -143,8 +209,40 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
                 </span>
               )}
             </div>
+            {/* Session-assign popover: file the scene under a session note. */}
+            {assigningId === scene.id && (
+              <div className="mx-3 mb-1 overflow-hidden rounded-md border border-hearth-border bg-hearth-panel2 text-xs">
+                {sessionNotes.length === 0 && (
+                  <p className="px-2.5 py-1.5 text-hearth-muted">
+                    No session notes yet — create one under 📓 Notes → + New note → Session.
+                  </p>
+                )}
+                {sessionNotes.map((sn) => (
+                  <button
+                    key={sn.id}
+                    onClick={() => assignSession(scene.id, sn.id)}
+                    className={`block w-full px-2.5 py-1.5 text-left transition-colors hover:bg-hearth-ember/10 ${
+                      scene.session === sn.id ? 'text-hearth-ember' : 'text-hearth-text'
+                    }`}
+                  >
+                    📅 {sn.title}
+                  </button>
+                ))}
+                {scene.session && (
+                  <button
+                    onClick={() => assignSession(scene.id, undefined)}
+                    className="block w-full border-t border-hearth-border px-2.5 py-1.5 text-left text-hearth-muted transition-colors hover:bg-hearth-ember/10"
+                  >
+                    ✕ Unfile
+                  </button>
+                )}
+              </div>
+            )}
+            </div>
           )
         })}
+          </div>
+        ))}
       </div>
       {buildMode && (
       <div className="border-t border-hearth-border p-2">

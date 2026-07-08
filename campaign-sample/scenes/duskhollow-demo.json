@@ -62,7 +62,7 @@
     },
     {
       "file": "ambience/evil-temple.ogg",
-      "volume": 0.45,
+      "volume": 1,
       "loop": true,
       "autoplay": false
     },
@@ -114,13 +114,6 @@
       "file": "sfx/heartbeat.mp3",
       "hotkey": "6",
       "volume": 0.8
-    },
-    {
-      "id": "spell",
-      "label": "Dark magic stirs",
-      "file": "sfx/dark-magic-spell.mp3",
-      "hotkey": "7",
-      "duckMusic": true
     }
   ],
   "ideas": [
@@ -138,5 +131,332 @@
   "transition": {
     "crossfadeMs": 2500
   },
-  "scriptText": "# Duskhollow — A Fair Day Turns\n\n## Market Square, Midday\n\n{{music:town}} The morning bells have long since faded, and Duskhollow's market square {{amb:fap-crowd}} glows under a flawless sky. Awnings snap in a warm breeze, a fiddler saws out a jig, and the smell of fresh bread drifts between the stalls. A coin-seller counts his take {{sfx:coins}} and waves you toward his trinkets. *It is, by every measure, a beautiful day.*\n\n> [!dm] Hit ▶ Go live, then walk the cues with Space: the fair-day theme, the market crowd bed, the coin clink. Let them breathe here — this is the calm before.\n\n## Dusk, and the Rain\n\nBut the light is going wrong. {{music:storm}} Clouds the color of old bruises pile over the eastern hills, and a cold wind rises {{amb:nox-wind-forest}} that tugs at cloaks and strangles the fiddler's tune. The first fat drops strike the cobbles, thunder rolls across the rooftops {{sfx:thunder}} — then the sky opens {{amb:nox-rain-strong}}. Stalls empty, shutters slam {{amb:fap-crowd}}. One of you strikes a lantern against the gloom {{sfx:torch}}, and its little flame is the only warm thing left in Duskhollow.\n\n> [!dm] The wind and rain beds fade in on their cues; the second crowd cue at \"stalls empty\" toggles the crowd off. Beds keep looping until their cue fires again — watch the Now Sounding strip at the bottom.\n\n## The Sunless Shrine\n\nThe road out of town ends at a door that should not be here — black stone, older than Duskhollow itself. It groans inward at a touch {{sfx:door}}, and the storm cuts off behind you {{amb:nox-rain-strong}} {{amb:nox-wind-forest}}. Inside, the air is cold and still and *wrong*. {{music:temple}} Water drips somewhere in the dark {{amb:nox-cave-drips}}, and the shrine itself seems to hold its breath {{amb:evil-temple}}. Something breathes that has no business breathing {{sfx:ghost}}, and the shadows will not stay still {{amb:ghostly-loop}}. Far below, beneath the altar, you feel a slow, patient pulse — like a heart the size of a room {{sfx:heart}}. **You are not alone in here.** {{sfx:spell}}\n\n> [!dm] The rain and wind cues at the door toggle those beds off as they step inside. Then the dripping and temple beds come in, then the ghostly loop. Save the dark-magic sting for the last line."
+  "script": [
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "Duskhollow — A Fair Day Turns"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "Market Square, Midday"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "town",
+          "label": "▶ town"
+        },
+        {
+          "type": "text",
+          "text": " The morning bells have long since faded, and Duskhollow's market square "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "fap-crowd",
+          "label": "〜 fap-crowd"
+        },
+        {
+          "type": "text",
+          "text": " glows under a flawless sky. Awnings snap in a warm breeze, a fiddler saws out a jig, and the smell of fresh bread drifts between the stalls. A coin-seller counts his take "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "coins",
+          "label": "🔊 coins"
+        },
+        {
+          "type": "text",
+          "text": " and waves you toward his trinkets. "
+        },
+        {
+          "type": "text",
+          "text": "It is, by every measure, a beautiful day.",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Hit ▶ Go live, then walk the cues with Space: the fair-day theme, the market crowd bed, the coin clink. Let them breathe here — this is the calm before."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "Dusk, and the Rain"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "But the light is going wrong. "
+        },
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "storm",
+          "label": "▶ storm"
+        },
+        {
+          "type": "text",
+          "text": " Clouds the color of old bruises pile over the eastern hills, and a cold wind rises "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "nox-wind-forest",
+          "label": "〜 nox-wind-forest"
+        },
+        {
+          "type": "text",
+          "text": " that tugs at cloaks and strangles the fiddler's tune. The first fat drops strike the cobbles, thunder rolls across the rooftops "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "thunder",
+          "label": "🔊 thunder"
+        },
+        {
+          "type": "text",
+          "text": " — then the sky opens "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "nox-rain-strong",
+          "label": "〜 nox-rain-strong"
+        },
+        {
+          "type": "text",
+          "text": ". Stalls empty, shutters slam "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "fap-crowd",
+          "label": "〜 fap-crowd"
+        },
+        {
+          "type": "text",
+          "text": ". One of you strikes a lantern against the gloom "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "torch",
+          "label": "🔊 torch"
+        },
+        {
+          "type": "text",
+          "text": ", and its little flame is the only warm thing left in Duskhollow."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "The wind and rain beds fade in on their cues; the second crowd cue at \"stalls empty\" toggles the crowd off. Beds keep looping until their cue fires again — watch the Now Sounding strip at the bottom."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Sunless Shrine"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The road out of town ends at a door that should not be here — black stone, older than Duskhollow itself. It groans inward at a touch "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "door",
+          "label": "🔊 door"
+        },
+        {
+          "type": "text",
+          "text": ", and the storm cuts off behind you "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "nox-rain-strong",
+          "label": "〜 nox-rain-strong"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "nox-wind-forest",
+          "label": "〜 nox-wind-forest"
+        },
+        {
+          "type": "text",
+          "text": ". Inside, the air is cold and still and "
+        },
+        {
+          "type": "text",
+          "text": "wrong",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ". "
+        },
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "temple",
+          "label": "▶ temple"
+        },
+        {
+          "type": "text",
+          "text": " Water drips somewhere in the dark "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "nox-cave-drips",
+          "label": "〜 nox-cave-drips"
+        },
+        {
+          "type": "text",
+          "text": ", and the shrine itself seems to hold its breath "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "evil-temple",
+          "label": "〜 evil-temple"
+        },
+        {
+          "type": "text",
+          "text": ". Something breathes that has no business breathing "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "ghost",
+          "label": "🔊 ghost"
+        },
+        {
+          "type": "text",
+          "text": ", and the shadows will not stay still "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "ghostly-loop",
+          "label": "〜 ghostly-loop"
+        },
+        {
+          "type": "text",
+          "text": ". Far below, beneath the altar, you feel a slow, patient pulse — like a heart the size of a room "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "heart",
+          "label": "🔊 heart"
+        },
+        {
+          "type": "text",
+          "text": ". "
+        },
+        {
+          "type": "text",
+          "text": "You are not alone in here.",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "spell",
+          "label": "🔊 spell"
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "The rain and wind cues at the door toggle those beds off as they step inside. Then the dripping and temple beds come in, then the ghostly loop. Save the dark-magic sting for the last line."
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

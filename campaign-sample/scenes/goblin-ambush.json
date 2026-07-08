@@ -97,16 +97,6 @@
       "id": "idea-flee",
       "text": "Have one goblin break and flee toward the warren to raise the alarm",
       "done": false
-    },
-    {
-      "id": "idea-worg",
-      "text": "If the fight is too easy, Krag whistles up a worg from the treeline",
-      "done": false
-    },
-    {
-      "id": "idea-prisoner",
-      "text": "A downed goblin can be questioned — it knows the warren's back entrance",
-      "done": false
     }
   ],
   "entities": [
@@ -116,22 +106,6 @@
       "name": "Krag the Vile",
       "note": "Goblin boss. Flees at half HP toward the warren.",
       "status": "present",
-      "used": false
-    },
-    {
-      "id": "ent-goblins",
-      "type": "monster",
-      "name": "Goblins (x4)",
-      "note": "Ambush from the canopy and brush",
-      "status": "present",
-      "used": false
-    },
-    {
-      "id": "ent-worg",
-      "type": "monster",
-      "name": "Worg",
-      "note": "Optional reinforcement if the party is winning easily",
-      "status": "optional",
       "used": false
     },
     {

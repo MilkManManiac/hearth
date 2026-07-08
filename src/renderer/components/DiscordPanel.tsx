@@ -209,17 +209,60 @@ export default function DiscordPanel() {
 
           {/* Step 3: live */}
           {state === 'joined' && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={run(() => window.hearth.discordLeave())}
-                disabled={busy}
-                className="rounded border border-hearth-emberdim bg-hearth-emberdim/20 px-3 py-1.5 text-sm text-hearth-gold hover:bg-hearth-emberdim/40"
-              >
-                ⏹ Leave channel
-              </button>
-              <span className="text-xs text-hearth-muted">
-                Players hear the full mix — the Master fader shapes their level too.
-              </span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={run(() => window.hearth.discordLeave())}
+                  disabled={busy}
+                  className="rounded border border-hearth-emberdim bg-hearth-emberdim/20 px-3 py-1.5 text-sm text-hearth-gold hover:bg-hearth-emberdim/40"
+                >
+                  ⏹ Leave channel
+                </button>
+                <span className="text-xs text-hearth-muted">
+                  Players hear the full mix — the Master fader shapes their level too.
+                </span>
+              </div>
+
+              {/* The Chronicler — per-speaker session recording */}
+              <div className="rounded border border-hearth-border/50 bg-hearth-panel2/40 px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-hearth-text">🪶 The Chronicler</span>
+                  {status?.chronicling ? (
+                    <>
+                      <span className="flex items-center gap-1.5 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] uppercase tracking-wider text-red-300">
+                        <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-red-400" />
+                        recording
+                      </span>
+                      <span className="text-xs text-hearth-muted">{status.utterances ?? 0} utterances</span>
+                      <button
+                        onClick={run(() => window.hearth.chronicleStop())}
+                        disabled={busy}
+                        className="ml-auto rounded border border-red-400/60 bg-red-500/10 px-2.5 py-1 text-xs text-red-300 hover:bg-red-500/20"
+                      >
+                        ⏹ Stop
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={run(() => window.hearth.chronicleStart())}
+                      disabled={busy}
+                      className="ml-auto rounded border border-hearth-ember bg-hearth-ember/15 px-2.5 py-1 text-xs text-hearth-ember hover:bg-hearth-ember/30"
+                    >
+                      ⏺ Record session
+                    </button>
+                  )}
+                </div>
+                <p className="mt-1.5 text-[11px] leading-snug text-hearth-muted">
+                  Records <b>each speaker separately</b> (WAV per utterance + manifest) into the
+                  campaign's <code>recordings/</code> folder — so future transcripts know exactly who
+                  said what. No diarization guesswork.
+                </p>
+                {status?.chronicling && status.chronicleDir && (
+                  <p className="mt-1 truncate text-[10px] text-hearth-muted/70" title={status.chronicleDir}>
+                    → {status.chronicleDir}
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </div>

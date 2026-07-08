@@ -1,0 +1,8 @@
+{
+  "id": "barkeep-tobble",
+  "kind": "npc",
+  "title": "Tobble, the Barkeep",
+  "bodyText": "Halfling barkeep of the Duskhollow taproom. Cheerful in front of customers, terrified after dark — he has seen what comes out of the well.\n\n> [!dm] Voice: quick, chirpy, drops to a whisper when the well comes up. He knows the goblins pay someone in town for safe passage, but will only say so if the party covers his debt (12 gp).\n\n# Wants\nTo sell the taproom and leave before winter.\n\n# Knows\nThe crypt under the well predates the town. The 'humming' starts on new-moon nights.",
+  "tags": ["duskhollow", "tavern"],
+  "createdAt": "2026-07-07T00:00:00.000Z"
+}

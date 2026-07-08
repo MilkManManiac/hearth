@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import type { Scene } from '../../shared/types'
+import { useEffect, useState } from 'react'
+import { NOTE_KINDS, NOTE_KIND_ORDER, type Scene } from '../../shared/types'
 import { useStore } from '../store'
+import NoteBody from './NoteBody'
 import TopBar from './TopBar'
 import SceneList from './SceneList'
 import MusicPalette from './MusicPalette'
@@ -13,6 +14,10 @@ import CastPanel from './CastPanel'
 import Toasts from './Toasts'
 import LibraryPanel from './LibraryPanel'
 import SoundConsole from './SoundConsole'
+import NotesRail from './NotesRail'
+import NoteView from './NoteView'
+import QuickSwitcher from './QuickSwitcher'
+import QuickCapture from './QuickCapture'
 
 /** A collapsed side rail: a slim strip that re-expands its panel. */
 function CollapsedRail({
@@ -45,8 +50,13 @@ function CollapsedRail({
 export default function ControlBoard() {
   const { campaign, currentSceneId, liveSceneId, goLive } = useStore()
   const runMode = useStore((s) => s.uiMode === 'run')
+  const leftTab = useStore((s) => s.leftTab)
+  const currentNoteId = useStore((s) => s.currentNoteId)
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
   const isLive = !!scene && scene.id === liveSceneId
+  // Notes tab + a selected note → the main area shows the note page.
+  const note =
+    leftTab === 'notes' ? (campaign.notes.find((n) => n.id === currentNoteId) ?? null) : null
   // Side rails collapse to slim strips (persisted) — full width for the script.
   const [leftOpen, setLeftOpen] = useState(localStorage.getItem('hearth:leftRail') !== '0')
   const [rightOpen, setRightOpen] = useState(localStorage.getItem('hearth:rightRail') !== '0')
@@ -64,13 +74,26 @@ export default function ControlBoard() {
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         {leftOpen ? (
-          <SceneList onCollapse={toggleLeft} />
+          leftTab === 'notes' ? (
+            <NotesRail onCollapse={toggleLeft} />
+          ) : (
+            <SceneList onCollapse={toggleLeft} />
+          )
         ) : (
-          <CollapsedRail side="left" icon="🎬" title="Show scenes" onClick={toggleLeft} />
+          <CollapsedRail
+            side="left"
+            icon={leftTab === 'notes' ? '📓' : '🎬'}
+            title={leftTab === 'notes' ? 'Show notes' : 'Show scenes'}
+            onClick={toggleLeft}
+          />
         )}
 
         <main className="flex-1 space-y-6 overflow-y-auto p-6">
-          {!scene ? (
+          {note ? (
+            <NoteView key={note.id} note={note} />
+          ) : leftTab === 'notes' ? (
+            <NotesEmptyState hasNotes={campaign.notes.length > 0} />
+          ) : !scene ? (
             <EmptyState hasCampaign={!!campaign.path} />
           ) : (
             <>
@@ -130,22 +153,32 @@ export default function ControlBoard() {
       </div>
       <SoundConsole />
       <LibraryPanel />
+      <QuickSwitcher />
+      <QuickCapture />
       <Toasts />
     </div>
   )
 }
 
-type Tab = 'images' | 'ideas' | 'cast'
+type Tab = 'images' | 'ideas' | 'cast' | 'notes'
 
 function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => void }) {
   const [tab, setTab] = useState<Tab>('images')
+  const currentNoteId = useStore((s) => s.currentNoteId)
   const ideaCount = scene.ideas?.length ?? 0
   const castCount = scene.entities?.length ?? 0
+
+  // Picking a note (quick switcher, session header) surfaces it here — in run
+  // mode this is how notes appear without taking the script off the screen.
+  useEffect(() => {
+    if (currentNoteId) setTab('notes')
+  }, [currentNoteId])
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'images', label: 'Images' },
     { id: 'ideas', label: `Ideas${ideaCount ? ` ${ideaCount}` : ''}` },
-    { id: 'cast', label: `Cast & Loot${castCount ? ` ${castCount}` : ''}` }
+    { id: 'cast', label: `Cast${castCount ? ` ${castCount}` : ''}` },
+    { id: 'notes', label: '📓' }
   ]
 
   return (
@@ -177,8 +210,92 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
         {tab === 'images' && <ImageStrip scene={scene} />}
         {tab === 'ideas' && <IdeasPanel scene={scene} />}
         {tab === 'cast' && <CastPanel scene={scene} />}
+        {tab === 'notes' && <NotesPeek />}
       </div>
     </aside>
+  )
+}
+
+/**
+ * The right panel's notes tab: pick any campaign note and read it beside the
+ * script — Ctrl+K also lands notes here in run mode. Read-only on purpose;
+ * editing happens on the full note page (or via Ctrl+J capture).
+ */
+function NotesPeek() {
+  const notes = useStore((s) => s.campaign.notes)
+  const currentNoteId = useStore((s) => s.currentNoteId)
+  const selectNote = useStore((s) => s.selectNote)
+  const setLeftTab = useStore((s) => s.setLeftTab)
+  const buildMode = useStore((s) => s.uiMode === 'build')
+  const note = notes.find((n) => n.id === currentNoteId) ?? null
+
+  if (notes.length === 0) {
+    return (
+      <p className="text-xs text-hearth-muted">
+        No notes yet — open 📓 Notes in the left rail (build mode) to start your campaign
+        notebook, or press <kbd className="rounded border border-hearth-border px-1">Ctrl+J</kbd>{' '}
+        to log something to the session.
+      </p>
+    )
+  }
+
+  return (
+    <div className="space-y-3">
+      <select
+        value={note?.id ?? ''}
+        onChange={(e) => selectNote(e.target.value || null)}
+        className="w-full rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-sm text-hearth-text"
+      >
+        <option value="">— pick a note —</option>
+        {NOTE_KIND_ORDER.map((kind) => {
+          const items = notes.filter((n) => n.kind === kind)
+          if (items.length === 0) return null
+          return (
+            <optgroup key={kind} label={NOTE_KINDS[kind].plural}>
+              {items.map((n) => (
+                <option key={n.id} value={n.id}>
+                  {n.title}
+                </option>
+              ))}
+            </optgroup>
+          )
+        })}
+      </select>
+      {note && (
+        <>
+          <div className="flex items-center gap-2 text-sm font-semibold text-hearth-text">
+            <span aria-hidden>{NOTE_KINDS[note.kind]?.icon}</span>
+            <span className="flex-1 truncate">{note.title}</span>
+            {buildMode && (
+              <button
+                onClick={() => setLeftTab('notes')}
+                title="Open the full note page for editing"
+                className="text-xs text-hearth-muted hover:text-hearth-ember"
+              >
+                ✎ Edit
+              </button>
+            )}
+          </div>
+          <NoteBody doc={note.body ?? []} />
+        </>
+      )}
+    </div>
+  )
+}
+
+function NotesEmptyState({ hasNotes }: { hasNotes: boolean }) {
+  return (
+    <div className="mx-auto mt-28 max-w-md text-center text-hearth-muted">
+      <div className="mb-4 text-5xl drop-shadow-[0_0_18px_rgba(224,138,60,0.45)]">📓</div>
+      <h2 className="mb-2 font-display text-2xl font-semibold text-hearth-text">
+        {hasNotes ? 'No note selected' : 'Your campaign notebook'}
+      </h2>
+      <p className="text-sm leading-relaxed">
+        {hasNotes
+          ? 'Pick a note on the left, or create one with + New note.'
+          : 'Sessions, NPCs, locations, factions, plot threads — everything you need at the table, one click away. Hit + New note on the left to start.'}
+      </p>
+    </div>
   )
 }
 

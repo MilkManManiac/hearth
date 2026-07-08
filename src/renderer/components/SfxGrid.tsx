@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import type { Scene, SfxItem } from '../../shared/types'
+import { isTypingTarget } from '../lib/keys'
 import { pushRecent, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
 import { LoopButton, VolumeFader } from './Mixer'
@@ -33,9 +34,8 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
     const onKey = (e: KeyboardEvent) => {
       // A modal owns the keyboard — K/J in Triage must not fire scene SFX.
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen) return
-      const target = e.target as HTMLElement
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen) return
+      if (isTypingTarget(e.target)) return
       const item = map.get(e.key.toLowerCase())
       if (item) {
         e.preventDefault()

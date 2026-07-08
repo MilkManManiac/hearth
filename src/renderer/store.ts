@@ -2,9 +2,12 @@ import { create } from 'zustand'
 import {
   DEFAULT_CROSSFADE_MS,
   type AssetKind,
+  type CampaignNote,
   type CampaignState,
   type CueInline,
-  type Scene
+  type NoteKind,
+  type Scene,
+  type ScriptBlock
 } from '../shared/types'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
 import type { DiscordStatus, LibraryAssetPatch, TriageScan } from '../preload/index'
@@ -12,7 +15,13 @@ import type { DiscordStatus, LibraryAssetPatch, TriageScan } from '../preload/in
 /** One audio engine per session, shared across the UI. */
 export const engine = new AudioEngine()
 
-const EMPTY_CAMPAIGN: CampaignState = { path: null, scenes: [], library: { assets: [] }, errors: [] }
+const EMPTY_CAMPAIGN: CampaignState = {
+  path: null,
+  scenes: [],
+  notes: [],
+  library: { assets: [] },
+  errors: []
+}
 
 interface PresentingImage {
   file: string
@@ -80,6 +89,10 @@ interface AppState {
   currentSceneId: string | null
   /** Scene whose atmosphere was last started with goLive, or null. */
   liveSceneId: string | null
+  /** Selected campaign note (notes tab / right panel). */
+  currentNoteId: string | null
+  /** Left-rail tab: the scene list or the campaign notes browser. */
+  leftTab: 'scenes' | 'notes'
   status: EngineStatus
   presenting: PresentingImage | null
   toasts: Toast[]
@@ -166,8 +179,11 @@ interface AppState {
   setSfxItemLoop: (sfxId: string, loop: boolean) => void
   setAmbienceLayerVolume: (file: string, v: number) => void
   setAmbienceLayerLoop: (file: string, loop: boolean) => void
-  /** Tap an ambience bed on/off independently of the scene's auto-loaded set. */
-  toggleAmbience: (file: string) => void
+  /**
+   * Tap an ambience bed on/off independently of the scene's auto-loaded set.
+   * `opts` (from an amb cue) overrides the layer's volume / fade durations.
+   */
+  toggleAmbience: (file: string, opts?: AmbCueOpts) => void
   /** Flip whether a bed starts automatically on go-live (persisted). */
   setAmbienceAutoplay: (file: string, autoplay: boolean) => void
   showImage: (file: string, caption?: string) => void
@@ -186,6 +202,26 @@ interface AppState {
   deleteScene: (sceneId: string) => Promise<void>
 
   updateScene: (sceneId: string, mutate: (s: Scene) => Scene) => Promise<void>
+
+  // Campaign notes (see NOTES-PLAN.md).
+  /** Quick switcher (Ctrl+K) open? Owns the keyboard while true. */
+  switcherOpen: boolean
+  setSwitcherOpen: (open: boolean) => void
+  /** Quick capture (Ctrl+J) open? Owns the keyboard while true. */
+  captureOpen: boolean
+  setCaptureOpen: (open: boolean) => void
+  /**
+   * Append a timestamped line to the active session note's log (the current
+   * scene's session, else the newest session note, else a new one) — the
+   * "player just made a promise, write it down" key.
+   */
+  captureToSession: (text: string) => Promise<void>
+  selectNote: (id: string | null) => void
+  setLeftTab: (tab: 'scenes' | 'notes') => void
+  updateNote: (noteId: string, mutate: (n: CampaignNote) => CampaignNote) => Promise<void>
+  createNote: (kind: NoteKind, title: string) => Promise<void>
+  /** Move the note's JSON to the OS trash. */
+  deleteNote: (noteId: string) => Promise<void>
   /** Duplicate a scene to a new file ("Copy of X") and select the copy. */
   duplicateScene: (sceneId: string) => Promise<void>
   /** Create a new scene from a built-in template id ('blank', 'tavern', …) and select it. */
@@ -203,8 +239,15 @@ function currentScene(state: AppState): Scene | null {
   return state.campaign.scenes.find((s) => s.id === state.currentSceneId) ?? null
 }
 
-/** Resolve an {{amb:...}} cue ref to a scene layer: exact file first, then filename stem. */
-function resolveAmbLayer(scene: Scene | null, ref: string) {
+/** Lifecycle overrides carried by an `{{amb:...}}` cue (see CueInline). */
+export interface AmbCueOpts {
+  volume?: number
+  fadeInMs?: number
+  fadeOutMs?: number
+}
+
+/** Match an amb-cue ref to a scene layer by exact file, else by filename stem. */
+export function resolveAmbLayer(scene: Scene | null, ref: string) {
   const layers = scene?.ambience ?? []
   const stem = assetStem(ref).toLowerCase()
   return layers.find((a) => a.file === ref) ?? layers.find((a) => assetStem(a.file).toLowerCase() === stem)
@@ -255,6 +298,8 @@ export const useStore = create<AppState>((set, get) => ({
   campaign: EMPTY_CAMPAIGN,
   currentSceneId: null,
   liveSceneId: null,
+  currentNoteId: null,
+  leftTab: (localStorage.getItem('hearth:leftTab') as 'scenes' | 'notes') ?? 'scenes',
   status: engine.status(),
   presenting: null,
   toasts: [],
@@ -584,10 +629,13 @@ export const useStore = create<AppState>((set, get) => ({
   setCampaign: (c) => {
     set({ campaign: c })
     // Keep a valid selection; default to first scene if none selected.
-    const { currentSceneId } = get()
+    const { currentSceneId, currentNoteId } = get()
     const stillExists = c.scenes.some((s) => s.id === currentSceneId)
     if (!stillExists) {
       set({ currentSceneId: c.scenes[0]?.id ?? null })
+    }
+    if (currentNoteId && !c.notes.some((n) => n.id === currentNoteId)) {
+      set({ currentNoteId: null })
     }
   },
 
@@ -624,7 +672,12 @@ export const useStore = create<AppState>((set, get) => ({
     else if (node.kind === 'image') get().showImage(node.ref)
     else if (node.kind === 'amb') {
       const layer = resolveAmbLayer(currentScene(get()), node.ref)
-      if (layer) get().toggleAmbience(layer.file)
+      if (layer)
+        get().toggleAmbience(layer.file, {
+          volume: node.volume,
+          fadeInMs: node.fadeInMs,
+          fadeOutMs: node.fadeOutMs
+        })
       else get().pushToast(`No ambience bed matches "${node.ref}" on this scene`, 'error')
     }
   },
@@ -727,20 +780,22 @@ export const useStore = create<AppState>((set, get) => ({
     }))
   },
 
-  toggleAmbience: (file) => {
+  toggleAmbience: (file, opts) => {
     const layer = currentScene(get())?.ambience?.find((a) => a.file === file)
     if (!layer) return
     if (get().status.ambienceFiles.includes(file)) {
-      engine.stopAmbienceLayer(file)
+      engine.stopAmbienceLayer(file, opts?.fadeOutMs)
       return
     }
+    // The cue's target volume wins over the layer's authored one.
+    const volume = opts?.volume ?? layer.volume
     // A zero-volume bed "plays" silently — indistinguishable from broken. Bump
     // it to the default level (and persist) so a tap is always audible.
-    if ((layer.volume ?? 0.4) <= 0.001) {
-      engine.startAmbienceLayer({ ...layer, volume: 0.4 })
+    if ((volume ?? 0.4) <= 0.001) {
+      engine.startAmbienceLayer({ ...layer, volume: 0.4 }, opts?.fadeInMs)
       get().setAmbienceLayerVolume(file, 0.4)
     } else {
-      engine.startAmbienceLayer(layer)
+      engine.startAmbienceLayer({ ...layer, volume }, opts?.fadeInMs)
     }
   },
 
@@ -855,6 +910,96 @@ export const useStore = create<AppState>((set, get) => ({
       get().setCampaign(fresh)
     } catch (err) {
       console.error('saveScene failed', err)
+    }
+  },
+
+  switcherOpen: false,
+  setSwitcherOpen: (open) => set({ switcherOpen: open }),
+  captureOpen: false,
+  setCaptureOpen: (open) => set({ captureOpen: open }),
+
+  captureToSession: async (text) => {
+    const trimmed = text.trim()
+    if (!trimmed) return
+    const st = get()
+    // Target: the armed scene's session, else the newest session note.
+    const sessions = st.campaign.notes.filter((n) => n.kind === 'session')
+    const sceneSession = currentScene(st)?.session
+    let target: CampaignNote | undefined =
+      sessions.find((n) => n.id === sceneSession) ??
+      [...sessions].sort((a, b) =>
+        (b.date ?? b.createdAt ?? '').localeCompare(a.date ?? a.createdAt ?? '')
+      )[0]
+    if (!target) {
+      // First capture of the campaign: make the session log exist.
+      try {
+        const { state, noteId } = await window.hearth.createNote('session', 'Session Log')
+        get().setCampaign(state)
+        target = state.notes.find((n) => n.id === noteId)
+      } catch (err) {
+        get().pushToast(`Capture failed: ${(err as Error).message}`, 'error')
+        return
+      }
+      if (!target) return
+    }
+    const now = new Date()
+    const hh = String(now.getHours()).padStart(2, '0')
+    const mm = String(now.getMinutes()).padStart(2, '0')
+    const line: ScriptBlock = {
+      type: 'paragraph',
+      content: [
+        { type: 'text', text: `${hh}:${mm} — `, marks: [{ type: 'color', value: 'whisper' }] },
+        { type: 'text', text: trimmed }
+      ]
+    }
+    await get().updateNote(target.id, (n) => ({ ...n, body: [...(n.body ?? []), line] }))
+    get().pushToast(`Logged to ${target.title}`, 'info')
+  },
+
+  selectNote: (id) => set({ currentNoteId: id }),
+
+  setLeftTab: (tab) => {
+    localStorage.setItem('hearth:leftTab', tab)
+    set({ leftTab: tab })
+  },
+
+  updateNote: async (noteId, mutate) => {
+    const note = get().campaign.notes.find((n) => n.id === noteId)
+    if (!note) return
+    const updated = mutate(note)
+    // Optimistic: reflect immediately, then persist to disk.
+    set((state) => ({
+      campaign: {
+        ...state.campaign,
+        notes: state.campaign.notes.map((n) => (n.id === noteId ? updated : n))
+      }
+    }))
+    try {
+      const fresh = await window.hearth.saveNote(updated)
+      get().setCampaign(fresh)
+    } catch (err) {
+      console.error('saveNote failed', err)
+      get().pushToast(`Note save failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  createNote: async (kind, title) => {
+    try {
+      const { state, noteId } = await window.hearth.createNote(kind, title)
+      get().setCampaign(state)
+      set({ currentNoteId: noteId, leftTab: 'notes' })
+    } catch (err) {
+      get().pushToast(`New note failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  deleteNote: async (noteId) => {
+    try {
+      if (get().currentNoteId === noteId) set({ currentNoteId: null })
+      const state = await window.hearth.deleteNote(noteId)
+      get().setCampaign(state)
+    } catch (err) {
+      get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
     }
   },
 

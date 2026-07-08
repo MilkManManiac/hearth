@@ -1,5 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AssetKind, CampaignState, LibraryAsset, PlaylistPreset, Scene } from '../shared/types'
+import type {
+  AssetKind,
+  CampaignNote,
+  CampaignState,
+  LibraryAsset,
+  NoteKind,
+  PlaylistPreset,
+  Scene
+} from '../shared/types'
 import type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus } from '../main/discord'
 
 export type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus }
@@ -18,6 +26,12 @@ export interface PresenterPayload {
 export interface SceneWriteResult {
   state: CampaignState
   sceneId: string
+}
+
+/** Result of creating a note: fresh state + the new note's id. */
+export interface NoteWriteResult {
+  state: CampaignState
+  noteId: string
 }
 
 /** Result of importing images into a scene: fresh state + how many were added. */
@@ -66,6 +80,10 @@ const api = {
     ipcRenderer.invoke('scene:create', templateId),
   deleteScene: (sceneId: string): Promise<CampaignState> =>
     ipcRenderer.invoke('scene:delete', sceneId),
+  saveNote: (note: CampaignNote): Promise<CampaignState> => ipcRenderer.invoke('note:save', note),
+  createNote: (kind: NoteKind, title: string): Promise<NoteWriteResult> =>
+    ipcRenderer.invoke('note:create', kind, title),
+  deleteNote: (noteId: string): Promise<CampaignState> => ipcRenderer.invoke('note:delete', noteId),
   updateLibraryAsset: (file: string, patch: LibraryAssetPatch): Promise<CampaignState> =>
     ipcRenderer.invoke('library:update', file, patch),
   deleteLibraryAsset: (file: string): Promise<CampaignState> =>
@@ -92,6 +110,9 @@ const api = {
   discordJoin: (guildId: string, channelId: string): Promise<void> =>
     ipcRenderer.invoke('discord:join', guildId, channelId),
   discordLeave: (): Promise<void> => ipcRenderer.invoke('discord:leave'),
+  /** The Chronicler: start/stop per-speaker recording of the joined channel. */
+  chronicleStart: (): Promise<void> => ipcRenderer.invoke('chronicle:start'),
+  chronicleStop: (): Promise<void> => ipcRenderer.invoke('chronicle:stop'),
   /** High-rate raw PCM (s16le 48kHz stereo interleaved) — fire-and-forget. */
   discordSendPcm: (chunk: ArrayBuffer): void => ipcRenderer.send('discord:pcm', chunk),
   onDiscordStatus: (cb: (status: DiscordStatus) => void): (() => void) => {

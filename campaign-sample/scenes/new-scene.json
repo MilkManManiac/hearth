@@ -1,0 +1,314 @@
+{
+  "id": "new-scene",
+  "name": "New Scene",
+  "music": [
+    {
+      "id": "lib-rejoicing",
+      "label": "Rejoicing",
+      "file": "music/rejoicing.mp3"
+    },
+    {
+      "id": "lib-harvest-season",
+      "label": "Harvest Season",
+      "file": "music/harvest-season.mp3",
+      "volume": 0.71
+    },
+    {
+      "id": "lib-peaceful-meadow",
+      "label": "Peaceful Meadow",
+      "file": "music/peaceful-meadow.ogg",
+      "volume": 0.54
+    },
+    {
+      "id": "lib-ruined-town",
+      "label": "Ruined Town",
+      "file": "music/ruined-town.ogg",
+      "volume": 0.58
+    },
+    {
+      "id": "lib-market-day",
+      "label": "Market Day",
+      "file": "music/market-day.mp3",
+      "volume": 0.56
+    },
+    {
+      "id": "lib-minstrel-dance",
+      "label": "Minstrel Dance",
+      "file": "music/minstrel-dance.mp3",
+      "volume": 0.58
+    },
+    {
+      "id": "lib-tension-pursuit",
+      "label": "Tension Pursuit",
+      "file": "music/tension-pursuit.wav"
+    },
+    {
+      "id": "lib-horror-atmosphere",
+      "label": "Horror Atmosphere",
+      "file": "music/horror-atmosphere.ogg"
+    },
+    {
+      "id": "lib-cave-exploration",
+      "label": "Cave Exploration",
+      "file": "music/cave-exploration.ogg"
+    },
+    {
+      "id": "lib-old-tower-inn",
+      "label": "Old Tower Inn",
+      "file": "music/old-tower-inn.mp3",
+      "volume": 0.38
+    },
+    {
+      "id": "lib-boss-epic-battle",
+      "label": "Boss Epic Battle",
+      "file": "music/boss-epic-battle.wav"
+    },
+    {
+      "id": "lib-requiem-choral",
+      "label": "Requiem Choral",
+      "file": "music/requiem-choral.ogg"
+    },
+    {
+      "id": "lib-somber-what-is-left",
+      "label": "Somber What Is Left",
+      "file": "music/somber-what-is-left.mp3"
+    },
+    {
+      "id": "lib-mp1-oliver-siimon-music-fantasywave-chromatic-deep-zombish-lost",
+      "label": "Fantasywave Chromatic Deep Zombish Lost",
+      "file": "music/mp1-oliver-siimon-music-fantasywave-chromatic-deep-zombish-lost.mp3"
+    },
+    {
+      "id": "lib-mp1-oliver-siimon-music-mysterious-piano-moody-2-e-minor-60-4-4",
+      "label": "Mysterious Piano & Moody 2 E Minor 60",
+      "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody-2-e-minor-60-4-4.mp3"
+    },
+    {
+      "id": "lib-mp1-oliver-siimon-blossom-valley-87",
+      "label": "Blossom Valley",
+      "file": "music/mp1-oliver-siimon-blossom-valley-87.flac"
+    },
+    {
+      "id": "lib-mp1-oliver-siimon-music-nature-hopeful-waking-87",
+      "label": "Nature Hopeful Waking",
+      "file": "music/mp1-oliver-siimon-music-nature-hopeful-waking-87.mp3"
+    },
+    {
+      "id": "lib-mp1-oliver-siimon-piano-spiegel",
+      "label": "Piano Spiegel",
+      "file": "music/mp1-oliver-siimon-piano-spiegel.mp3"
+    }
+  ],
+  "ambience": [
+    {
+      "file": "ambience/campfire.wav",
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/rain-storm.ogg",
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/ghostly-loop.mp3",
+      "volume": 0.24
+    },
+    {
+      "file": "ambience/evil-temple.ogg",
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/dungeon-cave.ogg",
+      "volume": 0.31
+    },
+    {
+      "file": "ambience/wind-whoosh.ogg",
+      "autoplay": false,
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/fap-forest-birds.ogg",
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/fap-crowd.ogg",
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/forest.mp3",
+      "autoplay": false,
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/fapx-crickets-night.ogg",
+      "volume": 0.4
+    }
+  ],
+  "sfx": [
+    {
+      "id": "lib-deep-monster-roar",
+      "label": "Deep Monster Roar",
+      "file": "sfx/deep-monster-roar.wav",
+      "volume": 1
+    },
+    {
+      "id": "lib-heartbeat",
+      "label": "Heartbeat",
+      "file": "sfx/heartbeat.mp3",
+      "loop": true,
+      "volume": 0.86
+    },
+    {
+      "id": "lib-bleach-hollow-scream-effect",
+      "label": "Bleach Hollow Scream Effect",
+      "file": "sfx/bleach hollow scream effect.mp3"
+    }
+  ],
+  "script": [
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Fake Town"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "lib-harvest-season",
+          "label": "▶ Harvest Season"
+        },
+        {
+          "type": "text",
+          "text": "It's finally there, right in front of you."
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "ambience/forest.mp3",
+          "label": "〜 forest"
+        },
+        {
+          "type": "text",
+          "text": " Townton. You've spent days travelling trying to find this small community. The breeze carries with it the smell of cooked meat, cheers from a lively crowd, "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "ambience/fap-crowd.ogg",
+          "label": "〜 fap-crowd"
+        },
+        {
+          "type": "text",
+          "text": "and smoke from the campfires"
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "ambience/campfire.wav",
+          "label": "〜 campfire"
+        },
+        {
+          "type": "text",
+          "text": ". Today is a good day. You spend the afternoon exploring the merry town. Joy on every face in this bustling crowd. You spend some time"
+        },
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "lib-minstrel-dance",
+          "label": "▶ Minstrel Dance"
+        },
+        {
+          "type": "text",
+          "text": " at the local tavern where drinks flow and the attendants are rowdy. "
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "lib-ruined-town",
+          "label": "▶ Ruined Town"
+        },
+        {
+          "type": "text",
+          "text": "Today was a good day. Almost too good. "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "ambience/dungeon-cave.ogg",
+          "label": "〜 dungeon-cave"
+        },
+        {
+          "type": "text",
+          "text": "You stare at the folks and an eerie feeling creeps over you. They never stop smiling. They never stop eating, drinking, dancing, laughing. "
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Today is a strange day. As dusk fades darkness bring with it the rain and thunder. "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "ambience/rain-storm.ogg",
+          "label": "〜 rain-storm"
+        },
+        {
+          "type": "text",
+          "text": "Strange noises can be heard from outside of the wooden walls. "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "ambience/wind-whoosh.ogg",
+          "label": "〜 wind-whoosh"
+        },
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "lib-tension-pursuit",
+          "label": "▶ Tension Pursuit"
+        },
+        {
+          "type": "text",
+          "text": "The winds pick up and bring in the noxiously sweet scent of death and rot. "
+        },
+        {
+          "type": "cue",
+          "kind": "sfx",
+          "ref": "lib-bleach-hollow-scream-effect",
+          "label": "🔊 Bleach Hollow Scream Effect"
+        }
+      ]
+    }
+  ],
+  "playlist": {
+    "enabled": false
+  }
+}

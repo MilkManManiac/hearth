@@ -5,9 +5,11 @@ import * as path from 'path'
 import chokidar, { type FSWatcher } from 'chokidar'
 import type {
   AssetKind,
+  CampaignNote,
   CampaignState,
   Library,
   LibraryAsset,
+  NoteKind,
   PlaylistPreset,
   Scene,
   SceneImage
@@ -17,7 +19,7 @@ import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import { AUTHORING_MD } from './authoring'
 
 const CONFIG_FILE = () => path.join(app.getPath('userData'), 'hearth-config.json')
-const SUBFOLDERS = ['scenes', 'music', 'ambience', 'sfx', 'art']
+const SUBFOLDERS = ['scenes', 'notes', 'music', 'ambience', 'sfx', 'art']
 const TRIAGE_AUDIO_EXTS = new Set(['.mp3', '.ogg', '.wav', '.flac', '.m4a'])
 
 interface Config {
@@ -91,6 +93,36 @@ const SCENE_TEMPLATES: Record<string, SceneTemplate> = {
     ambience: [],
     sfx: []
   }
+}
+
+/**
+ * Starter bodies for new notes — a light nudge toward useful structure, never
+ * required fields (empty templates create guilt; see NOTES-PLAN.md). The
+ * session skeleton follows the Lazy DM one-pager.
+ */
+const NOTE_STARTERS: Partial<Record<NoteKind, string>> = {
+  session: [
+    '# Recap',
+    'What happened last time — written to be read aloud.',
+    '',
+    '# Strong start',
+    'The opening beat: drop the players straight into something happening.',
+    '',
+    '# Possible scenes',
+    'A few short lines — build the real ones as Hearth scenes and assign them to this session.',
+    '',
+    '# Secrets & clues',
+    'Around ten one-sentence revelations the players might discover — not tied to any location. Unused ones roll into next session.',
+    '',
+    '# To-do / ideas',
+    '> [!dm] Post-session scratch: what worked, what to figure out before next time.'
+  ].join('\n'),
+  npc: '> [!dm] Who they are in one line. Voice/mannerism. What they want. What they know.\n',
+  pc: '> [!dm] Player + character. Goals, bonds, secrets, promises the table made to/about them.\n',
+  location: '> [!dm] What it looks/sounds/smells like on arrival. Who is here. What is hidden.\n',
+  faction: '> [!dm] What they want, who leads them, how they act when crossed.\n',
+  item: '> [!dm] What it does, where it came from, who wants it.\n',
+  thread: '> [!dm] The open question or secret. Mark the note resolved when it pays off.\n'
 }
 
 function readConfig(): Config {
@@ -182,8 +214,9 @@ export class CampaignManager {
   async load(): Promise<CampaignState> {
     const errors: string[] = []
     const scenes = await this.loadScenes(errors)
+    const notes = await this.loadNotes(errors)
     const library = await this.loadLibrary(errors)
-    return { path: this.campaignPath, scenes, library, errors }
+    return { path: this.campaignPath, scenes, notes, library, errors }
   }
 
   private async loadScenes(errors: string[]): Promise<Scene[]> {
@@ -215,6 +248,37 @@ export class CampaignManager {
     }
     scenes.sort((a, b) => a.name.localeCompare(b.name))
     return scenes
+  }
+
+  private async loadNotes(errors: string[]): Promise<CampaignNote[]> {
+    const dir = path.join(this.campaignPath, 'notes')
+    let files: string[] = []
+    try {
+      files = (await fs.readdir(dir)).filter((f) => f.toLowerCase().endsWith('.json'))
+    } catch {
+      return []
+    }
+    const notes: CampaignNote[] = []
+    for (const file of files) {
+      try {
+        const raw = await fs.readFile(path.join(dir, file), 'utf-8')
+        const note = JSON.parse(raw) as CampaignNote
+        note._sourceFile = `notes/${file}`
+        if (note.body) {
+          note.body = normalizeScript(note.body)
+        } else if (note.bodyText) {
+          note.body = compileScriptText(note.bodyText)
+        }
+        if (!note.id) note.id = file.replace(/\.json$/i, '')
+        if (!note.title) note.title = note.id
+        if (!note.kind) note.kind = 'note'
+        notes.push(note)
+      } catch (err) {
+        errors.push(`notes/${file}: ${(err as Error).message}`)
+      }
+    }
+    notes.sort((a, b) => a.title.localeCompare(b.title))
+    return notes
   }
 
   private async loadLibrary(errors: string[]): Promise<Library> {
@@ -349,6 +413,71 @@ export class CampaignManager {
     return this.load()
   }
 
+  // --- Campaign notes (see NOTES-PLAN.md) ---------------------------------
+
+  /** Persist an edited note back to its JSON file. Writes structured `body`. */
+  async saveNote(note: CampaignNote): Promise<CampaignState> {
+    const rel = note._sourceFile
+    if (!rel) throw new Error('note has no source file to save to')
+    // Strip runtime-only fields; bodyText is dropped in favour of structured body.
+    const { _sourceFile, bodyText, ...rest } = note
+    void _sourceFile
+    void bodyText
+    rest.updatedAt = new Date().toISOString()
+    const dest = path.join(this.campaignPath, rel)
+    const root = path.resolve(this.campaignPath)
+    if (!path.resolve(dest).startsWith(root + path.sep)) {
+      throw new Error('refusing to write outside campaign folder')
+    }
+    await fs.writeFile(dest, JSON.stringify(rest, null, 2))
+    this.markWrite()
+    return this.load()
+  }
+
+  /**
+   * Create a new note of `kind`, deriving a unique slug filename/id from the
+   * title. Starter bodyText shows the shape without demanding fields (the
+   * session kind gets a Lazy-DM-style prep skeleton).
+   */
+  async createNote(
+    kind: NoteKind,
+    title: string
+  ): Promise<{ state: CampaignState; noteId: string }> {
+    const dir = path.join(this.campaignPath, 'notes')
+    await fs.mkdir(dir, { recursive: true })
+    const taken = new Set(
+      (await fs.readdir(dir)).map((f) => f.toLowerCase().replace(/\.json$/i, ''))
+    )
+    for (const n of await this.loadNotes([])) taken.add(n.id.toLowerCase())
+    const base = slugify(title || kind)
+    let stem = base
+    for (let n = 2; taken.has(stem); n++) stem = `${base}-${n}`
+    const note: Omit<CampaignNote, '_sourceFile'> = {
+      id: stem,
+      kind,
+      title: title || stem,
+      bodyText: NOTE_STARTERS[kind] ?? '',
+      createdAt: new Date().toISOString()
+    }
+    await fs.writeFile(path.join(dir, `${stem}.json`), JSON.stringify(note, null, 2))
+    this.markWrite()
+    return { state: await this.load(), noteId: stem }
+  }
+
+  /** Move a note's JSON to the OS trash (recoverable — never a hard delete). */
+  async deleteNote(noteId: string): Promise<CampaignState> {
+    const note = (await this.loadNotes([])).find((n) => n.id === noteId)
+    if (!note?._sourceFile) throw new Error(`note "${noteId}" not found`)
+    const abs = path.join(this.campaignPath, note._sourceFile)
+    const root = path.resolve(this.campaignPath)
+    if (!path.resolve(abs).startsWith(root + path.sep)) {
+      throw new Error('refusing to delete outside campaign folder')
+    }
+    await shell.trashItem(abs)
+    this.markWrite()
+    return this.load()
+  }
+
   /** Copy user-picked files into the campaign's <kind> folder and index them. */
   async importAssets(kind: AssetKind): Promise<CampaignState> {
     const res = await dialog.showOpenDialog({
@@ -439,11 +568,18 @@ export class CampaignManager {
       else delete asset.name
     }
     if (patch.category !== undefined) {
-      // Free-form: any label works ("chill", "boss-phase-2"); slugified so
+      // Free-form and multi-value: "combat, tension, nature" files the asset
+      // under all three (first = primary/grouping). Each label is slugified so
       // grouping/filtering treat spellings consistently.
-      const cat = patch.category.trim().toLowerCase().replace(/\s+/g, '-')
-      if (cat) asset.category = cat
+      const cats = patch.category
+        .split(',')
+        .map((c) => c.trim().toLowerCase().replace(/\s+/g, '-'))
+        .filter(Boolean)
+        .filter((c, i, arr) => arr.indexOf(c) === i)
+      if (cats.length > 0) asset.category = cats[0]
       else delete asset.category
+      if (cats.length > 1) asset.categories = cats
+      else delete asset.categories
     }
     if (patch.description !== undefined) {
       if (patch.description.trim()) asset.description = patch.description.trim()

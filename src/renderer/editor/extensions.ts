@@ -4,6 +4,12 @@ import StarterKit from '@tiptap/starter-kit'
 import { scriptHighlightColor, scriptTextColor } from '../../shared/types'
 import CueChip from './CueChip'
 
+function numOrNull(v: string | null): number | null {
+  if (v == null || v === '') return null
+  const n = Number(v)
+  return Number.isFinite(n) ? n : null
+}
+
 /** Atomic inline cue node. Serializes to/from our ScriptDoc `cue` inline. */
 export const CueNode = Node.create({
   name: 'cue',
@@ -29,6 +35,27 @@ export const CueNode = Node.create({
         default: '',
         parseHTML: (el) => el.getAttribute('data-label'),
         renderHTML: (attrs) => ({ 'data-label': attrs.label })
+      },
+      // Amb-cue lifecycle options (null = unset; see CueInline in shared/types).
+      volume: {
+        default: null,
+        parseHTML: (el) => numOrNull(el.getAttribute('data-volume')),
+        renderHTML: (attrs) => (attrs.volume == null ? {} : { 'data-volume': String(attrs.volume) })
+      },
+      fadeInMs: {
+        default: null,
+        parseHTML: (el) => numOrNull(el.getAttribute('data-fade-in')),
+        renderHTML: (attrs) => (attrs.fadeInMs == null ? {} : { 'data-fade-in': String(attrs.fadeInMs) })
+      },
+      fadeOutMs: {
+        default: null,
+        parseHTML: (el) => numOrNull(el.getAttribute('data-fade-out')),
+        renderHTML: (attrs) => (attrs.fadeOutMs == null ? {} : { 'data-fade-out': String(attrs.fadeOutMs) })
+      },
+      until: {
+        default: null,
+        parseHTML: (el) => el.getAttribute('data-until'),
+        renderHTML: (attrs) => (attrs.until ? { 'data-until': attrs.until } : {})
       }
     }
   },
@@ -121,8 +148,11 @@ export const ScriptHighlightMark = Mark.create({
   }
 })
 
-/** The full extension set for the read-aloud editor. */
-export function buildExtensions() {
+/**
+ * The full extension set for the read-aloud editor. `cues: false` builds the
+ * same rich-text stack without the sound-cue node — used by the notes editor.
+ */
+export function buildExtensions(opts: { cues?: boolean } = {}) {
   return [
     StarterKit.configure({
       // Keep only what maps to our ScriptDoc; disable the rest.
@@ -139,7 +169,7 @@ export function buildExtensions() {
       dropcursor: { width: 2, color: '#e0b341' }
     }),
     CalloutNode,
-    CueNode,
+    ...(opts.cues === false ? [] : [CueNode]),
     ScriptColorMark,
     ScriptHighlightMark
   ]

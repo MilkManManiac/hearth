@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { BubbleMenu, useEditor, EditorContent } from '@tiptap/react'
 import type { Editor } from '@tiptap/react'
 import {
+  assetPrimaryCategory,
   CATEGORY_ORDER,
   categoryMeta,
   SCRIPT_HIGHLIGHTS,
@@ -106,7 +107,7 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
         kind: 'amb',
         ref: a.file,
         label: `${CUE_ICON.amb} ${display}`,
-        category: a.category || 'uncategorized',
+        category: assetPrimaryCategory(a) || 'uncategorized',
         register: { kind: 'ambience', id: a.file, label: display, file: a.file }
       })
       continue
@@ -120,7 +121,7 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
       kind,
       ref: id,
       label,
-      category: a.category || 'uncategorized',
+      category: assetPrimaryCategory(a) || 'uncategorized',
       register: { kind, id, label: display, file: a.file }
     })
   }
@@ -424,7 +425,7 @@ export default function ScriptEditor({
   )
 }
 
-function ToolBtn({
+export function ToolBtn({
   active,
   disabled,
   onClick,
@@ -455,7 +456,7 @@ function ToolBtn({
   )
 }
 
-function Swatch({
+export function Swatch({
   color,
   active,
   ring,

@@ -76,6 +76,27 @@ dramatic timing:
   stem (\`rain-heavy\`). Give script-driven beds \`"autoplay": false\` so they wait
   for their cue instead of starting when the scene goes live — see below.
 
+**Amb cue lifecycle options** — an amb cue can carry \`|\`-separated options that
+pre-mix the bed so the DM never rides faders while talking:
+
+\`\`\`
+{{amb:rain-heavy|vol=35%|in=4s|out=8s|until=section}}
+\`\`\`
+
+- \`vol=\` — target volume the bed fades **up to** (overrides the layer's
+  \`volume\`). \`35%\` or \`0.35\`. Use it to balance beds against each other, e.g.
+  campfire at 50% over rain at 30%.
+- \`in=\` / \`out=\` — fade-in / fade-out duration. \`4s\`, \`2.5s\`, or bare ms
+  (\`4000\`). Default ~0.8 s.
+- \`until=section\` — the bed **auto-fades out** when the teleprompter pointer
+  crosses the next heading (any level). Without it a bed plays until toggled
+  off (a second cue, the console, or Stop All). Headings therefore double as
+  atmosphere boundaries: start section-scoped beds just after a heading and
+  they clean themselves up when the DM moves on.
+
+Options are amb-only; unknown options are ignored (a typo degrades gracefully).
+In the app's script editor the same settings live behind the ⚙ on each amb chip.
+
 Whitespace inside the braces is tolerated (\`{{ sfx : shriek }}\` works).
 
 **Go-live & autoplay** — selecting a scene in the app is *silent* (the DM can
@@ -170,6 +191,8 @@ file in the new shape.
 - sfx \`volume\` 0.9, \`duckMusic\` true (music dips ~8 dB while it plays);
   \`loop: true\` makes it a sustained tap-on/tap-off loop instead of a one-shot
 - \`transition.crossfadeMs\` 2500
+- \`session\` (optional) — id of a \`notes/\` session note; the scene list groups
+  scenes under their session ("Session 3" holding its scenes). Unset = Unfiled.
 
 ### Playlist mode (optional)
 
@@ -214,6 +237,31 @@ Two optional lists power the side panels the DM checks off during play:
 When drafting a scene, populate these: likely NPCs/monsters, findable loot, and
 2–4 "what might happen here" ideas. It turns the scene into a live checklist.
 
+## notes/ — the campaign notebook
+
+One JSON file per note in \`notes/\`. Notes are the DM's campaign-wide knowledge
+base — sessions, NPCs, PCs, locations, factions, items, plot threads, scratch —
+browsed in-app under the 📓 Notes tab (grouped by \`kind\`, no folders). They
+hot-reload from disk like scenes.
+
+\`\`\`jsonc
+{
+  "id": "barkeep-tobble",          // = filename stem
+  "kind": "npc",                    // session|npc|pc|location|faction|item|thread|note
+  "title": "Tobble, the Barkeep",
+  "bodyText": "Markdown body — same subset as scriptText (# headings, **bold**, > [!dm] callouts), no sound cues.",
+  "tags": ["duskhollow"],
+  "status": "open",                 // threads only: open|resolved
+  "date": "2026-07-12"              // sessions only (display)
+}
+\`\`\`
+
+Like scenes, \`bodyText\` compiles to a structured \`body\` on load; once the note
+is edited in-app it persists as \`body\` and \`bodyText\` is dropped. When drafting
+notes for the DM, keep entities light: a line of who/what, a \`> [!dm]\` for
+secrets, headings only where they help. Session notes follow a Lazy-DM prep
+shape (Recap / Strong start / Possible scenes / Secrets & clues / To-do).
+
 ## library.json
 
 Every asset gets an entry with a **category** + descriptive **tags** — this is
@@ -233,8 +281,19 @@ creature):
 
 ### Categories
 
-\`category\` is a single coarse bucket (free-form, but prefer these so grouping
-stays tidy). Recommended set:
+\`category\` is the primary coarse bucket (free-form, but prefer these so grouping
+stays tidy). An asset can also carry **multiple categories** via \`categories\`
+(an array, primary first — keep \`category\` mirroring \`categories[0]\`):
+
+\`\`\`jsonc
+{ "file": "sfx/war-drums.ogg", "kind": "sfx",
+  "category": "combat", "categories": ["combat", "tension", "creatures"],
+  "tags": ["drums", "anticipation"] }
+\`\`\`
+
+The library browser's category filter matches *any* of them; grouping uses the
+primary. In the app, the ✎ editor's category field takes a comma-separated
+list. Recommended set:
 
 - **SFX:** \`creatures\` · \`combat\` · \`magic\` · \`weather\` · \`water\` · \`fire\` ·
   \`places\` · \`objects\` · \`horror\` · \`ui\`

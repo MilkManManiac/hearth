@@ -195,6 +195,15 @@ export default function TopBar() {
             <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-hearth-ember" />
           )}
           🎧 Discord
+          {discordStatus?.chronicling && (
+            <span
+              className="flex items-center gap-1 rounded-full bg-red-500/20 px-1.5 text-[9px] font-bold uppercase tracking-wider text-red-300"
+              title={`The Chronicler is recording (${discordStatus.utterances ?? 0} utterances)`}
+            >
+              <span className="inline-block h-1 w-1 animate-flicker rounded-full bg-red-400" />
+              rec
+            </span>
+          )}
         </button>
         <Btn onClick={openPresenter} title="Open the player-facing presenter window">🖥 Presenter</Btn>
         <button

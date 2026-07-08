@@ -3,7 +3,14 @@ import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
 import { DiscordBridge } from './discord'
-import type { AssetKind, LibraryAsset, PlaylistPreset, Scene } from '../shared/types'
+import type {
+  AssetKind,
+  CampaignNote,
+  LibraryAsset,
+  NoteKind,
+  PlaylistPreset,
+  Scene
+} from '../shared/types'
 import type { TriageKeepRequest } from '../preload/index'
 
 const MIME: Record<string, string> = {
@@ -191,6 +198,21 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  ipcMain.handle('note:save', async (_e, note: CampaignNote) => {
+    const state = await campaign.saveNote(note)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('note:create', async (_e, kind: NoteKind, title: string) => {
+    const result = await campaign.createNote(kind, title)
+    broadcast('campaign:changed', result.state)
+    return result
+  })
+  ipcMain.handle('note:delete', async (_e, noteId: string) => {
+    const state = await campaign.deleteNote(noteId)
+    broadcast('campaign:changed', state)
+    return state
+  })
   ipcMain.handle('library:update', async (_e, file: string, patch: Partial<LibraryAsset>) => {
     const state = await campaign.updateLibraryAsset(file, patch)
     broadcast('campaign:changed', state)
@@ -233,6 +255,12 @@ function registerIpc(): void {
     discord.join(guildId, channelId)
   )
   ipcMain.handle('discord:leave', () => discord.leave())
+  // The Chronicler: per-speaker session recording into <campaign>/recordings/.
+  ipcMain.handle('chronicle:start', () => {
+    const stamp = new Date().toISOString().slice(0, 16).replace(/[T:]/g, '-')
+    return discord.startChronicle(path.join(campaign.path, 'recordings', `session-${stamp}`))
+  })
+  ipcMain.handle('chronicle:stop', () => discord.stopChronicle())
   // High-rate PCM sink — fire-and-forget send, not invoke.
   ipcMain.on('discord:pcm', (_e, chunk: ArrayBuffer) => discord.pushPcm(chunk))
 

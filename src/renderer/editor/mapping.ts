@@ -28,7 +28,18 @@ function markToJSON(m: ScriptMark): { type: string; attrs?: Record<string, unkno
 
 function inlineToJSON(node: ScriptInline): JSONContent | null {
   if (node.type === 'cue') {
-    return { type: 'cue', attrs: { kind: node.kind, ref: node.ref, label: node.label ?? '' } }
+    return {
+      type: 'cue',
+      attrs: {
+        kind: node.kind,
+        ref: node.ref,
+        label: node.label ?? '',
+        volume: node.volume ?? null,
+        fadeInMs: node.fadeInMs ?? null,
+        fadeOutMs: node.fadeOutMs ?? null,
+        until: node.until ?? null
+      }
+    }
   }
   if (!node.text) return null // ProseMirror forbids empty text nodes
   const marks = node.marks?.map(markToJSON)
@@ -81,11 +92,19 @@ function markFromJSON(m: { type?: string; attrs?: Record<string, unknown> }): Sc
 function inlineFromJSON(node: JSONContent): ScriptInline | null {
   if (node.type === 'cue') {
     const a = node.attrs ?? {}
+    const num = (v: unknown): number | undefined => {
+      const n = Number(v)
+      return v == null || v === '' || !Number.isFinite(n) ? undefined : n
+    }
     return {
       type: 'cue',
       kind: (a.kind as CueKind) ?? 'sfx',
       ref: String(a.ref ?? ''),
-      label: a.label ? String(a.label) : undefined
+      label: a.label ? String(a.label) : undefined,
+      volume: num(a.volume),
+      fadeInMs: num(a.fadeInMs),
+      fadeOutMs: num(a.fadeOutMs),
+      until: a.until === 'section' ? 'section' : undefined
     }
   }
   if (node.type === 'text') {

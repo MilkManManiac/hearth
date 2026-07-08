@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');const t=fs.readFileSync('TODOS.md','utf8');const m=t.match(/## 🔔[\\s\\S]*?(?=\\n---)/);if(m)console.log(JSON.stringify({systemMessage:'⏰ Standing reminders (TODOS.md):\\n\\n'+m[0].trim()}))\" 2>/dev/null || true",
+            "timeout": 15,
+            "statusMessage": "Reading standing reminders…"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react'
-import { assetDisplayName, categoryMeta, type AssetKind, type PlaylistPreset } from '../../shared/types'
+import {
+  assetCategories,
+  assetDisplayName,
+  categoryMeta,
+  type AssetKind,
+  type LibraryAsset,
+  type PlaylistPreset
+} from '../../shared/types'
+import { isTypingTarget } from '../lib/keys'
 import { pushRecent, useFavorites } from '../lib/prefs'
 import { engine, useStore } from '../store'
 import { VolumeFader } from './Mixer'
@@ -12,7 +20,6 @@ function stem(file: string): string {
 /** Stable empty fallback — a `?? []` inside a selector would loop React. */
 const NO_PRESETS: PlaylistPreset[] = []
 
-const KIND_ICON: Record<AssetKind, string> = { music: '♪', ambience: '〜', sfx: '🔊' }
 const KIND_CHIP: Record<AssetKind, string> = {
   music: 'border-hearth-ember/60 text-hearth-ember hover:bg-hearth-ember/20',
   ambience: 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/20',
@@ -24,17 +31,61 @@ const KIND_LIT: Record<AssetKind, string> = {
   sfx: 'bg-hearth-gold/20'
 }
 
-export interface Mood {
-  icon: string
-  label: string
+// What each kind IS, spelled out — the old ♪/〜/🔊 glyphs read as noise live.
+const KIND_BADGE_TEXT: Record<AssetKind, string> = { music: 'MUS', ambience: 'AMB', sfx: 'SFX' }
+const KIND_BADGE_TITLE: Record<AssetKind, string> = {
+  music: 'Music track — one at a time, crossfades',
+  ambience: 'Ambience bed — loops, layers freely',
+  sfx: 'Sound effect — one-shot (or a held loop)'
+}
+const KIND_BADGE_CLASS: Record<AssetKind, string> = {
+  music: 'bg-hearth-ember/25 text-hearth-ember',
+  ambience: 'bg-emerald-500/25 text-emerald-300',
+  sfx: 'bg-hearth-gold/25 text-hearth-gold'
 }
 
-/** The category doubles as a mood tag (tension, somber, combat, tavern…). */
-function MoodDot({ mood }: { mood: Mood | null | undefined }) {
-  if (!mood) return null
+/** Tiny explicit kind tag: MUS / AMB / SFX. */
+function KindBadge({ kind }: { kind: AssetKind }) {
   return (
-    <span title={`Mood: ${mood.label}`} aria-label={`Mood: ${mood.label}`} className="-ml-0.5 text-[11px] opacity-80">
-      {mood.icon}
+    <span
+      title={KIND_BADGE_TITLE[kind]}
+      className={`rounded-sm px-1 py-px text-[8px] font-bold leading-none tracking-wider ${KIND_BADGE_CLASS[kind]}`}
+    >
+      {KIND_BADGE_TEXT[kind]}
+    </span>
+  )
+}
+
+/**
+ * Mood/category info for a chip. `moods` are readable text tags (categories
+ * minus the bulk-utility ones); `untagged` marks assets that still need a
+ * sorting pass — exactly the ones to hit with ✎ in the Library.
+ */
+export interface MoodInfo {
+  moods: string[]
+  untagged: boolean
+}
+
+/** Readable mood tags (max 2 shown) or a "needs tagging" marker. */
+function MoodTags({ info }: { info: MoodInfo | null }) {
+  if (!info) return null
+  if (info.untagged) {
+    return (
+      <span
+        title="No category/mood yet — tag it via ✎ in the Library (📚)"
+        className="rounded-sm bg-white/10 px-1 py-px text-[8px] font-bold leading-none tracking-wider text-hearth-muted"
+      >
+        ?
+      </span>
+    )
+  }
+  if (info.moods.length === 0) return null
+  return (
+    <span
+      title={`Mood: ${info.moods.join(', ')}`}
+      className="max-w-[7rem] truncate text-[9px] lowercase leading-none tracking-wide text-hearth-muted"
+    >
+      {info.moods.slice(0, 2).join(' · ')}
     </span>
   )
 }
@@ -52,7 +103,8 @@ function RowLabel({ children, title }: { children: React.ReactNode; title?: stri
 
 /** A playing item: name + a small (deliberately imprecise) fader + kill. */
 function NowChip({
-  icon,
+  kind,
+  looping,
   label,
   className,
   mood,
@@ -63,10 +115,12 @@ function NowChip({
   onStop,
   stopTitle
 }: {
-  icon: string
+  kind: AssetKind
+  /** Show the loop marker (a held SFX loop). */
+  looping?: boolean
   label: string
   className: string
-  mood?: Mood | null
+  mood?: MoodInfo | null
   volume: number | undefined
   defaultVolume: number
   onVolume: (v: number) => void
@@ -76,9 +130,14 @@ function NowChip({
 }) {
   return (
     <span className={`flex items-center gap-1.5 rounded-full border py-1 pl-2.5 pr-1 text-sm transition-colors ${className}`}>
-      <span aria-hidden>{icon}</span>
-      <MoodDot mood={mood} />
+      <KindBadge kind={kind} />
+      {looping && (
+        <span aria-hidden title="Held loop — tap ✕ to stop">
+          🔁
+        </span>
+      )}
       <span className="max-w-[10rem] truncate">{label}</span>
+      <MoodTags info={mood ?? null} />
       <span className="w-12">
         <VolumeFader value={volume} defaultValue={defaultVolume} onChange={onVolume} />
       </span>
@@ -102,7 +161,7 @@ function NowChip({
   )
 }
 
-/** A fire/toggle chip for the run-mode scene row and the staples row. */
+/** A fire/toggle chip for the run-mode scene rows and the staples row. */
 function FireChip({
   kind,
   label,
@@ -110,15 +169,21 @@ function FireChip({
   mood,
   onClick,
   title,
-  extra
+  extra,
+  badge = true,
+  hotkey
 }: {
   kind: AssetKind
   label: string
   lit: boolean
-  mood?: Mood | null
+  mood?: MoodInfo | null
   onClick: () => void
   title: string
   extra?: React.ReactNode
+  /** Show the MUS/AMB/SFX tag. Off inside kind-grouped rows (the row label says it). */
+  badge?: boolean
+  /** Single-key hotkey that fires this in run mode. */
+  hotkey?: string
 }) {
   return (
     <span
@@ -127,9 +192,18 @@ function FireChip({
       }`}
     >
       <button onClick={onClick} title={title} className="flex items-center gap-1.5 py-1 pl-2.5 pr-2">
-        <span aria-hidden>{lit ? '⏹' : KIND_ICON[kind]}</span>
-        <MoodDot mood={mood} />
+        {badge && <KindBadge kind={kind} />}
+        {lit && <span aria-hidden>⏹</span>}
+        {hotkey && (
+          <kbd
+            title={`Press ${hotkey.toUpperCase()} to fire`}
+            className="rounded border border-white/25 bg-black/25 px-1 py-px font-mono text-[9px] uppercase leading-none opacity-80"
+          >
+            {hotkey}
+          </kbd>
+        )}
         <span className="max-w-[9rem] truncate">{label}</span>
+        <MoodTags info={mood ?? null} />
       </button>
       {extra}
     </span>
@@ -168,9 +242,17 @@ export default function SoundConsole() {
   const [staplesOpen, setStaplesOpen] = useState(localStorage.getItem('hearth:staplesOpen') !== '0')
 
   const scene = scenes.find((s) => s.id === currentSceneId) ?? null
+  // Staples cluster by kind (music → beds → sfx), alphabetical within — the
+  // badges then read as group headers instead of confetti.
+  const KIND_ORDER: Record<AssetKind, number> = { music: 0, ambience: 1, sfx: 2 }
   const staples = favorites
     .map((file) => assets.find((a) => a.file === file))
     .filter((a): a is NonNullable<typeof a> => !!a && !a.trash)
+    .sort(
+      (a, b) =>
+        KIND_ORDER[a.kind] - KIND_ORDER[b.kind] ||
+        assetDisplayName(a).localeCompare(assetDisplayName(b))
+    )
 
   // Run mode hides the SFX grid, so its single-key hotkeys re-home here.
   useEffect(() => {
@@ -179,9 +261,8 @@ export default function SoundConsole() {
     if (map.size === 0) return
     const onKey = (e: KeyboardEvent) => {
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen) return
-      const target = e.target as HTMLElement
-      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen) return
+      if (isTypingTarget(e.target)) return
       const item = map.get(e.key.toLowerCase())
       if (item) {
         e.preventDefault()
@@ -219,14 +300,20 @@ export default function SoundConsole() {
   const ambLayer = (file: string) => scenes.flatMap((s) => s.ambience ?? []).find((a) => a.file === file)
   const sfxItem = (id: string) => scenes.flatMap((s) => s.sfx ?? []).find((x) => x.id === id)
 
-  // The library category doubles as the mood tag (tension/somber/combat/
-  // tavern…). Bulk-utility categories aren't moods — skip them.
-  const moodOf = (file: string | null | undefined): Mood | null => {
+  // The library categories double as mood tags (tension/somber/combat/
+  // tavern…). Bulk-utility categories aren't moods — skip them. An asset with
+  // no categories at all gets flagged `untagged` so it's easy to spot the ones
+  // still needing a sorting pass.
+  const moodOf = (file: string | null | undefined): MoodInfo | null => {
     if (!file) return null
-    const c = assets.find((x) => x.file === file)?.category
-    if (!c || c === 'footsteps' || c === 'voices') return null
-    const m = categoryMeta(c)
-    return { icon: m.icon, label: m.label }
+    const asset: LibraryAsset | undefined = assets.find((x) => x.file === file)
+    if (!asset) return null // scene-local file, not a library asset — nothing to tag
+    const cats = assetCategories(asset)
+    if (cats.length === 0) return { moods: [], untagged: true }
+    const moods = cats
+      .filter((c) => c !== 'footsteps' && c !== 'voices')
+      .map((c) => categoryMeta(c).label.toLowerCase())
+    return { moods, untagged: false }
   }
 
   const toggleStaples = (): void => {
@@ -244,7 +331,7 @@ export default function SoundConsole() {
           </RowLabel>
           {musicLabel && (
             <NowChip
-              icon="♪"
+              kind="music"
               label={musicLabel}
               className="border-hearth-ember/60 bg-hearth-ember/10 text-hearth-ember"
               mood={moodOf(musicTrack?.file ?? (status.activeMusicId?.includes('/') ? status.activeMusicId : null))}
@@ -259,7 +346,7 @@ export default function SoundConsole() {
           {status.ambienceFiles.map((file) => (
             <NowChip
               key={file}
-              icon="〜"
+              kind="ambience"
               label={stem(file)}
               className="border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
               mood={moodOf(file)}
@@ -273,7 +360,8 @@ export default function SoundConsole() {
           {status.loopingSfxIds.map((id) => (
             <NowChip
               key={id}
-              icon="🔁"
+              kind="sfx"
+              looping
               label={sfxItem(id)?.label ?? id}
               className="border-hearth-gold/60 bg-hearth-gold/10 text-hearth-gold"
               mood={moodOf(sfxItem(id)?.file)}
@@ -310,16 +398,18 @@ export default function SoundConsole() {
         </div>
       )}
 
-      {/* SCENE — the armed scene's whole palette, fireable from down here (Run mode) */}
-      {hasScene && scene && (
+      {/* SCENE — the armed scene's palette, one row per kind (Run mode). The
+          row label carries the kind, so chips skip their badge. */}
+      {hasScene && scene && (scene.music?.length ?? 0) > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <RowLabel title="This scene's sounds — fire them from here without scrolling the board">
-            Scene
+          <RowLabel title="This scene's music palette — tap to crossfade (one track at a time)">
+            ♪ Music
           </RowLabel>
           {(scene.music ?? []).map((t) => (
             <FireChip
               key={t.id}
               kind="music"
+              badge={false}
               label={t.label}
               mood={moodOf(t.file)}
               lit={status.activeMusicId === t.id}
@@ -330,10 +420,18 @@ export default function SoundConsole() {
               title={status.activeMusicId === t.id ? 'Playing' : `Crossfade to ${t.label}`}
             />
           ))}
+        </div>
+      )}
+      {hasScene && scene && (scene.ambience?.length ?? 0) > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <RowLabel title="This scene's ambience beds — tap to toggle, they layer freely">
+            〜 Beds
+          </RowLabel>
           {(scene.ambience ?? []).map((a) => (
             <FireChip
               key={a.file}
               kind="ambience"
+              badge={false}
               label={stem(a.file)}
               mood={moodOf(a.file)}
               lit={status.ambienceFiles.includes(a.file)}
@@ -344,10 +442,19 @@ export default function SoundConsole() {
               title={status.ambienceFiles.includes(a.file) ? 'Stop this bed' : 'Start this bed'}
             />
           ))}
+        </div>
+      )}
+      {hasScene && scene && (scene.sfx?.length ?? 0) > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <RowLabel title="This scene's sound effects — tap to fire; single-key hotkeys work while in run mode">
+            ⚡ SFX
+          </RowLabel>
           {(scene.sfx ?? []).map((s) => (
             <FireChip
               key={s.id}
               kind="sfx"
+              badge={false}
+              hotkey={s.hotkey}
               label={s.label}
               mood={moodOf(s.file)}
               lit={status.loopingSfxIds.includes(s.id)}

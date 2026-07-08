@@ -16,8 +16,16 @@ export interface LibraryAsset {
   /**
    * Coarse grouping for the library browser + drag tray, e.g. "creatures",
    * "combat", "town". Free-form; see LIBRARY_CATEGORIES for the recommended set.
+   * Legacy single value — kept in sync as `categories[0]` when editing.
    */
   category?: string
+  /**
+   * Multi-category: a sound can live in several buckets at once ("combat" +
+   * "tension" + "creatures"), so it surfaces from any search angle. The first
+   * entry is the primary (used for grouping); `category` mirrors it for
+   * back-compat. Read via `assetCategories()`, never directly.
+   */
+  categories?: string[]
   /** Free-text notes: what it sounds like, when to use it, source quirks. */
   description?: string
   /**
@@ -32,6 +40,20 @@ export interface LibraryAsset {
 /** Human-facing name for a library asset: the override, else the filename stem. */
 export function assetDisplayName(a: Pick<LibraryAsset, 'file' | 'name'>): string {
   return a.name ?? (a.file.split('/').pop() ?? a.file).replace(/\.[^.]+$/, '')
+}
+
+/**
+ * All categories on an asset, primary first. Handles both shapes: the
+ * multi-value `categories` array and the legacy single `category`.
+ */
+export function assetCategories(a: Pick<LibraryAsset, 'category' | 'categories'>): string[] {
+  if (a.categories && a.categories.length > 0) return a.categories
+  return a.category ? [a.category] : []
+}
+
+/** Primary category (grouping key), or undefined when uncategorized. */
+export function assetPrimaryCategory(a: Pick<LibraryAsset, 'category' | 'categories'>): string | undefined {
+  return assetCategories(a)[0]
 }
 
 export interface LibraryCategoryMeta {
@@ -188,6 +210,19 @@ export interface CueInline {
   kind: CueKind
   ref: string
   label?: string
+  // --- amb-cue lifecycle options (ignored on other kinds) -------------------
+  /** Target volume the bed fades up to (0..1). Overrides the layer's volume. */
+  volume?: number
+  /** Fade-in duration when this cue starts the bed (ms). */
+  fadeInMs?: number
+  /** Fade-out duration when the bed stops — via this cue or a section end (ms). */
+  fadeOutMs?: number
+  /**
+   * When the bed turns off. 'section': auto-fades out when the teleprompter
+   * crosses the next heading. Default (absent/'manual'): plays until toggled
+   * off by the cue, the console, or Stop All.
+   */
+  until?: 'section' | 'manual'
 }
 
 /** A run of text (with optional marks) or an atomic cue. */
@@ -288,6 +323,11 @@ export interface Scene {
   ideas?: SceneIdea[]
   /** Cast & loot — NPCs, monsters, findable items, hooks. */
   entities?: SceneEntity[]
+  /**
+   * Session-note id this scene belongs to (notes/ kind:"session"). Groups the
+   * scene list — "Session 3" holding its scenes. Unset = Unfiled.
+   */
+  session?: string
   /** Optional playlist mode for this scene's music (palette stays the default). */
   playlist?: PlaylistConfig
   transition?: { crossfadeMs?: number }
@@ -295,10 +335,71 @@ export interface Scene {
   _sourceFile?: string
 }
 
+// ---------------------------------------------------------------------------
+// Campaign notes: the DM's knowledge base (see NOTES-PLAN.md). One JSON file
+// per note in <campaign>/notes/. Flat + typed + linked — no folder hierarchy;
+// the browser groups by kind. Bodies reuse the ScriptDoc rich-text tree.
+// ---------------------------------------------------------------------------
+
+export type NoteKind =
+  | 'session'
+  | 'npc'
+  | 'pc'
+  | 'location'
+  | 'faction'
+  | 'item'
+  | 'thread'
+  | 'note'
+
+export interface NoteKindMeta {
+  label: string
+  /** Plural group header in the notes browser. */
+  plural: string
+  icon: string
+}
+
+/** Display metadata + browser grouping order for note kinds. */
+export const NOTE_KINDS: Record<NoteKind, NoteKindMeta> = {
+  session: { label: 'Session', plural: 'Sessions', icon: '📅' },
+  npc: { label: 'NPC', plural: 'NPCs', icon: '🎭' },
+  pc: { label: 'PC', plural: 'The Party', icon: '🛡️' },
+  location: { label: 'Location', plural: 'Locations', icon: '🗺️' },
+  faction: { label: 'Faction', plural: 'Factions', icon: '🏳️' },
+  item: { label: 'Item', plural: 'Items', icon: '🗝️' },
+  thread: { label: 'Thread', plural: 'Threads & Secrets', icon: '🧵' },
+  note: { label: 'Note', plural: 'Notes', icon: '📝' }
+}
+
+export const NOTE_KIND_ORDER = Object.keys(NOTE_KINDS) as NoteKind[]
+
+export interface CampaignNote {
+  id: string
+  kind: NoteKind
+  title: string
+  /** Rich-text body (same tree as scene scripts, minus sound cues). */
+  body?: ScriptDoc
+  /**
+   * Markdown authoring path (same subset as scene scriptText, no cues needed).
+   * Compiled into `body` at load; dropped once the note is edited in-app.
+   */
+  bodyText?: string
+  tags?: string[]
+  /** Threads: open (default) or resolved. */
+  status?: 'open' | 'resolved'
+  /** Sessions: when it was/will be played (ISO date, display-only). */
+  date?: string
+  createdAt?: string
+  updatedAt?: string
+  /** Populated by the loader: relative path within the campaign. */
+  _sourceFile?: string
+}
+
 export interface CampaignState {
   /** Absolute path of the active campaign folder, or null if none chosen. */
   path: string | null
   scenes: Scene[]
+  /** Campaign-wide notes (sessions, NPCs, locations…), from notes/*.json. */
+  notes: CampaignNote[]
   library: Library
   /** Human-readable load errors (bad JSON, etc.) surfaced in the UI. */
   errors: string[]

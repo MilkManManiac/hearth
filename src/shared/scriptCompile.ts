@@ -1,4 +1,5 @@
 import type {
+  CueInline,
   CueKind,
   LegacyScriptNode,
   ScriptBlock,
@@ -18,6 +19,46 @@ const CUE_ICON: Record<CueKind, string> = {
 
 function cueLabel(kind: CueKind, ref: string): string {
   return `${CUE_ICON[kind]} ${ref}`
+}
+
+/** "3s" / "2.5s" → ms; a bare number is already ms. Undefined on nonsense. */
+function parseDurationMs(v: string): number | undefined {
+  const m = /^(\d+(?:\.\d+)?)(s|ms)?$/.exec(v.trim())
+  if (!m) return undefined
+  const n = parseFloat(m[1])
+  return m[2] === 's' ? Math.round(n * 1000) : Math.round(n)
+}
+
+/** "40%" or "0.4" → 0..1. Undefined on nonsense. */
+function parseVolume(v: string): number | undefined {
+  const pct = v.trim().endsWith('%')
+  const n = parseFloat(v)
+  if (Number.isNaN(n)) return undefined
+  const vol = pct ? n / 100 : n
+  return Math.min(1, Math.max(0, vol))
+}
+
+/**
+ * Build a cue from the text between `{{kind:` and `}}`. The ref may carry
+ * `|`-separated lifecycle options (amb cues only), e.g.
+ * `{{amb:rain|vol=40%|in=3s|out=6s|until=section}}`. Unknown options are
+ * ignored so a typo degrades to a plain cue instead of breaking the script.
+ */
+function buildCue(kind: CueKind, raw: string): CueInline {
+  const [ref, ...optParts] = raw.split('|').map((s) => s.trim())
+  const cue: CueInline = { type: 'cue', kind, ref, label: cueLabel(kind, ref) }
+  if (kind !== 'amb') return cue
+  for (const part of optParts) {
+    const eq = part.indexOf('=')
+    if (eq === -1) continue
+    const key = part.slice(0, eq).trim().toLowerCase()
+    const val = part.slice(eq + 1)
+    if (key === 'vol' || key === 'volume') cue.volume = parseVolume(val) ?? cue.volume
+    else if (key === 'in') cue.fadeInMs = parseDurationMs(val) ?? cue.fadeInMs
+    else if (key === 'out') cue.fadeOutMs = parseDurationMs(val) ?? cue.fadeOutMs
+    else if (key === 'until' && val.trim() === 'section') cue.until = 'section'
+  }
+  return cue
 }
 
 // ---------------------------------------------------------------------------
@@ -65,9 +106,7 @@ function parseInline(text: string): ScriptInline[] {
   CUE_RE.lastIndex = 0
   while ((m = CUE_RE.exec(text)) !== null) {
     if (m.index > last) out.push(...parseEmphasis(text.slice(last, m.index), []))
-    const kind = m[1] as CueKind
-    const ref = m[2].trim()
-    out.push({ type: 'cue', kind, ref, label: cueLabel(kind, ref) })
+    out.push(buildCue(m[1] as CueKind, m[2].trim()))
     last = m.index + m[0].length
   }
   if (last < text.length) out.push(...parseEmphasis(text.slice(last), []))
@@ -159,6 +198,24 @@ export function migrateLegacyScript(nodes: LegacyScriptNode[]): ScriptDoc {
 
   const nonEmpty = blocks.filter((b) => b.type !== 'paragraph' || b.content.length > 0)
   return nonEmpty.length ? nonEmpty : [{ type: 'paragraph', content: [] }]
+}
+
+/** Flatten a ScriptDoc to plain text (search indexing; cue labels included). */
+export function docText(doc: ScriptDoc | undefined): string {
+  if (!doc) return ''
+  const parts: string[] = []
+  const walk = (blocks: ScriptBlock[]): void => {
+    for (const b of blocks) {
+      if (b.type === 'callout') {
+        walk(b.content)
+        continue
+      }
+      for (const n of b.content) parts.push(n.type === 'text' ? n.text : (n.label ?? n.ref))
+      parts.push('\n')
+    }
+  }
+  walk(doc)
+  return parts.join(' ')
 }
 
 const BLOCK_TYPES = new Set(['paragraph', 'heading', 'callout'])

@@ -86,6 +86,29 @@ Bot setup (one-time, in the Discord developer portal):
 - `src/renderer/components/DiscordPanel.tsx` — the modal UI; store slice in
   `store.ts` (status, connect/join actions, tap lifecycle tied to join state).
 
+## The Chronicler (added 2026-07-08)
+
+Craig-style **per-speaker session recorder** built into the bridge. While
+joined, 🪶 "Record session" in the Discord panel subscribes to each speaking
+user (`connection.receiver`, `EndBehaviorType.AfterSilence` 800ms), decodes
+opus→PCM via opusscript (same no-native-deps policy), and writes:
+
+- `<campaign>/recordings/session-<stamp>/<offsetMs>-<user>.wav` per utterance
+  (48kHz stereo s16le; <0.25s blips dropped)
+- `manifest.jsonl` — one line per utterance: user, userId, startMs/endMs,
+  seconds, file
+- `session.json` — start time, guild/channel, format notes
+
+Purpose: future transcripts get **perfect speaker attribution** (no
+diarization). Whisper each WAV, order by startMs, done.
+
+Notes/limits:
+- Join is now `selfDeaf: false` (a deafened bot receives nothing).
+- WAV is uncompressed (~690MB/hr per *continuously* talking speaker; real
+  sessions are far less). Follow-up: ffmpeg pass to ogg/flac after stop.
+- DAVE E2EE receive path untested until the next live session.
+- TopBar shows a red **rec** chip while recording; recordings are gitignored.
+
 ## Open items before "done"
 
 - [ ] First live test with a real bot token (join, audio audible, latency ok).
