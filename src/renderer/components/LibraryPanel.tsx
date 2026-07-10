@@ -8,6 +8,7 @@ import {
   categoryMeta
 } from '../../shared/types'
 import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
+import { basename } from '../../shared/paths'
 import { useStore } from '../store'
 import DangerButton from './DangerButton'
 import PreviewScrubber from './PreviewScrubber'
@@ -28,9 +29,6 @@ function categoryRank(id: string): number {
   return i === -1 ? CATEGORY_ORDER.length : i
 }
 
-function basename(file: string): string {
-  return file.split('/').pop() ?? file
-}
 
 /**
  * Full-library browser: search + category/kind filters + per-asset audition.

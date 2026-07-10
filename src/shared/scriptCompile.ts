@@ -208,7 +208,7 @@ export function compileScriptText(src: string): ScriptDoc {
 // ---------------------------------------------------------------------------
 
 /** Up-convert a legacy flat script (text/cue runs) into paragraph blocks. */
-export function migrateLegacyScript(nodes: LegacyScriptNode[]): ScriptDoc {
+function migrateLegacyScript(nodes: LegacyScriptNode[]): ScriptDoc {
   const blocks: ScriptBlock[] = []
   let inline: ScriptInline[] = []
   const flush = () => {
@@ -397,9 +397,19 @@ function isTreeDoc(raw: unknown): raw is ScriptDoc {
 /**
  * Normalize whatever is stored in `scene.script` (tree or legacy flat array)
  * into a `ScriptDoc`. Loader uses this so on-disk legacy scenes migrate live.
+ * Defensive: hand-authored blocks missing their `content` array get one, so
+ * a typo'd scene can't crash every renderer walk.
  */
 export function normalizeScript(raw: unknown): ScriptDoc {
-  if (isTreeDoc(raw)) return raw
+  if (isTreeDoc(raw)) {
+    const fix = (blocks: ScriptBlock[]): ScriptBlock[] =>
+      blocks.map((b) =>
+        b.type === 'callout'
+          ? { ...b, content: fix(b.content ?? []) }
+          : { ...b, content: b.content ?? [] }
+      )
+    return fix(raw)
+  }
   if (Array.isArray(raw)) return migrateLegacyScript(raw as LegacyScriptNode[])
   return [{ type: 'paragraph', content: [] }]
 }

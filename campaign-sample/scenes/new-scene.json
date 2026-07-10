@@ -72,31 +72,6 @@
       "id": "lib-somber-what-is-left",
       "label": "Somber What Is Left",
       "file": "music/somber-what-is-left.mp3"
-    },
-    {
-      "id": "lib-mp1-oliver-siimon-music-fantasywave-chromatic-deep-zombish-lost",
-      "label": "Fantasywave Chromatic Deep Zombish Lost",
-      "file": "music/mp1-oliver-siimon-music-fantasywave-chromatic-deep-zombish-lost.mp3"
-    },
-    {
-      "id": "lib-mp1-oliver-siimon-music-mysterious-piano-moody-2-e-minor-60-4-4",
-      "label": "Mysterious Piano & Moody 2 E Minor 60",
-      "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody-2-e-minor-60-4-4.mp3"
-    },
-    {
-      "id": "lib-mp1-oliver-siimon-blossom-valley-87",
-      "label": "Blossom Valley",
-      "file": "music/mp1-oliver-siimon-blossom-valley-87.flac"
-    },
-    {
-      "id": "lib-mp1-oliver-siimon-music-nature-hopeful-waking-87",
-      "label": "Nature Hopeful Waking",
-      "file": "music/mp1-oliver-siimon-music-nature-hopeful-waking-87.mp3"
-    },
-    {
-      "id": "lib-mp1-oliver-siimon-piano-spiegel",
-      "label": "Piano Spiegel",
-      "file": "music/mp1-oliver-siimon-piano-spiegel.mp3"
     }
   ],
   "ambience": [
@@ -136,10 +111,6 @@
     {
       "file": "ambience/forest.mp3",
       "autoplay": false,
-      "volume": 0.4
-    },
-    {
-      "file": "ambience/fapx-crickets-night.ogg",
       "volume": 0.4
     }
   ],

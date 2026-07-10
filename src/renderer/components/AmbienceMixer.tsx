@@ -1,12 +1,10 @@
 import type { Scene } from '../../shared/types'
+import { basename } from '../../shared/paths'
 import { pushRecent } from '../lib/prefs'
 import { useStore } from '../store'
 import { LoopButton, VolumeFader } from './Mixer'
 import SectionHeader from './SectionHeader'
 
-function basename(file: string): string {
-  return file.split('/').pop() ?? file
-}
 
 /** Per-layer live mixer for the scene's ambience beds. */
 export default function AmbienceMixer({ scene }: { scene: Scene }) {

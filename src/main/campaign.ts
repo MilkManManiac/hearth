@@ -314,11 +314,21 @@ export class CampaignManager {
 
   private startWatching(): void {
     this.stopWatching()
-    this.watcher = chokidar.watch(this.campaignPath, {
-      ignoreInitial: true,
-      depth: 3,
-      awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 }
-    })
+    // Watch only what hot-reloads (scenes/notes/library) — watching the whole
+    // campaign paid a startup scan + write-finish polling over thousands of
+    // audio files that never reload.
+    this.watcher = chokidar.watch(
+      [
+        path.join(this.campaignPath, 'scenes'),
+        path.join(this.campaignPath, 'notes'),
+        path.join(this.campaignPath, 'library.json')
+      ],
+      {
+        ignoreInitial: true,
+        depth: 2,
+        awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 }
+      }
+    )
     const trigger = () => {
       if (this.reloadTimer) clearTimeout(this.reloadTimer)
       this.reloadTimer = setTimeout(async () => {
