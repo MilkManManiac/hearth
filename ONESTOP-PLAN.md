@@ -24,11 +24,11 @@ converged on the plan below.
   the audio library. DDB character JSON import for the party dashboard.
 
 ## Build phases (each ends usable)
-- **C1 — Compendium** ✦ IN PROGRESS: normalized SRD data + 📖 browser modal
+- **C1 — Compendium** ✅ SHIPPED 2026-07-10: normalized SRD data + 📖 browser modal
   (kind tabs, fuzzy search, CR/type/level/school filters), 2024-layout stat
   blocks + spell cards, Ctrl+K searches it, hover-peek later. The DM's
   daily-driver lookup, offline.
-- **C2 — Encounters & initiative**: `Combatant = compendium ref + overrides +
+- **C2 — Encounters & initiative** ✅ SHIPPED 2026-07-10 (⚔ right-panel tab; PC max-HP entry + presenter party view still open):: `Combatant = compendium ref + overrides +
   mutable state` (Improved Initiative's shape), per-scene encounter JSON,
   2024 XP-budget math (flat budget table — no multipliers), presenter-window
   party view with fuzzed HP. Conditions with round timers.

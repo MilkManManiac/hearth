@@ -323,6 +323,43 @@ export interface SceneEntity {
   used?: boolean
 }
 
+// ---------------------------------------------------------------------------
+// Encounters (ONESTOP-PLAN C2): a combatant wraps an optional compendium ref
+// plus mutable table state — the Improved Initiative shape. Lives on the scene
+// so prep and play stay together; persisted via the normal saveScene path.
+// ---------------------------------------------------------------------------
+
+export interface CombatantCondition {
+  name: string
+  /** Round on which it expires (checked when the round advances past it). */
+  untilRound?: number
+}
+
+export interface Combatant {
+  id: string
+  name: string
+  /** Compendium monster key (public/compendium/monsters.json), if any. */
+  ref?: string
+  side: 'foe' | 'ally' | 'pc'
+  maxHp: number
+  hp: number
+  ac?: number
+  /** d20 modifier used by the roll-initiative button. */
+  initBonus?: number
+  initiative?: number
+  conditions?: CombatantCondition[]
+  /** XP for budget math (from the compendium at add time). */
+  xp?: number
+  note?: string
+}
+
+export interface Encounter {
+  combatants: Combatant[]
+  round: number
+  /** Index into the initiative-sorted order; -1 = not started. */
+  turn: number
+}
+
 export interface Scene {
   id: string
   name: string
@@ -352,6 +389,8 @@ export interface Scene {
    * scene list — "Session 3" holding its scenes. Unset = Unfiled.
    */
   session?: string
+  /** Prepped/live combat for this scene (ONESTOP-PLAN C2). */
+  encounter?: Encounter
   /** Optional playlist mode for this scene's music (palette stays the default). */
   playlist?: PlaylistConfig
   transition?: { crossfadeMs?: number }

@@ -14,6 +14,7 @@ import ScriptPanel from './ScriptPanel'
 import ImageStrip from './ImageStrip'
 import IdeasPanel from './IdeasPanel'
 import CastPanel from './CastPanel'
+import EncounterPanel from './EncounterPanel'
 import Toasts from './Toasts'
 import LibraryPanel from './LibraryPanel'
 import SoundConsole from './SoundConsole'
@@ -264,13 +265,14 @@ export default function ControlBoard() {
   )
 }
 
-type Tab = 'images' | 'ideas' | 'cast' | 'notes'
+type Tab = 'images' | 'ideas' | 'cast' | 'fight' | 'notes'
 
 function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => void }) {
   const [tab, setTab] = useState<Tab>('images')
   const currentNoteId = useStore((s) => s.currentNoteId)
   const ideaCount = scene.ideas?.length ?? 0
   const castCount = scene.entities?.length ?? 0
+  const fightCount = scene.encounter?.combatants.length ?? 0
 
   // Picking a note (quick switcher, session header) surfaces it here — in run
   // mode this is how notes appear without taking the script off the screen.
@@ -282,6 +284,7 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
     { id: 'images', label: 'Images' },
     { id: 'ideas', label: `Ideas${ideaCount ? ` ${ideaCount}` : ''}` },
     { id: 'cast', label: `Cast${castCount ? ` ${castCount}` : ''}` },
+    { id: 'fight', label: `⚔${fightCount ? ` ${fightCount}` : ''}` },
     { id: 'notes', label: '📓' }
   ]
 
@@ -314,6 +317,7 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
         {tab === 'images' && <ImageStrip scene={scene} />}
         {tab === 'ideas' && <IdeasPanel scene={scene} />}
         {tab === 'cast' && <CastPanel scene={scene} />}
+        {tab === 'fight' && <EncounterPanel scene={scene} />}
         {tab === 'notes' && <NotesPeek />}
       </div>
     </aside>
