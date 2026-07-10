@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Character } from '../../shared/types'
+import type { Character, RollEvent } from '../../shared/types'
+import { d20Expr, groupText, rollExpr } from '../../shared/dice'
 import {
   ABILITY_KEYS,
   ABILITY_LABEL,
@@ -32,7 +33,11 @@ export interface SheetCallbacks {
   /** Open a spell's card (DM: compendium deep-link; player: inline modal). */
   onOpenSpell?: (key: string) => void
   onOpenSpecies?: (key: string) => void
+  /** Send a roll to the campaign Game Log (D1). Absent = no dice on this surface. */
+  onRoll?: (roll: RollEvent) => void
 }
+
+type RollMode = 'adv' | 'dis' | null
 
 export default function CharacterSheet({
   c,
@@ -83,6 +88,24 @@ export default function CharacterSheet({
     })
     .filter(Boolean)
     .join(' / ')
+
+  // --- Dice (D1): every derived number is a roll button when onRoll is wired.
+  const [rollMode, setRollMode] = useState<RollMode>(null)
+  const [lastRoll, setLastRoll] = useState<RollEvent | null>(null)
+  const canRoll = !!cb.onRoll
+  const doRoll = (what: string, bonus: number) => {
+    if (!cb.onRoll) return
+    const roll = rollExpr(d20Expr(bonus), {
+      who: c.name || 'Unnamed',
+      characterId: c.id,
+      what,
+      mode: rollMode ?? undefined
+    })
+    if (!roll) return
+    setLastRoll(roll)
+    setRollMode(null) // adv/dis is per-roll, armed then consumed (visible, unlike DDB's right-click)
+    cb.onRoll(roll)
+  }
 
   const [dmg, setDmg] = useState('')
   const applyHp = (sign: 1 | -1) => {
@@ -269,6 +292,15 @@ export default function CharacterSheet({
         <button onClick={() => patch({ inspiration: !c.inspiration })} className={`rounded-full border px-2 py-0.5 text-xs ${c.inspiration ? 'border-hearth-gold bg-hearth-gold/20 text-hearth-gold' : 'border-hearth-border text-hearth-muted'}`} title="Heroic Inspiration">
           ✨ Insp
         </button>
+        {canRoll && (
+          <button
+            onClick={() => doRoll('Initiative', mod(c.abilities.dex))}
+            title={`Roll initiative (1d20${fmtMod(mod(c.abilities.dex))})`}
+            className="rounded border border-hearth-border px-2 py-0.5 text-xs text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+          >
+            ⚡ Init {fmtMod(mod(c.abilities.dex))}
+          </button>
+        )}
         <span className="ml-auto flex gap-1.5">
           <button onClick={() => patch({ slotsUsed: levels.some((e) => e.classKey === 'warlock') ? {} : c.slotsUsed })} className="rounded border border-hearth-border px-2 py-0.5 text-xs text-hearth-muted hover:text-hearth-text" title="Short rest: warlock Pact slots return">
             🌙 Short rest
@@ -301,6 +333,22 @@ export default function CharacterSheet({
         </div>
       )}
 
+      {/* Dice bar (D1): visible adv/dis toggle — armed for the next roll. */}
+      {canRoll && (
+        <RollBar
+          mode={rollMode}
+          setMode={setRollMode}
+          lastRoll={lastRoll}
+          onFreeRoll={(expr) => {
+            const roll = rollExpr(expr, { who: c.name || 'Unnamed', characterId: c.id, what: expr })
+            if (!roll) return false
+            setLastRoll(roll)
+            cb.onRoll!(roll)
+            return true
+          }}
+        />
+      )}
+
       {/* Abilities + saves */}
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {ABILITY_KEYS.map((k) => (
@@ -312,11 +360,32 @@ export default function CharacterSheet({
               onChange={(e) => patch({ abilities: { ...c.abilities, [k]: Number(e.target.value) || 0 } })}
               className="w-full bg-transparent text-center text-lg font-semibold text-hearth-text focus:outline-none"
             />
-            <div className="text-xs text-hearth-ember">{fmtMod(mod(c.abilities[k]))}</div>
-            <div className="text-[10px] text-hearth-muted" title="Saving throw">
-              save {fmtMod(saveBonus(c, k, cls?.savingThrows ?? []))}
-              {cls?.savingThrows.includes(k) ? ' ●' : ''}
-            </div>
+            {canRoll ? (
+              <button
+                onClick={() => doRoll(`${ABILITY_LABEL[k]} check`, mod(c.abilities[k]))}
+                title={`Roll a ${ABILITY_LABEL[k]} check (1d20${fmtMod(mod(c.abilities[k]))})`}
+                className="rounded px-1 text-xs text-hearth-ember hover:bg-hearth-ember/15"
+              >
+                {fmtMod(mod(c.abilities[k]))}
+              </button>
+            ) : (
+              <div className="text-xs text-hearth-ember">{fmtMod(mod(c.abilities[k]))}</div>
+            )}
+            {canRoll ? (
+              <button
+                onClick={() => doRoll(`${ABILITY_LABEL[k]} save`, saveBonus(c, k, cls?.savingThrows ?? []))}
+                title={`Roll a ${ABILITY_LABEL[k]} saving throw`}
+                className="rounded px-1 text-[10px] text-hearth-muted hover:bg-hearth-ember/15 hover:text-hearth-ember"
+              >
+                save {fmtMod(saveBonus(c, k, cls?.savingThrows ?? []))}
+                {cls?.savingThrows.includes(k) ? ' ●' : ''}
+              </button>
+            ) : (
+              <div className="text-[10px] text-hearth-muted" title="Saving throw">
+                save {fmtMod(saveBonus(c, k, cls?.savingThrows ?? []))}
+                {cls?.savingThrows.includes(k) ? ' ●' : ''}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -335,14 +404,27 @@ export default function CharacterSheet({
                 else if (state === 1) patch({ expertise: [...(c.expertise ?? []), sk] })
                 else patch({ skillProfs: c.skillProfs.filter((x) => x !== sk), expertise: (c.expertise ?? []).filter((x) => x !== sk) })
               }
+              const skillName = sk.replace(/_/g, ' ')
               return (
-                <button key={sk} onClick={cycle} className="flex items-center gap-1.5 rounded px-1 py-px text-left text-xs text-hearth-muted hover:bg-hearth-panel2">
-                  <span className={state === 2 ? 'text-hearth-gold' : state === 1 ? 'text-hearth-ember' : 'text-hearth-muted/40'}>
-                    {state === 2 ? '◉' : state === 1 ? '●' : '○'}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate capitalize">{sk.replace(/_/g, ' ')}</span>
-                  <span className="tabular-nums text-hearth-text">{fmtMod(skillBonus(c, sk))}</span>
-                </button>
+                <span key={sk} className="flex items-center gap-1.5 rounded px-1 py-px text-xs text-hearth-muted hover:bg-hearth-panel2">
+                  <button onClick={cycle} className="flex min-w-0 flex-1 items-center gap-1.5 text-left" title="Click: ○ → proficient → expertise">
+                    <span className={state === 2 ? 'text-hearth-gold' : state === 1 ? 'text-hearth-ember' : 'text-hearth-muted/40'}>
+                      {state === 2 ? '◉' : state === 1 ? '●' : '○'}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate capitalize">{skillName}</span>
+                  </button>
+                  {canRoll ? (
+                    <button
+                      onClick={() => doRoll(`${skillName.replace(/\b\w/g, (ch) => ch.toUpperCase())} check`, skillBonus(c, sk))}
+                      title={`Roll ${skillName} (1d20${fmtMod(skillBonus(c, sk))})`}
+                      className="rounded px-1 tabular-nums text-hearth-text hover:bg-hearth-ember/15 hover:text-hearth-ember"
+                    >
+                      {fmtMod(skillBonus(c, sk))}
+                    </button>
+                  ) : (
+                    <span className="tabular-nums text-hearth-text">{fmtMod(skillBonus(c, sk))}</span>
+                  )}
+                </span>
               )
             })}
           </div>
@@ -357,7 +439,21 @@ export default function CharacterSheet({
             <div className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2">
               <div className="mb-1 flex items-baseline gap-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
                 Spell slots
-                {spellDc != null && <span className="normal-case">DC {spellDc} · atk {fmtMod(spellAtk!)}</span>}
+                {spellDc != null &&
+                  (canRoll ? (
+                    <span className="normal-case">
+                      DC {spellDc} ·{' '}
+                      <button
+                        onClick={() => doRoll('Spell attack', spellAtk!)}
+                        title={`Roll a spell attack (1d20${fmtMod(spellAtk!)})`}
+                        className="rounded px-0.5 text-hearth-ember hover:bg-hearth-ember/15"
+                      >
+                        atk {fmtMod(spellAtk!)}
+                      </button>
+                    </span>
+                  ) : (
+                    <span className="normal-case">DC {spellDc} · atk {fmtMod(spellAtk!)}</span>
+                  ))}
               </div>
               {Object.entries(slots).map(([lvl, total]) => {
                 const used = c.slotsUsed?.[lvl] ?? 0
@@ -427,6 +523,85 @@ export default function CharacterSheet({
           />
         </label>
       </div>
+    </div>
+  )
+}
+
+/** Sticky-armed ADV/DIS toggle + freeform tray + last-roll readout (D1). */
+function RollBar({
+  mode,
+  setMode,
+  lastRoll,
+  onFreeRoll
+}: {
+  mode: RollMode
+  setMode: (m: RollMode) => void
+  lastRoll: RollEvent | null
+  onFreeRoll: (expr: string) => boolean
+}) {
+  const [expr, setExpr] = useState('')
+  const [bad, setBad] = useState(false)
+  const fire = () => {
+    if (!expr.trim()) return
+    if (onFreeRoll(expr.trim())) {
+      setExpr('')
+      setBad(false)
+    } else setBad(true)
+  }
+  const ModeBtn = ({ m, label, title }: { m: RollMode; label: string; title: string }) => (
+    <button
+      onClick={() => setMode(mode === m ? null : m)}
+      title={title}
+      className={`rounded px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+        mode === m
+          ? m === 'adv'
+            ? 'bg-emerald-500/25 text-emerald-300'
+            : 'bg-red-500/25 text-red-300'
+          : 'text-hearth-muted hover:text-hearth-text'
+      }`}
+    >
+      {label}
+    </button>
+  )
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-md border border-hearth-border bg-hearth-panel2/30 px-2 py-1.5">
+      <span className="text-sm" title="Dice: click any number on the sheet to roll it">🎲</span>
+      <span className="flex rounded border border-hearth-border">
+        <ModeBtn m="adv" label="ADV" title="Arm Advantage for the next d20 roll (2d20, keep high)" />
+        <ModeBtn m="dis" label="DIS" title="Arm Disadvantage for the next d20 roll (2d20, keep low)" />
+      </span>
+      {mode && <span className="text-[10px] text-hearth-muted">armed for next roll</span>}
+      <input
+        value={expr}
+        onChange={(e) => {
+          setExpr(e.target.value)
+          setBad(false)
+        }}
+        onKeyDown={(e) => e.key === 'Enter' && fire()}
+        placeholder="2d6+3…"
+        className={`w-24 rounded border bg-hearth-bg px-1.5 py-0.5 text-xs text-hearth-text placeholder:text-hearth-muted/40 focus:outline-none ${
+          bad ? 'border-red-500/60' : 'border-hearth-border focus:border-hearth-ember'
+        }`}
+        title="Freeform dice (damage, Bless d4, sneak attack…) — Enter rolls"
+      />
+      {lastRoll && (
+        <span className="ml-auto flex items-baseline gap-1.5 text-xs">
+          <span className="text-hearth-muted">{lastRoll.what}:</span>
+          <span
+            className={`text-base font-bold ${
+              lastRoll.crit === 'crit' ? 'text-hearth-gold' : lastRoll.crit === 'fumble' ? 'text-red-300' : 'text-hearth-ember'
+            }`}
+          >
+            {lastRoll.total}
+          </span>
+          <span className="text-[10px] text-hearth-muted/70">
+            {lastRoll.groups.map(groupText).join(' + ')}
+            {lastRoll.modifier !== 0 ? ` ${lastRoll.modifier > 0 ? '+' : ''}${lastRoll.modifier}` : ''}
+          </span>
+          {lastRoll.crit === 'crit' && <span className="text-[10px] font-bold text-hearth-gold">NAT 20!</span>}
+          {lastRoll.crit === 'fumble' && <span className="text-[10px] font-bold text-red-300">nat 1</span>}
+        </span>
+      )}
     </div>
   )
 }

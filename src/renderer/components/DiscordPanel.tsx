@@ -34,6 +34,8 @@ export default function DiscordPanel() {
   const [channels, setChannels] = useState<DiscordChannelInfo[]>([])
   const [guildId, setGuildId] = useState('')
   const [channelId, setChannelId] = useState('')
+  const [textChannels, setTextChannels] = useState<DiscordChannelInfo[]>([])
+  const [rollChannelId, setRollChannelId] = useState('')
 
   const state = status?.state ?? 'idle'
   const connected = state === 'connected' || state === 'joining' || state === 'joined'
@@ -68,6 +70,24 @@ export default function DiscordPanel() {
       .then(setChannels)
       .catch((err) => pushToast((err as Error).message, 'error'))
   }, [guildId, pushToast])
+
+  // Game Log feed (D1): the saved roll channel + text channels of the picked
+  // server (single-server bots don't need a pick).
+  useEffect(() => {
+    if (!open) return
+    void window.hearth.discordRollChannel().then((id) => setRollChannelId(id ?? ''))
+  }, [open])
+  const feedGuild = guildId || (guilds.length === 1 ? guilds[0].id : '')
+  useEffect(() => {
+    if (!feedGuild || !connected) {
+      setTextChannels([])
+      return
+    }
+    window.hearth
+      .discordTextChannels(feedGuild)
+      .then(setTextChannels)
+      .catch(() => setTextChannels([]))
+  }, [feedGuild, connected])
 
   if (!open) return null
 
@@ -204,6 +224,33 @@ export default function DiscordPanel() {
                   Disconnect bot
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Game Log → Discord (D1): rolls post to a text channel as embeds. */}
+          {connected && (
+            <div className="rounded border border-hearth-border/50 bg-hearth-panel2/40 px-3 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-hearth-text">🎲 Game Log feed</span>
+                <span className="text-[10px] text-hearth-muted">public rolls post to a text channel</span>
+              </div>
+              <select
+                value={rollChannelId}
+                onChange={(e) => {
+                  setRollChannelId(e.target.value)
+                  void window.hearth.discordSetRollChannel(e.target.value || undefined)
+                }}
+                disabled={textChannels.length === 0}
+                className={`${inputCls} mt-2`}
+                title={textChannels.length === 0 ? 'Pick a server above first' : 'Rolls from sheets, the portal, and public DM rolls land here'}
+              >
+                <option value="">— off (no Discord posting) —</option>
+                {textChannels.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    # {c.name}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 

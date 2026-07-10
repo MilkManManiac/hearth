@@ -49,6 +49,27 @@ function readToken(): string | undefined {
   }
 }
 
+/** Text channel that receives Game Log rolls ('' / absent = posting off). */
+function readRollChannel(): string | undefined {
+  try {
+    return JSON.parse(fsSync.readFileSync(CONFIG_FILE(), 'utf-8')).rollChannelId || undefined
+  } catch {
+    return undefined
+  }
+}
+
+function writeRollChannel(channelId: string | undefined): void {
+  let cfg: Record<string, unknown> = {}
+  try {
+    cfg = JSON.parse(fsSync.readFileSync(CONFIG_FILE(), 'utf-8'))
+  } catch {
+    /* fresh config */
+  }
+  if (channelId) cfg.rollChannelId = channelId
+  else delete cfg.rollChannelId
+  fsSync.writeFileSync(CONFIG_FILE(), JSON.stringify(cfg, null, 2))
+}
+
 function writeToken(token: string | undefined): void {
   let cfg: Record<string, unknown> = {}
   try {
@@ -196,6 +217,55 @@ export class DiscordBridge {
     return [...channels.values()]
       .filter((c): c is NonNullable<typeof c> => !!c && c.isVoiceBased())
       .map((c) => ({ id: c.id, name: c.name }))
+  }
+
+  /** Text channels, for the Game Log → Discord feed picker. */
+  async listTextChannels(guildId: string): Promise<DiscordChannelInfo[]> {
+    if (!this.client) throw new Error('Not connected')
+    const guild = await this.client.guilds.fetch(guildId)
+    const channels = await guild.channels.fetch()
+    return [...channels.values()]
+      .filter((c): c is NonNullable<typeof c> => !!c && c.isTextBased() && !c.isVoiceBased())
+      .map((c) => ({ id: c.id, name: c.name }))
+  }
+
+  getRollChannel(): string | undefined {
+    return readRollChannel()
+  }
+
+  setRollChannel(channelId: string | undefined): void {
+    writeRollChannel(channelId)
+  }
+
+  /**
+   * Post a Game Log roll to the configured text channel. Fire-and-forget —
+   * silently skipped when the bot isn't connected, no channel is set, or the
+   * roll is DM-only.
+   */
+  postRoll(roll: {
+    who: string
+    what: string
+    expr: string
+    total: number
+    groups: { die: number; results: number[]; kept: number[] }[]
+    crit?: 'crit' | 'fumble'
+    dmOnly?: boolean
+  }): void {
+    const channelId = readRollChannel()
+    if (!this.client || !channelId || roll.dmOnly) return
+    const dice = roll.groups
+      .map((g) => `d${g.die}[${g.results.map((r, i) => (g.kept.includes(i) ? r : `~~${r}~~`)).join(', ')}]`)
+      .join(' ')
+    const flair = roll.crit === 'crit' ? ' 💥 **NAT 20!**' : roll.crit === 'fumble' ? ' 💀 nat 1' : ''
+    const line = `🎲 **${roll.who}** — ${roll.what}: **${roll.total}**${flair}\n-# ${roll.expr} · ${dice}`
+    void (async () => {
+      try {
+        const channel = await this.client!.channels.fetch(channelId)
+        if (channel?.isTextBased() && 'send' in channel) await channel.send(line)
+      } catch (err) {
+        console.error('[discord] roll post failed:', (err as Error).message)
+      }
+    })()
   }
 
   /** Join a voice channel and start playing the raw PCM stream. */

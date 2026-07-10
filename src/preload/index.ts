@@ -7,6 +7,7 @@ import type {
   LibraryAsset,
   NoteKind,
   PlaylistPreset,
+  RollEvent,
   Scene
 } from '../shared/types'
 import type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus } from '../main/discord'
@@ -112,6 +113,20 @@ const api = {
   /** Player portal (C5): players open their character in a browser. */
   portalStatus: (): Promise<{ running: boolean; url: string }> => ipcRenderer.invoke('portal:status'),
   portalToggle: (): Promise<{ running: boolean; url: string }> => ipcRenderer.invoke('portal:toggle'),
+  /** Game Log (D1): send a roll to the campaign hub / read the session log. */
+  sendRoll: (roll: RollEvent): Promise<void> => ipcRenderer.invoke('roll:send', roll),
+  getRollLog: (): Promise<RollEvent[]> => ipcRenderer.invoke('roll:log'),
+  onRoll: (cb: (roll: RollEvent) => void): (() => void) => {
+    const listener = (_e: unknown, roll: RollEvent) => cb(roll)
+    ipcRenderer.on('roll:new', listener)
+    return () => ipcRenderer.removeListener('roll:new', listener)
+  },
+  /** Text channels for the Game Log → Discord feed. */
+  discordTextChannels: (guildId: string): Promise<DiscordChannelInfo[]> =>
+    ipcRenderer.invoke('discord:text-channels', guildId),
+  discordRollChannel: (): Promise<string | undefined> => ipcRenderer.invoke('discord:roll-channel'),
+  discordSetRollChannel: (channelId: string | undefined): Promise<void> =>
+    ipcRenderer.invoke('discord:set-roll-channel', channelId),
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),

@@ -567,6 +567,42 @@ export interface Character {
   _sourceFile?: string
 }
 
+// ---------------------------------------------------------------------------
+// Dice + Game Log (DDB-MECHANICS D1): every roll anywhere (DM app, player
+// portal, monster stat blocks) becomes a RollEvent streamed to all surfaces.
+// ---------------------------------------------------------------------------
+
+export interface RollDieGroup {
+  /** Die size (20 for d20, 6 for d6…). */
+  die: number
+  /** Every face rolled, in order. */
+  results: number[]
+  /** Indices into `results` that count toward the total (adv/dis drop one d20). */
+  kept: number[]
+}
+
+export interface RollEvent {
+  id: string
+  /** Epoch ms. */
+  ts: number
+  /** Display name: character name or "DM". */
+  who: string
+  characterId?: string
+  /** What was rolled: "Perception check", "Longsword — attack", "2d6+3". */
+  what: string
+  /** The expression as rolled, e.g. "1d20+5 (adv)". */
+  expr: string
+  total: number
+  groups: RollDieGroup[]
+  /** Flat modifier included in the total. */
+  modifier: number
+  mode?: 'adv' | 'dis'
+  /** Natural 20 / natural 1 on a d20 roll. */
+  crit?: 'crit' | 'fumble'
+  /** DM-only rolls never reach the portal (DDB's "Self" visibility). */
+  dmOnly?: boolean
+}
+
 export interface CampaignState {
   /** Absolute path of the active campaign folder, or null if none chosen. */
   path: string | null

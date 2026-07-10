@@ -10,6 +10,8 @@ import {
   type NamedEntry,
   type Spell
 } from '../lib/compendium'
+import { d20Expr, rollExpr } from '../../shared/dice'
+import { submitRoll, useRollStore, wireRollFeed } from '../lib/rollStore'
 
 // ---------------------------------------------------------------------------
 // Rules-term tooltips: condition names inside descriptions ("Charmed",
@@ -35,6 +37,69 @@ function useGlossaryTerms() {
       .catch(() => undefined)
   }, [])
   return glossaryCache
+}
+
+// ---------------------------------------------------------------------------
+// DM dice (D1): inside a monster stat block, dice expressions ("2d8+3") and
+// attack bonuses ("Attack Roll: +7") are roll buttons. Visibility follows the
+// Game Log's "DM rolls public" toggle (default 🔒 DM-only, DDB's "Self").
+// Only in the Electron app — the portal renders plain text.
+// ---------------------------------------------------------------------------
+
+const canDmRoll = () => typeof window !== 'undefined' && !!window.hearth
+
+function dmRoll(what: string, expr: string): void {
+  const roll = rollExpr(expr, { who: 'DM', what, dmOnly: !useRollStore.getState().dmPublic })
+  if (roll) submitRoll(roll)
+}
+
+function DmRollBtn({ label, what, expr, title }: { label: string; what: string; expr: string; title: string }) {
+  return (
+    <button
+      onClick={() => dmRoll(what, expr)}
+      title={title}
+      className="rounded bg-hearth-ember/10 px-0.5 font-semibold text-hearth-ember hover:bg-hearth-ember/25"
+    >
+      {label}
+    </button>
+  )
+}
+
+/** RulesText + clickable dice/attack bonuses, attributed to the monster. */
+export function DiceText({ text, rollAs }: { text: string; rollAs: string }) {
+  useEffect(() => wireRollFeed(), [])
+  const parts = useMemo<ReactNode[]>(() => {
+    if (!canDmRoll()) return [<RulesText key="t" text={text} />]
+    // Attack bonuses ("Attack Roll: +7") and dice ("2d8+3", "1d10").
+    const re = /(Attack Roll:\s*)([+-]\d+)|(\b\d+d\d+(?:\s*[+-]\s*\d+)?\b)/g
+    const out: ReactNode[] = []
+    let last = 0
+    let m: RegExpExecArray | null
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) out.push(<RulesText key={last} text={text.slice(last, m.index)} />)
+      if (m[2] !== undefined) {
+        out.push(<RulesText key={`${m.index}a`} text={m[1]} />)
+        out.push(
+          <DmRollBtn
+            key={`${m.index}b`}
+            label={m[2]}
+            what={`${rollAs} — attack`}
+            expr={d20Expr(parseInt(m[2], 10))}
+            title={`Roll the attack (1d20${m[2]})`}
+          />
+        )
+      } else {
+        const dice = m[3].replace(/\s+/g, '')
+        out.push(
+          <DmRollBtn key={m.index} label={m[3]} what={`${rollAs} — ${dice}`} expr={dice} title={`Roll ${dice}`} />
+        )
+      }
+      last = m.index + m[0].length
+    }
+    if (last < text.length) out.push(<RulesText key={`${last}e`} text={text.slice(last)} />)
+    return out
+  }, [text, rollAs])
+  return <>{parts}</>
 }
 
 /** Description text with condition-name tooltips. */
@@ -126,7 +191,18 @@ export function MonsterStatBlock({ m }: { m: Monster }) {
           <>
             {'  '}
             <span className="font-semibold text-hearth-text">Initiative </span>
-            {m.initiative >= 0 ? `+${m.initiative}` : m.initiative}
+            {canDmRoll() ? (
+              <DmRollBtn
+                label={m.initiative >= 0 ? `+${m.initiative}` : String(m.initiative)}
+                what={`${m.name} — initiative`}
+                expr={d20Expr(m.initiative)}
+                title="Roll initiative"
+              />
+            ) : m.initiative >= 0 ? (
+              `+${m.initiative}`
+            ) : (
+              m.initiative
+            )}
           </>
         )}
       </Line>
@@ -159,11 +235,26 @@ export function MonsterStatBlock({ m }: { m: Monster }) {
           </tr>
           <tr>
             <td className="text-left text-hearth-muted">Save</td>
-            {abilityCols.map((c) => (
-              <td key={c.key} className="text-hearth-muted">
-                {m.saves[c.save] != null ? (m.saves[c.save] >= 0 ? `+${m.saves[c.save]}` : m.saves[c.save]) : '—'}
-              </td>
-            ))}
+            {abilityCols.map((c) => {
+              const sv = m.saves[c.save]
+              if (sv == null) {
+                return (
+                  <td key={c.key} className="text-hearth-muted">
+                    —
+                  </td>
+                )
+              }
+              const label = sv >= 0 ? `+${sv}` : String(sv)
+              return (
+                <td key={c.key} className="text-hearth-muted">
+                  {canDmRoll() ? (
+                    <DmRollBtn label={label} what={`${m.name} — ${c.label} save`} expr={d20Expr(sv)} title={`Roll a ${c.label} save`} />
+                  ) : (
+                    label
+                  )}
+                </td>
+              )
+            })}
           </tr>
         </tbody>
       </table>
@@ -196,7 +287,7 @@ export function MonsterStatBlock({ m }: { m: Monster }) {
           {m.traits.map((t) => (
             <p key={t.name} className="my-1 text-[13px] leading-snug text-hearth-muted">
               <span className="font-semibold italic text-hearth-text">{t.name}. </span>
-              <RulesText text={t.desc} />
+              <DiceText text={t.desc} rollAs={m.name} />
             </p>
           ))}
         </>
@@ -214,7 +305,7 @@ export function MonsterStatBlock({ m }: { m: Monster }) {
                   {a.name}
                   {usesLabel(a)}.{' '}
                 </span>
-                <RulesText text={a.desc} />
+                <DiceText text={a.desc} rollAs={m.name} />
               </p>
             ))}
           </div>

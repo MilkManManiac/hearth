@@ -2,7 +2,7 @@ import http from 'http'
 import os from 'os'
 import * as path from 'path'
 import { promises as fs } from 'fs'
-import type { Character } from '../shared/types'
+import type { Character, RollEvent } from '../shared/types'
 
 // ONESTOP-PLAN C5 — the player portal: Hearth hosts a small HTTP server so
 // each PLAYER opens their character in any browser (phone/laptop) — build,
@@ -37,6 +37,10 @@ export interface PortalDeps {
   rendererDir: string
   /** Current campaign folder (for /homebrew/*). */
   campaignDir: () => string
+  /** A player rolled dice — feed the campaign Game Log hub. */
+  onRoll: (roll: RollEvent) => void
+  /** Recent public rolls for the portal's log (DM-only rolls pre-filtered). */
+  getRolls: () => RollEvent[]
 }
 
 function lanIp(): string {
@@ -64,6 +68,18 @@ export class PlayerPortal {
     for (const res of this.sseClients) {
       try {
         res.write('data: changed\n\n')
+      } catch {
+        this.sseClients.delete(res)
+      }
+    }
+  }
+
+  /** Stream a public roll to connected players (named SSE event). */
+  pushRoll(roll: RollEvent): void {
+    const payload = `event: roll\ndata: ${JSON.stringify(roll)}\n\n`
+    for (const res of this.sseClients) {
+      try {
+        res.write(payload)
       } catch {
         this.sseClients.delete(res)
       }
@@ -109,6 +125,18 @@ export class PlayerPortal {
         if (!current) return this.json(res, { error: 'not found' }, 404)
         // The server owns identity + file location; the client owns the rest.
         await this.deps.saveCharacter({ ...incoming, id: current.id, _sourceFile: current._sourceFile })
+        return this.json(res, { ok: true })
+      }
+      if (url === '/api/rolls' && req.method === 'GET') {
+        return this.json(res, this.deps.getRolls())
+      }
+      if (url === '/api/roll' && req.method === 'POST') {
+        const roll = JSON.parse(await readBody(req)) as RollEvent
+        // Basic shape check; players can never post DM-only rolls.
+        if (typeof roll?.total !== 'number' || typeof roll?.who !== 'string' || !Array.isArray(roll?.groups)) {
+          return this.json(res, { error: 'bad roll' }, 400)
+        }
+        this.deps.onRoll({ ...roll, who: roll.who.slice(0, 40), what: String(roll.what ?? '').slice(0, 80), dmOnly: false })
         return this.json(res, { ok: true })
       }
       if (url === '/api/events') {

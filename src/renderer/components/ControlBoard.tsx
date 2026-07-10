@@ -15,6 +15,7 @@ import ImageStrip from './ImageStrip'
 import IdeasPanel from './IdeasPanel'
 import CastPanel from './CastPanel'
 import EncounterPanel from './EncounterPanel'
+import GameLogPanel from './GameLog'
 import Toasts from './Toasts'
 import LibraryPanel from './LibraryPanel'
 import SoundConsole from './SoundConsole'
@@ -271,7 +272,7 @@ export default function ControlBoard() {
   )
 }
 
-type Tab = 'images' | 'ideas' | 'cast' | 'fight' | 'notes'
+type Tab = 'images' | 'ideas' | 'cast' | 'fight' | 'log' | 'notes'
 
 function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => void }) {
   const [tab, setTab] = useState<Tab>('images')
@@ -291,6 +292,7 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
     { id: 'ideas', label: `Ideas${ideaCount ? ` ${ideaCount}` : ''}` },
     { id: 'cast', label: `Cast${castCount ? ` ${castCount}` : ''}` },
     { id: 'fight', label: `⚔${fightCount ? ` ${fightCount}` : ''}` },
+    { id: 'log', label: '🎲' },
     { id: 'notes', label: '📓' }
   ]
 
@@ -324,6 +326,7 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
         {tab === 'ideas' && <IdeasPanel scene={scene} />}
         {tab === 'cast' && <CastPanel scene={scene} />}
         {tab === 'fight' && <EncounterPanel scene={scene} />}
+        {tab === 'log' && <GameLogPanel />}
         {tab === 'notes' && <NotesPeek />}
       </div>
     </aside>

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Character } from '../../shared/types'
+import type { Character, RollEvent } from '../../shared/types'
 import { loadKind, type ClassEntry, type NamedEntry } from '../lib/compendium'
 import CharacterSheet from './CharacterSheet'
+import { RollFeed } from './GameLog'
 import { EntryArticle, SpellCard } from './StatBlock'
 import type { Spell } from '../lib/compendium'
 import { loadSpells } from '../lib/compendium'
@@ -26,8 +27,27 @@ export default function PlayerApp() {
   const [spellCard, setSpellCard] = useState<Spell | null>(null)
   const [speciesCard, setSpeciesCard] = useState<NamedEntry | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [rolls, setRolls] = useState<RollEvent[]>([])
+  const [logOpen, setLogOpen] = useState(false)
+  const [unseen, setUnseen] = useState(0)
   // Don't let an SSE refetch clobber the keystrokes you just typed.
   const lastEdit = useRef(0)
+  const logOpenRef = useRef(false)
+  logOpenRef.current = logOpen
+
+  const addRoll = (r: RollEvent) => {
+    setRolls((rs) => (rs.some((x) => x.id === r.id) ? rs : [...rs.slice(-299), r]))
+    if (!logOpenRef.current) setUnseen((n) => n + 1)
+  }
+
+  const sendRoll = (roll: RollEvent) => {
+    addRoll(roll)
+    void fetch('/api/roll', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(roll)
+    }).catch(() => undefined)
+  }
 
   const refetch = () =>
     api<Character[]>('/api/characters')
@@ -41,8 +61,16 @@ export default function PlayerApp() {
     loadKind('class').then((r) => setClasses(r as unknown as ClassEntry[]))
     loadKind('species').then(setSpecies)
     loadKind('background').then(setBackgrounds)
+    void api<RollEvent[]>('/api/rolls').then(setRolls).catch(() => undefined)
     const es = new EventSource('/api/events')
     es.onmessage = () => void refetch()
+    es.addEventListener('roll', (e) => {
+      try {
+        addRoll(JSON.parse((e as MessageEvent).data) as RollEvent)
+      } catch {
+        /* malformed roll event — ignore */
+      }
+    })
     return () => es.close()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -126,11 +154,42 @@ export default function PlayerApp() {
             cb={{
               onPatch: patch,
               onOpenSpell: (key) => void loadSpells().then((all) => setSpellCard(all.find((s) => s.key === key) ?? null)),
-              onOpenSpecies: (key) => setSpeciesCard(species.find((s) => s.key === key) ?? null)
+              onOpenSpecies: (key) => setSpeciesCard(species.find((s) => s.key === key) ?? null),
+              onRoll: sendRoll
             }}
           />
         )}
       </main>
+
+      {/* Game Log drawer (D1): the table's shared rolls, phone-friendly. */}
+      {selected && (
+        <>
+          <button
+            onClick={() => {
+              setLogOpen((v) => !v)
+              setUnseen(0)
+            }}
+            className="fixed bottom-4 right-4 z-40 flex items-center gap-1 rounded-full border border-hearth-border bg-hearth-panel px-3 py-2 text-sm shadow-2xl hover:border-hearth-ember"
+            title="Game Log — the whole table's rolls"
+          >
+            🎲
+            {unseen > 0 && (
+              <span className="rounded-full bg-hearth-ember px-1.5 text-[10px] font-bold text-black">{unseen}</span>
+            )}
+          </button>
+          {logOpen && (
+            <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex h-[45vh] max-w-3xl flex-col gap-2 rounded-t-lg border border-hearth-border bg-hearth-panel p-3 shadow-2xl">
+              <div className="flex items-center">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">Game Log</span>
+                <button onClick={() => setLogOpen(false)} className="ml-auto px-1 text-xs text-hearth-muted hover:text-hearth-text">
+                  ✕
+                </button>
+              </div>
+              <RollFeed rolls={rolls} />
+            </div>
+          )}
+        </>
+      )}
 
       {(spellCard || speciesCard) && (
         <div

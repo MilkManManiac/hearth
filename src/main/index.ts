@@ -11,6 +11,7 @@ import type {
   LibraryAsset,
   NoteKind,
   PlaylistPreset,
+  RollEvent,
   Scene
 } from '../shared/types'
 import type { TriageKeepRequest } from '../preload/index'
@@ -84,6 +85,22 @@ function broadcast(channel: string, payload: unknown): void {
   }
   // Connected player-portal browsers refetch on any campaign change.
   if (channel === 'campaign:changed') portal?.notifyChange()
+}
+
+// --- Game Log hub (DDB-MECHANICS D1) ---------------------------------------
+// Every roll from any surface lands here, then fans out: DM windows (all
+// rolls), portal SSE (public rolls only), Discord (optional, later layer).
+const ROLL_LOG_MAX = 300
+const rollLog: RollEvent[] = []
+
+function handleRoll(roll: RollEvent): void {
+  rollLog.push(roll)
+  if (rollLog.length > ROLL_LOG_MAX) rollLog.splice(0, rollLog.length - ROLL_LOG_MAX)
+  for (const win of BrowserWindow.getAllWindows()) {
+    win.webContents.send('roll:new', roll)
+  }
+  if (!roll.dmOnly) portal?.pushRoll(roll)
+  discord?.postRoll(roll)
 }
 
 function createMainWindow(): void {
@@ -233,6 +250,10 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  // --- Game Log (D1) ---
+  ipcMain.handle('roll:send', (_e, roll: RollEvent) => handleRoll(roll))
+  ipcMain.handle('roll:log', () => rollLog)
+
   ipcMain.handle('portal:status', () => portal.status())
   ipcMain.handle('portal:toggle', async () => {
     const status = portal.status().running ? await portal.stop() : await portal.start()
@@ -283,6 +304,11 @@ function registerIpc(): void {
     discord.join(guildId, channelId)
   )
   ipcMain.handle('discord:leave', () => discord.leave())
+  ipcMain.handle('discord:text-channels', (_e, guildId: string) => discord.listTextChannels(guildId))
+  ipcMain.handle('discord:roll-channel', () => discord.getRollChannel())
+  ipcMain.handle('discord:set-roll-channel', (_e, channelId: string | undefined) =>
+    discord.setRollChannel(channelId)
+  )
   // The Chronicler: per-speaker session recording into <campaign>/recordings/.
   ipcMain.handle('chronicle:start', () => {
     const stamp = new Date().toISOString().slice(0, 16).replace(/[T:]/g, '-')
@@ -323,7 +349,10 @@ app.whenReady().then(async () => {
       return state
     },
     rendererDir: path.join(__dirname, '../renderer'),
-    campaignDir: () => campaign.path
+    campaignDir: () => campaign.path,
+    // Portal rolls join the same hub as DM rolls (never DM-only from players).
+    onRoll: (roll) => handleRoll({ ...roll, dmOnly: false }),
+    getRolls: () => rollLog.filter((r) => !r.dmOnly)
   })
   const initial = await campaign.init()
   console.log(

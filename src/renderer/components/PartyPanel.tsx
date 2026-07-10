@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Character } from '../../shared/types'
 import { passive } from '../lib/character'
 import { loadKind, type ClassEntry, type NamedEntry } from '../lib/compendium'
+import { submitRoll, wireRollFeed } from '../lib/rollStore'
 import { useStore } from '../store'
 import CharacterSheet from './CharacterSheet'
 import DangerButton from './DangerButton'
@@ -28,6 +29,7 @@ export default function PartyPanel() {
 
   useEffect(() => {
     if (!open) return
+    wireRollFeed()
     loadKind('class').then((r) => setClasses(r as unknown as ClassEntry[]))
     loadKind('species').then(setSpecies)
     loadKind('background').then(setBackgrounds)
@@ -141,7 +143,8 @@ export default function PartyPanel() {
                 cb={{
                   onPatch: (p) => void updateCharacter(selected.id, (x) => ({ ...x, ...p })),
                   onOpenSpell: (key) => openCompendium({ kind: 'spell', key }),
-                  onOpenSpecies: (key) => openCompendium({ kind: 'species', key })
+                  onOpenSpecies: (key) => openCompendium({ kind: 'species', key }),
+                  onRoll: submitRoll
                 }}
                 headerExtra={
                   <DangerButton
