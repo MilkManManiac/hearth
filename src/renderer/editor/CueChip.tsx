@@ -1,12 +1,32 @@
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { useEffect, useRef, useState } from 'react'
-import type { CueKind } from '../../shared/types'
+import type { CueKind, Scene } from '../../shared/types'
+import { useStore } from '../store'
 
 const KIND_CLASS: Record<CueKind, string> = {
   music: 'border-hearth-ember/60 bg-hearth-ember/15 text-hearth-ember',
   sfx: 'border-hearth-gold/60 bg-hearth-gold/10 text-hearth-gold',
   image: 'border-sky-500/50 bg-sky-500/10 text-sky-300',
   amb: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
+}
+
+const CUE_ICON: Record<CueKind, string> = { music: '▶', sfx: '🔊', image: '🖼', amb: '〜' }
+
+const stem = (file: string) => (file.split('/').pop() ?? file).replace(/\.[^.]+$/, '')
+
+/** Same-kind retarget candidates from the scene's palettes (value = cue ref). */
+function targetOptions(scene: Scene | undefined, kind: CueKind): { value: string; display: string }[] {
+  if (!scene) return []
+  switch (kind) {
+    case 'music':
+      return (scene.music ?? []).map((m) => ({ value: m.id, display: m.label }))
+    case 'sfx':
+      return (scene.sfx ?? []).map((s) => ({ value: s.id, display: s.label }))
+    case 'amb':
+      return (scene.ambience ?? []).map((a) => ({ value: a.file, display: stem(a.file) }))
+    case 'image':
+      return (scene.images ?? []).map((img) => ({ value: img.file, display: img.caption ?? stem(img.file) }))
+  }
 }
 
 /**
@@ -20,9 +40,12 @@ const KIND_CLASS: Record<CueKind, string> = {
  */
 export default function CueChip({ node, deleteNode, selected, updateAttributes }: NodeViewProps) {
   const kind = (node.attrs.kind as CueKind) ?? 'sfx'
-  const label = (node.attrs.label as string) || (node.attrs.ref as string)
+  const ref = node.attrs.ref as string
+  const label = (node.attrs.label as string) || ref
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLElement | null>(null)
+  const scene = useStore((s) => s.campaign.scenes.find((sc) => sc.id === s.currentSceneId))
+  const targets = targetOptions(scene, kind)
 
   // Close the popover on any click outside the chip.
   useEffect(() => {
@@ -51,23 +74,25 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
       contentEditable={false}
     >
       <span>{label}</span>
-      {kind === 'amb' && (
-        <button
-          type="button"
-          title="Atmosphere settings: target volume, fade in/out, when it stops"
-          onMouseDown={(e) => {
-            // preventDefault so the click doesn't move the selection/blur the editor
-            e.preventDefault()
-            e.stopPropagation()
-            setOpen((o) => !o)
-          }}
-          className={`flex h-4 w-4 items-center justify-center rounded-full text-[11px] leading-none hover:bg-black/30 ${
-            hasLifecycle || open ? 'opacity-100' : 'opacity-50 hover:opacity-100'
-          }`}
-        >
-          ⚙
-        </button>
-      )}
+      <button
+        type="button"
+        title={
+          kind === 'amb'
+            ? 'Cue settings: what it plays, target volume, fade in/out, when it stops'
+            : 'Cue settings: what it plays'
+        }
+        onMouseDown={(e) => {
+          // preventDefault so the click doesn't move the selection/blur the editor
+          e.preventDefault()
+          e.stopPropagation()
+          setOpen((o) => !o)
+        }}
+        className={`flex h-4 w-4 items-center justify-center rounded-full text-[11px] leading-none hover:bg-black/30 ${
+          hasLifecycle || open ? 'opacity-100' : 'opacity-50 hover:opacity-100'
+        }`}
+      >
+        ⚙
+      </button>
       <button
         type="button"
         title="Remove cue"
@@ -90,6 +115,29 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
           onPointerDown={(e) => e.stopPropagation()}
           className="absolute left-0 top-full z-40 mt-1 flex w-56 cursor-default flex-col gap-2 rounded-md border border-hearth-border bg-hearth-panel2 p-2.5 text-xs text-hearth-text shadow-card"
         >
+          <LifecycleField label="Plays" hint="Retarget this cue to another of the scene's assets — no delete + re-drag">
+            <select
+              value={targets.some((t) => t.value === ref) ? ref : '::current'}
+              onChange={(e) => {
+                const t = targets.find((o) => o.value === e.target.value)
+                if (t) updateAttributes({ ref: t.value, label: `${CUE_ICON[kind]} ${t.display}` })
+              }}
+              className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-1.5 py-0.5"
+            >
+              {!targets.some((t) => t.value === ref) && (
+                <option value="::current" disabled>
+                  {ref} (not in scene)
+                </option>
+              )}
+              {targets.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.display}
+                </option>
+              ))}
+            </select>
+          </LifecycleField>
+          {kind === 'amb' && (
+            <>
           <LifecycleField label="Fades up to" hint="% of full volume — pre-mix beds against each other">
             <input
               type="number"
@@ -123,6 +171,8 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
               <option value="section">at end of section</option>
             </select>
           </LifecycleField>
+            </>
+          )}
         </span>
       )}
     </NodeViewWrapper>

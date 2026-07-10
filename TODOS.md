@@ -27,9 +27,10 @@ session (see bottom) to turn the big ones into concrete specs before building.
   (separate Claude session). Check the folder next session — may be ready for
   a triage/import pass into Elor Rebirth.
 
-**Claude's queue (rough priority):** N3 wiki-links + backlinks (#11) → user
-fills Session 14's actual events in the Elor campaign → hand-verify pass
-(#10, N1/N2, Chronicler live test next session) → #12 mac/packaging last.
+**Claude's queue (rough priority):** ~~N3 wiki-links + backlinks (#11)~~ ✅
+built 2026-07-09 → user fills Session 14's actual events in the Elor campaign
+→ hand-verify pass (#10, N1/N2, N3, Chronicler live test next session) →
+#12 mac/packaging (Windows portable ✅ 2026-07-09; mac still open).
 
 **Built 2026-07-08:** the **Elor: Rebirth campaign folder**
 (`C:\Users\weshu\Campaigns\Elor Rebirth` — 61 notes: 13 sessions, 5 PCs,
@@ -323,9 +324,9 @@ the user's downloaded packs imported at their direction (`fapx-`/`noxx-`/
 Files are **local-only/gitignored** (~750 MB; mp1 also has no license file —
 private demo use only). The 📚 Library's edit/trash/delete tools + the
 scene-first cue tray are how this stays navigable — expect heavy culling of
-footsteps/voices variants via 🚮. Note: engine decode cache still never
-evicts; with a 2k-asset library, a long audition session grows memory (the
-cache-evict TODO from #8.2 is now more relevant).
+footsteps/voices variants via 🚮. ~~Note: engine decode cache still never
+evicts~~ — stale: the engine has a 384 MB LRU decode-cache budget
+(`AudioEngine.CACHE_BUDGET`, evict-on-load, playing sources unaffected).
 
 ---
 
@@ -368,12 +369,16 @@ converted from the looping-SFX hack to real `{{amb}}` cues; faders got
 numeric readout + double-click reset; bus volumes persist (`hearth:mixer`);
 AUTHORING.md + authoring.ts seed document amb cues/autoplay/go-live.
 
-**Review items deliberately left for later:** editable cue chips (retarget
-ref without delete+redrag), shared basename/prettyLabel helper cleanup +
+**Review items deliberately left for later:** ~~editable cue chips~~ (✅
+2026-07-09 — every cue chip now has a ⚙ popover with a "Plays" select that
+retargets the cue to any same-kind asset in the scene; amb chips keep their
+lifecycle fields below it; an orphaned ref shows as "(not in scene)"),
+shared basename/prettyLabel helper cleanup +
 unified empty-state component, cue color-map dedupe (ScriptPanel vs CueChip),
 template ids shared const (main + SceneList), symlink-hardening the asset://
-path checks (realpath), engine decode-cache eviction, one-shot SFX not
-stopped by Stop all.
+path checks (realpath), ~~engine decode-cache eviction~~ (done — 384 MB LRU),
+~~one-shot SFX not stopped by Stop all~~ (done — stopAll fades in-flight
+one-shots).
 
 ---
 
@@ -512,8 +517,22 @@ scene's session note (else newest session; creates "Session Log" if none).
 Right panel gained a read-only 📓 tab (NoteBody renderer + grouped picker)
 that auto-follows note selection. Switcher/capture registered as
 keyboard-owning modals in every hotkey guard. AUTHORING.md documents
-`session`. **Next: N3** [[links]] + autocomplete + backlinks, then N4 secrets
-carry-forward / promote-from-Cast / docx import of Elor sessions.
+`session`. **N3 (links) ✅ BUILT 2026-07-09 — verify by hand.** `[[note-id]]` /
+`[[note-id|label]]` in any note body OR scene script compiles to an atomic
+`link` inline (shared compiler — every existing Elor `[[ref]]` went live for
+free). Typing `[[` in the note editor opens fuzzy autocomplete over all notes
+(Enter/Tab inserts a live-titled chip; unmatched names offer create-on-first-use
+via `createNoteInline`, kind `note` — retype on its page). Chips render the
+target's live title (label override wins); unresolved refs render dashed, not
+lost. Ctrl+click follows a link in the editor; plain click follows in read-only
+NoteBody + scene ScriptPanel (links don't consume teleprompter cue slots).
+Every note page shows **⤷ Linked from** backlinks (notes + scenes), click to
+jump. New: `editor/LinkSuggest.tsx`, `editor/NoteLinkChip.tsx`,
+`components/NoteLinkPill.tsx`, `lib/fuzzy.ts` (extracted from QuickSwitcher).
+**Verify by hand:** type `[[` in a note → pick → chip appears + autosaves;
+Ctrl+click navigates; backlinks show on the target; a `[[link]]` in a scene
+script renders + navigates without shifting Space-cue order. **Next: N4**
+secrets carry-forward / promote-from-Cast / docx import of Elor sessions.
 
 ## 12. Mac support / packaging + distribution (parked until we're happy with everything else)
 The app is already mac-compatible (no Windows-specific code; davey has mac
