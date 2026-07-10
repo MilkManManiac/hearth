@@ -11,6 +11,7 @@ import {
 import { isTypingTarget } from '../lib/keys'
 import { pushRecent, useFavorites } from '../lib/prefs'
 import { engine, useStore } from '../store'
+import DangerButton from './DangerButton'
 import { VolumeFader } from './Mixer'
 
 /** "music/nox-rain-strong.ogg" → "nox-rain-strong" */
@@ -364,7 +365,7 @@ export default function SoundConsole() {
     if (map.size === 0) return
     const onKey = (e: KeyboardEvent) => {
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen) return
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen) return
       if (isTypingTarget(e.target)) return
       const item = map.get(e.key.toLowerCase())
       if (item) {
@@ -609,17 +610,14 @@ export default function SoundConsole() {
                   </button>
                 )}
                 {buildMode && !active && (
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Delete playlist "${p.name}"? (Tracks stay in the library.)`)) {
-                        void deletePlaylistPreset(p.id)
-                      }
-                    }}
-                    title="Delete this playlist"
-                    className="px-0.5 opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                  <DangerButton
+                    onConfirm={() => void deletePlaylistPreset(p.id)}
+                    title="Delete this playlist (tracks stay in the library)"
+                    className="rounded border border-transparent px-0.5 opacity-40 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                    armedLabel="✕?"
                   >
                     ✕
-                  </button>
+                  </DangerButton>
                 )}
               </span>
             )

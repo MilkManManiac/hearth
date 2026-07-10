@@ -9,6 +9,7 @@ import {
 } from '../../shared/types'
 import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
 import { useStore } from '../store'
+import DangerButton from './DangerButton'
 import PreviewScrubber from './PreviewScrubber'
 import GrowArea from './GrowArea'
 
@@ -257,21 +258,14 @@ export default function LibraryPanel() {
                     {label}
                     <span className="text-hearth-muted/60">{items.length}</span>
                     {key === 'trash' && (
-                      <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `Purge all ${items.length} trashed sound${items.length === 1 ? '' : 's'}? Files go to the recycle bin and their names are blocklisted so future imports skip them. Sounds still used by a scene are kept.`
-                            )
-                          ) {
-                            void purgeTrash()
-                          }
-                        }}
-                        title="Delete everything marked as trash — recycle bin + blocklist"
+                      <DangerButton
+                        onConfirm={() => void purgeTrash()}
+                        title={`Purge all ${items.length} trashed sounds — recycle bin + blocklist (scene-used sounds are kept)`}
                         className="ml-2 rounded border border-red-500/40 bg-red-500/10 px-2 py-0.5 text-[10px] normal-case tracking-normal text-red-300 hover:bg-red-500/25"
+                        armedLabel={`🗑 Really purge ${items.length}?`}
                       >
                         🗑 Purge all
-                      </button>
+                      </DangerButton>
                     )}
                   </h3>
                   <ul className="space-y-1">
@@ -443,17 +437,14 @@ function AssetRow({
             >
               ♻
             </button>
-            <button
-              onClick={() => {
-                if (window.confirm(`Delete "${assetDisplayName(asset)}" for good? The file moves to the recycle bin.`)) {
-                  void deleteLibraryAsset(asset.file)
-                }
-              }}
+            <DangerButton
+              onConfirm={() => void deleteLibraryAsset(asset.file)}
               title="Delete for good (file → recycle bin). Blocked while a scene still uses it."
-              className="flex-none px-1 text-sm text-hearth-muted hover:text-red-400"
+              className="flex-none rounded border border-transparent px-1 text-sm text-hearth-muted hover:text-red-400"
+              armedLabel="🗑?"
             >
               🗑
-            </button>
+            </DangerButton>
           </>
         ) : (
           <button

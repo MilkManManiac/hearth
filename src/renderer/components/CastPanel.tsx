@@ -224,14 +224,14 @@ function EntityRow({
           <button
             onClick={onPromote}
             title="Promote to a campaign note — graduates this entry into the notebook, keeps a link here"
-            className="shrink-0 text-hearth-muted opacity-0 hover:text-hearth-gold group-hover:opacity-100"
+            className="shrink-0 text-hearth-muted opacity-40 hover:text-hearth-gold group-hover:opacity-100"
           >
             ⤴
           </button>
         )}
         <button
           onClick={onRemove}
-          className="shrink-0 text-hearth-muted opacity-0 hover:text-red-400 group-hover:opacity-100"
+          className="shrink-0 text-hearth-muted opacity-40 hover:text-red-400 group-hover:opacity-100"
           title="Remove"
         >
           ×

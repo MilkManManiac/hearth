@@ -99,7 +99,7 @@ export default function AmbienceMixer({ scene }: { scene: Scene }) {
                 <button
                   onClick={() => removeLayer(layer.file)}
                   title="Remove from this scene (the file stays in the library)"
-                  className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                  className="flex-none text-xs text-hearth-muted opacity-40 transition-opacity hover:text-red-400 group-hover:opacity-100"
                 >
                   ✕
                 </button>

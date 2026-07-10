@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store'
+import DangerButton from './DangerButton'
 import { LeftTabSwitch } from './NotesRail'
 
 /** Built-in starting points; ids must match SCENE_TEMPLATES in main/campaign.ts. */
@@ -162,7 +163,7 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
                 <span className="flex-1 truncate">{scene.name}</span>
               )}
               {!renaming && buildMode && (
-                <span className="ml-1 flex flex-none items-center opacity-0 transition-opacity group-hover:opacity-100">
+                <span className="ml-1 flex flex-none items-center opacity-40 transition-opacity group-hover:opacity-100">
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
@@ -194,18 +195,14 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
                   >
                     📅
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (window.confirm(`Delete "${scene.name}"? The file moves to the recycle bin.`)) {
-                        deleteScene(scene.id)
-                      }
-                    }}
+                  <DangerButton
+                    onConfirm={() => deleteScene(scene.id)}
                     title={`Delete "${scene.name}" (moves to recycle bin)`}
-                    className="rounded px-1 text-xs text-hearth-muted hover:text-red-400"
+                    className="rounded border border-transparent px-1 text-xs text-hearth-muted hover:text-red-400"
+                    armedLabel="🗑?"
                   >
                     🗑
-                  </button>
+                  </DangerButton>
                 </span>
               )}
             </div>

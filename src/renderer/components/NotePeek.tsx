@@ -69,13 +69,17 @@ export function useNotePeek(refId: string) {
   return { onMouseEnter, onMouseLeave, card }
 }
 
-/** Browser-style back/forward for note navigation (Alt+←/→, mouse 4/5). */
-export function NoteNavButtons() {
+/**
+ * Browser-style back/forward for note navigation (Alt+←/→, mouse 4/5).
+ * `always` renders them disabled even with no history — on the note page they
+ * must be visible from the first visit or nobody learns they exist.
+ */
+export function NoteNavButtons({ always = false }: { always?: boolean }) {
   const canBack = useStore((s) => s.noteBack.length > 0)
   const canForward = useStore((s) => s.noteForward.length > 0)
   const goNoteBack = useStore((s) => s.goNoteBack)
   const goNoteForward = useStore((s) => s.goNoteForward)
-  if (!canBack && !canForward) return null
+  if (!always && !canBack && !canForward) return null
   return (
     <span className="flex items-center gap-0.5">
       <button

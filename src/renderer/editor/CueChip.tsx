@@ -1,16 +1,8 @@
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { useEffect, useRef, useState } from 'react'
 import type { CueKind, Scene } from '../../shared/types'
+import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_TEXT, cueDisplayLabel } from '../lib/cueMeta'
 import { useStore } from '../store'
-
-const KIND_CLASS: Record<CueKind, string> = {
-  music: 'border-hearth-ember/60 bg-hearth-ember/15 text-hearth-ember',
-  sfx: 'border-hearth-gold/60 bg-hearth-gold/10 text-hearth-gold',
-  image: 'border-sky-500/50 bg-sky-500/10 text-sky-300',
-  amb: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300'
-}
-
-const CUE_ICON: Record<CueKind, string> = { music: '▶', sfx: '🔊', image: '🖼', amb: '〜' }
 
 const stem = (file: string) => (file.split('/').pop() ?? file).replace(/\.[^.]+$/, '')
 
@@ -41,7 +33,7 @@ function targetOptions(scene: Scene | undefined, kind: CueKind): { value: string
 export default function CueChip({ node, deleteNode, selected, updateAttributes }: NodeViewProps) {
   const kind = (node.attrs.kind as CueKind) ?? 'sfx'
   const ref = node.attrs.ref as string
-  const label = (node.attrs.label as string) || ref
+  const label = cueDisplayLabel(node.attrs.label as string, ref)
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLElement | null>(null)
   const scene = useStore((s) => s.campaign.scenes.find((sc) => sc.id === s.currentSceneId))
@@ -67,12 +59,15 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
     <NodeViewWrapper
       as="span"
       ref={rootRef}
-      className={`cue-chip relative mx-0.5 inline-flex cursor-grab select-none items-center gap-1 rounded border px-1.5 py-0.5 align-middle text-sm ${
-        KIND_CLASS[kind]
+      className={`cue-chip relative mx-0.5 inline-flex cursor-grab select-none items-center gap-1.5 rounded border px-1.5 py-0.5 align-middle text-sm ${
+        CUE_CHIP_CLASS[kind]
       } ${selected ? 'ring-2 ring-hearth-ember/70' : ''}`}
       data-drag-handle
       contentEditable={false}
     >
+      <span aria-hidden className={CUE_BADGE_CLASS}>
+        {CUE_TEXT[kind]}
+      </span>
       <span>{label}</span>
       <button
         type="button"
@@ -120,7 +115,7 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
               value={targets.some((t) => t.value === ref) ? ref : '::current'}
               onChange={(e) => {
                 const t = targets.find((o) => o.value === e.target.value)
-                if (t) updateAttributes({ ref: t.value, label: `${CUE_ICON[kind]} ${t.display}` })
+                if (t) updateAttributes({ ref: t.value, label: t.display })
               }}
               className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-1.5 py-0.5"
             >

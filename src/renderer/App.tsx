@@ -24,7 +24,7 @@ function MainApp() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       const s = useStore.getState()
-      if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen) return
+      if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen || s.helpOpen) return
       const t = e.target as HTMLElement | null
       if (isTypingTarget(t)) {
         t?.blur()
@@ -58,6 +58,21 @@ function MainApp() {
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
+  }, [])
+
+  // ? opens the shortcut cheat-sheet — the discoverability net for everything
+  // else (Ctrl+K especially). Never while typing ("?" is a real character).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '?' || e.ctrlKey || e.metaKey || e.altKey) return
+      if (isTypingTarget(e.target)) return
+      const s = useStore.getState()
+      if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen) return
+      e.preventDefault()
+      s.setHelpOpen(!s.helpOpen)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [])
 
   // Clicked controls must not keep the keyboard: once a button or fader has

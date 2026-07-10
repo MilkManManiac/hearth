@@ -17,8 +17,7 @@ import { normalizeScript } from '../../shared/scriptCompile'
 import { buildExtensions } from '../editor/extensions'
 import { docToTiptap, tiptapToDoc } from '../editor/mapping'
 import { insertCueAt, type CueAttrs } from '../editor/insert'
-
-const CUE_ICON: Record<CueKind, string> = { music: '▶', sfx: '🔊', image: '🖼', amb: '〜' }
+import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_TEXT } from '../lib/cueMeta'
 
 /** Registration payload for a library asset not yet on the scene. */
 interface RegisterEntry {
@@ -75,22 +74,22 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
 
   for (const m of scene.music ?? []) {
     sceneFiles.add(m.file)
-    items.push({ key: `m:${m.id}`, kind: 'music', ref: m.id, label: `${CUE_ICON.music} ${m.label}`, category: IN_SCENE })
+    items.push({ key: `m:${m.id}`, kind: 'music', ref: m.id, label: m.label, category: IN_SCENE })
   }
   for (const s of scene.sfx ?? []) {
     sceneFiles.add(s.file)
-    items.push({ key: `s:${s.id}`, kind: 'sfx', ref: s.id, label: `${CUE_ICON.sfx} ${s.label}`, category: IN_SCENE })
+    items.push({ key: `s:${s.id}`, kind: 'sfx', ref: s.id, label: s.label, category: IN_SCENE })
   }
   for (const a of scene.ambience ?? []) {
     sceneFiles.add(a.file)
-    items.push({ key: `a:${a.file}`, kind: 'amb', ref: a.file, label: `${CUE_ICON.amb} ${stem(a.file)}`, category: IN_SCENE })
+    items.push({ key: `a:${a.file}`, kind: 'amb', ref: a.file, label: stem(a.file), category: IN_SCENE })
   }
   for (const img of scene.images ?? []) {
     items.push({
       key: `i:${img.file}`,
       kind: 'image',
       ref: img.file,
-      label: `${CUE_ICON.image} ${img.caption ?? stem(img.file)}`,
+      label: img.caption ?? stem(img.file),
       category: IN_SCENE
     })
   }
@@ -106,7 +105,7 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
         key: `lib:${a.file}`,
         kind: 'amb',
         ref: a.file,
-        label: `${CUE_ICON.amb} ${display}`,
+        label: display,
         category: assetPrimaryCategory(a) || 'uncategorized',
         register: { kind: 'ambience', id: a.file, label: display, file: a.file }
       })
@@ -115,7 +114,7 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
     if (a.kind !== 'music' && a.kind !== 'sfx') continue
     const kind = a.kind as 'music' | 'sfx'
     const id = slug(a.file)
-    const label = `${CUE_ICON[kind]} ${display}`
+    const label = display
     items.push({
       key: `lib:${a.file}`,
       kind,
@@ -412,8 +411,11 @@ export default function ScriptEditor({
                     }}
                     onClick={() => insertItem(item)}
                     title={item.register ? 'Adds to this scene when used' : item.ref}
-                    className="tray-chip cursor-grab select-none rounded border border-hearth-border bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-text hover:border-hearth-ember"
+                    className="tray-chip inline-flex cursor-grab select-none items-center gap-1.5 rounded border border-hearth-border bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-text hover:border-hearth-ember"
                   >
+                    <span aria-hidden className={`${CUE_BADGE_CLASS} ${CUE_CHIP_CLASS[item.kind]} border-0`}>
+                      {CUE_TEXT[item.kind]}
+                    </span>
                     {item.label}
                   </span>
                 ))}

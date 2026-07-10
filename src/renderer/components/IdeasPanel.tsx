@@ -95,7 +95,7 @@ function IdeaRow({
       />
       <button
         onClick={onRemove}
-        className="shrink-0 text-hearth-muted opacity-0 hover:text-red-400 group-hover:opacity-100"
+        className="shrink-0 text-hearth-muted opacity-40 hover:text-red-400 group-hover:opacity-100"
         title="Remove"
       >
         ×

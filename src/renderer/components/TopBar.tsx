@@ -162,8 +162,24 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-2">
+        <Btn
+          onClick={() => useStore.getState().setSwitcherOpen(true)}
+          title="Find any scene or note — fuzzy search everything (Ctrl+K)"
+        >
+          🔍 Find
+          <kbd className="ml-1.5 rounded border border-hearth-border bg-hearth-bg px-1 font-mono text-[9px] text-hearth-muted">
+            Ctrl K
+          </kbd>
+        </Btn>
         <Btn onClick={openLibrary} title="Browse, search & audition the asset library">📚 Library</Btn>
         {!run && <ToolsMenu />}
+        <button
+          onClick={() => useStore.getState().setHelpOpen(true)}
+          title="Keyboard shortcuts (?)"
+          className="rounded-full border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted transition-colors hover:border-hearth-ember hover:text-hearth-ember"
+        >
+          ?
+        </button>
       </div>
 
       <div className="ml-auto flex flex-col gap-1">

@@ -6,6 +6,7 @@ import {
   type ScriptDoc,
   type ScriptInline
 } from '../../shared/types'
+import { cueDisplayLabel } from '../lib/cueMeta'
 import NoteLinkPill from './NoteLinkPill'
 
 /**
@@ -67,7 +68,7 @@ function renderInline(node: ScriptInline, key: number): ReactNode {
   }
   return (
     <span key={key} className="mx-0.5 rounded bg-hearth-panel2 px-1 text-xs text-hearth-muted">
-      {node.label ?? node.ref}
+      {cueDisplayLabel(node.label, node.ref)}
     </span>
   )
 }

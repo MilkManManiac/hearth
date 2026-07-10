@@ -9,19 +9,13 @@ import {
   type ScriptInline
 } from '../../shared/types'
 import { setCheckedAt } from '../../shared/scriptCompile'
+import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_CHIP_HOVER, CUE_TEXT, cueDisplayLabel } from '../lib/cueMeta'
 import { blurNonTypingFocus, isTypingTarget } from '../lib/keys'
 import { pushRecent } from '../lib/prefs'
 import { engine, resolveAmbLayer, useStore } from '../store'
 import NoteLinkPill from './NoteLinkPill'
 import ScriptEditor, { type EnsureAsset } from './ScriptEditor'
 import SectionHeader from './SectionHeader'
-
-const CUE_STYLE: Record<string, string> = {
-  music: 'border-hearth-ember/60 bg-hearth-ember/15 text-hearth-ember hover:bg-hearth-ember/30',
-  sfx: 'border-hearth-gold/60 bg-hearth-gold/10 text-hearth-gold hover:bg-hearth-gold/25',
-  image: 'border-sky-500/50 bg-sky-500/10 text-sky-300 hover:bg-sky-500/25',
-  amb: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/25'
-}
 
 const HEADING_CLASS: Record<number, string> = {
   1: 'mt-3 mb-1 text-2xl font-semibold text-hearth-text',
@@ -98,7 +92,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== ' ' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen)
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen)
         return // a modal owns the keyboard
       if (isTypingTarget(e.target)) return // typing is the one thing that outranks the timeline
       blurNonTypingFocus() // a clicked mute button / volume slider must not hold the keyboard
@@ -280,12 +274,15 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, i
     <button
       key={key}
       onClick={() => fireCue(node, idx)}
-      className={`mx-1 inline-flex items-center gap-1 rounded border px-2 py-0.5 align-middle text-sm transition-colors ${CUE_STYLE[node.kind]} ${
+      className={`mx-1 inline-flex items-center gap-1.5 rounded border px-2 py-0.5 align-middle text-sm transition-colors ${CUE_CHIP_CLASS[node.kind]} ${CUE_CHIP_HOVER[node.kind]} ${
         isNext ? 'ring-1 ring-hearth-ember/80 ring-offset-2 ring-offset-hearth-panel shadow-[0_0_10px_rgba(255,140,60,0.35)]' : ''
       }`}
       title={`${node.kind}: ${node.ref}${ambLifecycleHint(node)}${isNext ? ' — next (Space)' : ''}`}
     >
-      {node.label ?? node.ref}
+      <span aria-hidden className={CUE_BADGE_CLASS}>
+        {CUE_TEXT[node.kind]}
+      </span>
+      {cueDisplayLabel(node.label, node.ref)}
       {node.kind === 'amb' && node.until === 'section' && (
         <span aria-hidden className="text-[10px] opacity-70" title="Fades out at the end of this section">
           §

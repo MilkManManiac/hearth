@@ -214,6 +214,9 @@ interface AppState {
   /** Quick capture (Ctrl+J) open? Owns the keyboard while true. */
   captureOpen: boolean
   setCaptureOpen: (open: boolean) => void
+  /** Shortcut cheat-sheet (?) open? Owns the keyboard while true. */
+  helpOpen: boolean
+  setHelpOpen: (open: boolean) => void
   /**
    * Append a timestamped line to the active session note's log (the current
    * scene's session, else the newest session note, else a new one) — the
@@ -948,6 +951,9 @@ export const useStore = create<AppState>((set, get) => ({
   setSwitcherOpen: (open) => set({ switcherOpen: open }),
   captureOpen: false,
   setCaptureOpen: (open) => set({ captureOpen: open }),
+
+  helpOpen: false,
+  setHelpOpen: (open) => set({ helpOpen: open }),
 
   captureToSession: async (text) => {
     const trimmed = text.trim()

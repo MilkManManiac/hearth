@@ -34,7 +34,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
     const onKey = (e: KeyboardEvent) => {
       // A modal owns the keyboard — K/J in Triage must not fire scene SFX.
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen) return
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen) return
       if (isTypingTarget(e.target)) return
       const item = map.get(e.key.toLowerCase())
       if (item) {
@@ -118,7 +118,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
                       removeSfxItem(s.id)
                     }}
                     title="Remove from this scene (the file stays in the library)"
-                    className="flex-none text-xs text-hearth-muted opacity-0 transition-opacity hover:text-red-400 group-hover:opacity-100"
+                    className="flex-none text-xs text-hearth-muted opacity-40 transition-opacity hover:text-red-400 group-hover:opacity-100"
                   >
                     ✕
                   </button>

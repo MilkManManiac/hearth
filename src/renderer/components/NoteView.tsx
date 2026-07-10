@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER, type CampaignNote, type NoteKind } from '../../shared/types'
 import { docLinks, docMentions, linkifyMentions, setCheckedAt } from '../../shared/scriptCompile'
 import { useStore } from '../store'
+import DangerButton from './DangerButton'
 import NoteBody from './NoteBody'
 import NoteEditor from './NoteEditor'
 import { NoteNavButtons } from './NotePeek'
@@ -79,7 +80,7 @@ export default function NoteView({ note }: { note: CampaignNote }) {
     <div className="mx-auto max-w-3xl space-y-4">
       <div>
         <div className="flex items-center gap-3">
-          <NoteNavButtons />
+          <NoteNavButtons always />
           <span className="text-2xl" aria-hidden title={meta.label}>
             {meta.icon}
           </span>
@@ -166,18 +167,17 @@ export default function NoteView({ note }: { note: CampaignNote }) {
               >
                 {editing ? '✓ Done' : '✎ Edit'}
               </button>
-              <button
-                onClick={() => {
-                  if (window.confirm(`Delete "${note.title}"? The file moves to the recycle bin.`)) {
-                    void deleteNote(note.id)
-                    selectNote(null)
-                  }
+              <DangerButton
+                onConfirm={() => {
+                  void deleteNote(note.id)
+                  selectNote(null)
                 }}
-                className="text-hearth-muted/60 transition-colors hover:text-red-400"
+                className="rounded border border-transparent px-1 text-hearth-muted/60 transition-colors hover:text-red-400"
                 title="Delete this note (file → recycle bin)"
+                armedLabel="🗑 Sure? Click again"
               >
                 🗑 Delete
-              </button>
+              </DangerButton>
             </span>
           )}
         </div>
