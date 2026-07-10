@@ -84,11 +84,16 @@ Session **next week uses ONLY the sound mixer / scene builder** — the audio
 core must stay rock-stable; Table/Party/Ember are ongoing projects with no
 deadline pressure ("take our time and make sure those are set").
 
-1. **M1 — Map library**: maps as first-class entities + Map Browser + live-map
-   pointer + fog zones + migrate scene.map / encounters. (Foundation for
-   everything below; doesn't touch audio.)
-2. **M2 — Ember E1**: the Table view (live-follow, view-only) + /asset image
-   route. Presenter retires when this is proven at a real table.
+1. **M1 — Map library** ✅ SHIPPED 2026-07-10: `maps/*.json` first-class maps
+   (strokes + named fog zones + tokens + overlays + grid + the encounter),
+   auto-migration from scene.map/encounter (verified on real Eekso data,
+   idempotent), `table.json` live pointer + 🔴 Go live, ◇ Zone tool (polygon,
+   auto-named, sidebar list, one-click toggle), MapsPanel library browser
+   (TopBar 🗺), presenter live-follows the live map (pushed images interject).
+2. **M2 — Ember E1** ✅ SHIPPED 2026-07-10: portal 🗺 Table view live-follows
+   the live map (fog zones clear in real time, initiative strip, PC HP rings);
+   GET /api/table + path-guarded /asset image route. Presenter retires when
+   this is proven at a real table.
 3. **M3 — The window split**: Table + Party become real windows; tracker moves
    into Table; console slims down.
 4. **M4 — Inventory/equipment overhaul** + migration (can interleave with M2/M3).
