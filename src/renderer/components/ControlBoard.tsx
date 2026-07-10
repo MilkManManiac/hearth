@@ -397,34 +397,33 @@ function NotesPeek() {
   )
 }
 
-function NotesEmptyState({ hasNotes }: { hasNotes: boolean }) {
+/** The one big-empty-main-area component (audit P4: was two near-dupes). */
+function BigEmptyState({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
     <div className="mx-auto mt-28 max-w-md text-center text-hearth-muted">
-      <div className="mb-4 text-5xl drop-shadow-[0_0_18px_rgba(224,138,60,0.45)]">📓</div>
-      <h2 className="mb-2 font-display text-2xl font-semibold text-hearth-text">
-        {hasNotes ? 'No note selected' : 'Your campaign notebook'}
-      </h2>
-      <p className="text-sm leading-relaxed">
-        {hasNotes
-          ? 'Pick a note on the left, or create one with + New note.'
-          : 'Sessions, NPCs, locations, factions, plot threads — everything you need at the table, one click away. Hit + New note on the left to start.'}
-      </p>
+      <div className="mb-4 text-5xl drop-shadow-[0_0_18px_rgba(224,138,60,0.45)]">{icon}</div>
+      <h2 className="mb-2 font-display text-2xl font-semibold text-hearth-text">{title}</h2>
+      <p className="text-sm leading-relaxed">{children}</p>
     </div>
+  )
+}
+
+function NotesEmptyState({ hasNotes }: { hasNotes: boolean }) {
+  return (
+    <BigEmptyState icon="📓" title={hasNotes ? 'No note selected' : 'Your campaign notebook'}>
+      {hasNotes
+        ? 'Pick a note on the left, or create one with + New note.'
+        : 'Sessions, NPCs, locations, factions, plot threads — everything you need at the table, one click away. Hit + New note on the left to start.'}
+    </BigEmptyState>
   )
 }
 
 function EmptyState({ hasCampaign }: { hasCampaign: boolean }) {
   return (
-    <div className="mx-auto mt-28 max-w-md text-center text-hearth-muted">
-      <div className="mb-4 text-5xl drop-shadow-[0_0_18px_rgba(224,138,60,0.45)]">🔥</div>
-      <h2 className="mb-2 font-display text-2xl font-semibold text-hearth-text">
-        {hasCampaign ? 'No scene selected' : 'Welcome to Hearth'}
-      </h2>
-      <p className="text-sm leading-relaxed">
-        {hasCampaign
-          ? 'Pick a scene on the left, or drop a scene JSON into the scenes/ folder — it appears here automatically. See AUTHORING.md in the campaign folder for the format.'
-          : 'Choose a campaign folder from the top bar to gather round and get started.'}
-      </p>
-    </div>
+    <BigEmptyState icon="🔥" title={hasCampaign ? 'No scene selected' : 'Welcome to Hearth'}>
+      {hasCampaign
+        ? 'Pick a scene on the left, or drop a scene JSON into the scenes/ folder — it appears here automatically. See AUTHORING.md in the campaign folder for the format.'
+        : 'Choose a campaign folder from the top bar to gather round and get started.'}
+    </BigEmptyState>
   )
 }

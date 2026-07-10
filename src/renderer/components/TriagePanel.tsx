@@ -1,21 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AssetKind } from '../../shared/types'
 import { CATEGORY_ORDER, categoryMeta } from '../../shared/types'
+import { prettyLabel as prettyName, stem } from '../../shared/paths'
 import { useStore } from '../store'
 import PreviewScrubber from './PreviewScrubber'
-
-/** "creatures/wolf_growl-03.wav" → "wolf_growl-03" */
-function stem(rel: string): string {
-  return (rel.split('/').pop() ?? rel).replace(/\.[^.]+$/, '')
-}
-
-/** "wolf_growl-03" → "Wolf Growl 03" */
-function prettyName(rel: string): string {
-  return stem(rel)
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-    .trim()
-}
 
 /** Crude kind guess from path/filename tokens; the form is right there to fix it. */
 function guessKind(rel: string): AssetKind {

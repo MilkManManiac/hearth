@@ -7,6 +7,36 @@
 Captured for later. Not being worked on yet. We'll likely run a **grill-me**
 session (see bottom) to turn the big ones into concrete specs before building.
 
+## 🔔 WES — review queue (updated 2026-07-10; everything Claude needs from you)
+
+**Decisions / answers:**
+- [ ] **Discord bridge truth:** did a live voice test ever actually pass? DISCORD-BRIDGE.md's
+  header says yes, its own checklist says no. Answer decides whether we trust it next session
+  or schedule a test.
+- [ ] **Session 24 actuals:** 2–3 lines on what actually fired (Squeeze? Rothe grotto?
+  Whispering Pool reflections?) — [[session-24]] is flagged "played but unrecorded."
+- [ ] **GAMEPLAN Phases 3/4** — images-to-players (bot embed / player web page) and the
+  D&D Beyond party dashboard: keep, defer, or kill?
+- [ ] **Campaign brainstorm queue** — `campaigns/elor-rebirth/notes/grill-queue.json` has the
+  open story questions (Eilistraee's release mechanism is the big one — it's your Ch-1 climax).
+
+**Hand-verification (open the app and poke — ~10 min):**
+- [ ] Desktop icon launches the NEW build (auto-repack fires when you close Hearth; if the
+  icon still feels old, run `npm run pack` with Hearth closed).
+- [ ] Notes: open Brolin/Cumb from a link — read-first page, plain-click links work, hover
+  ~½s shows the peek card, Alt+← comes back, ✎ Edit toggles the editor.
+- [ ] Press `?` — the shortcut cheat-sheet; 🔍 Find button opens Ctrl+K.
+- [ ] Run mode: left rail is scenes-only; a Ctrl+K note lands in the right panel; Ideas/Cast
+  add-boxes are gone; cue chips read MUS/SFX/AMB/IMG.
+- [ ] Drag a side panel's inner edge (resize / drag small to hide); ▾ minimizes the sound
+  console to a "N sounding" strip.
+- [ ] Delete something → button arms red "Sure?" instead of an OS popup.
+- [ ] Skim 2–3 restructured session notes (S13, S20) + Shipton/Trunks/Soni — is the TL;DR
+  format right everywhere?
+- [ ] New session note → tick some Secrets boxes → create another session → "Carried
+  forward" appears with only the unticked ones.
+- [ ] Audition a few wave-8 sounds (nox-/oga-/blacis-/km- prefixes) — cull duds via 🚮.
+
 ## 🔔 Standing reminders (surface these regularly)
 
 **DM's own todo (not Claude's):**

@@ -11,6 +11,7 @@ import {
   type ScriptBlock
 } from '../shared/types'
 import { docUncheckedItems } from '../shared/scriptCompile'
+import { prettyLabel, stem as assetStem } from '../shared/paths'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
 import type { DiscordStatus, LibraryAssetPatch, TriageScan } from '../preload/index'
 
@@ -61,19 +62,6 @@ function shuffled<T>(items: T[]): T[] {
 /** Crossfade to use between playlist tracks for this scene. */
 function playlistFade(scene: Scene): number {
   return scene.playlist?.crossfadeMs ?? scene.transition?.crossfadeMs ?? DEFAULT_CROSSFADE_MS
-}
-
-/** Filename without directory or extension, e.g. "music/old-tower-inn.mp3" → "old-tower-inn". */
-function assetStem(file: string): string {
-  return (file.split('/').pop() ?? file).replace(/\.[^.]+$/, '')
-}
-
-/** A readable label from a filename: "old-tower-inn" → "Old Tower Inn". */
-function prettyLabel(file: string): string {
-  return assetStem(file)
-    .replace(/[-_]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-    .trim()
 }
 
 /** A scene-unique id for a newly added asset, based on its filename. */
