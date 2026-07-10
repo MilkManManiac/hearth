@@ -4,6 +4,7 @@ import {
   NOTE_KINDS,
   type AssetKind,
   type CampaignNote,
+  type Character,
   type CampaignState,
   type CueInline,
   type NoteKind,
@@ -22,6 +23,7 @@ const EMPTY_CAMPAIGN: CampaignState = {
   path: null,
   scenes: [],
   notes: [],
+  characters: [],
   library: { assets: [] },
   errors: []
 }
@@ -214,6 +216,12 @@ interface AppState {
   /** 🗺 Fog-of-war map editor open? Owns the keyboard while true. */
   mapEditorOpen: boolean
   setMapEditorOpen: (open: boolean) => void
+  /** 🛡 Party dashboard / character sheets open? Owns the keyboard while true. */
+  partyOpen: boolean
+  setPartyOpen: (open: boolean) => void
+  updateCharacter: (characterId: string, mutate: (c: Character) => Character) => Promise<void>
+  createCharacter: (name: string) => Promise<string | null>
+  deleteCharacter: (characterId: string) => Promise<void>
   /**
    * Append a timestamped line to the active session note's log (the current
    * scene's session, else the newest session note, else a new one) — the
@@ -959,6 +967,49 @@ export const useStore = create<AppState>((set, get) => ({
 
   mapEditorOpen: false,
   setMapEditorOpen: (open) => set({ mapEditorOpen: open }),
+
+  partyOpen: false,
+  setPartyOpen: (open) => set({ partyOpen: open }),
+
+  updateCharacter: async (characterId, mutate) => {
+    const c = get().campaign.characters.find((x) => x.id === characterId)
+    if (!c) return
+    const updated = mutate(c)
+    // Optimistic: reflect immediately, then persist to disk.
+    set((state) => ({
+      campaign: {
+        ...state.campaign,
+        characters: state.campaign.characters.map((x) => (x.id === characterId ? updated : x))
+      }
+    }))
+    try {
+      const fresh = await window.hearth.saveCharacter(updated)
+      get().setCampaign(fresh)
+    } catch (err) {
+      console.error('saveCharacter failed', err)
+      get().pushToast(`Character save failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  createCharacter: async (name) => {
+    try {
+      const { state, characterId } = await window.hearth.createCharacter(name)
+      get().setCampaign(state)
+      return characterId
+    } catch (err) {
+      get().pushToast(`New character failed: ${(err as Error).message}`, 'error')
+      return null
+    }
+  },
+
+  deleteCharacter: async (characterId) => {
+    try {
+      const state = await window.hearth.deleteCharacter(characterId)
+      get().setCampaign(state)
+    } catch (err) {
+      get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
+    }
+  },
 
   captureToSession: async (text) => {
     const trimmed = text.trim()

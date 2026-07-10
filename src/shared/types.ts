@@ -483,12 +483,73 @@ export interface CampaignNote {
   _sourceFile?: string
 }
 
+// ---------------------------------------------------------------------------
+// Characters (ONESTOP-PLAN C4): the DDB-clone character home. One JSON per
+// character in <campaign>/characters/. CHOICES are the source of truth
+// (class/species/level/scores/profs/spells); the sheet derives everything else
+// at render (proficiency bonus, mods, saves, passives, spell slots) — never
+// persist computed values (the Foundry lesson). Table state (hp, slots used,
+// conditions) is mutable and lives here too so the party dashboard is live.
+// ---------------------------------------------------------------------------
+
+export interface AbilityScores {
+  str: number
+  dex: number
+  con: number
+  int: number
+  wis: number
+  cha: number
+}
+
+export interface Character {
+  id: string
+  name: string
+  /** The human at the table. */
+  player?: string
+  // --- choices (compendium keys from public/compendium/) --------------------
+  classKey?: string
+  subclassKey?: string
+  level: number
+  speciesKey?: string
+  backgroundKey?: string
+  /** Final scores (background bonuses already applied by the builder). */
+  abilities: AbilityScores
+  /** Skill proficiencies (snake_case skill ids) — expertise doubles via `expertise`. */
+  skillProfs: string[]
+  expertise?: string[]
+  featKeys?: string[]
+  /** Known/prepared spell keys (compendium). */
+  spells?: string[]
+  /** Free-form gear lines ("Longsword", "Chain Mail", "50 ft rope"). */
+  equipment?: string[]
+  // --- manual overrides (armor math is deliberately not automated in v1) ----
+  ac: number
+  maxHp: number
+  speed?: number
+  // --- mutable table state ---------------------------------------------------
+  hp: number
+  tempHp?: number
+  hitDiceSpent?: number
+  deathSaves?: { success: number; fail: number }
+  conditions?: string[]
+  /** Expended slots by spell level ("1".."9"). */
+  slotsUsed?: Record<string, number>
+  /** Per-feature uses ticked off (name → used count). */
+  usesSpent?: Record<string, number>
+  inspiration?: boolean
+  notes?: string
+  /** Populated by the loader. */
+  _sourceFile?: string
+}
+
 export interface CampaignState {
   /** Absolute path of the active campaign folder, or null if none chosen. */
   path: string | null
   scenes: Scene[]
   /** Campaign-wide notes (sessions, NPCs, locations…), from notes/*.json. */
   notes: CampaignNote[]
+  /** Player characters (ONESTOP-PLAN C4), from characters/*.json. */
+  characters: Character[]
   library: Library
   /** Human-readable load errors (bad JSON, etc.) surfaced in the UI. */
   errors: string[]

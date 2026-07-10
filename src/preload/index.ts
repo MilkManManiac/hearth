@@ -3,6 +3,7 @@ import type {
   AssetKind,
   CampaignNote,
   CampaignState,
+  Character,
   LibraryAsset,
   NoteKind,
   PlaylistPreset,
@@ -86,6 +87,11 @@ const api = {
   createNote: (kind: NoteKind, title: string): Promise<NoteWriteResult> =>
     ipcRenderer.invoke('note:create', kind, title),
   deleteNote: (noteId: string): Promise<CampaignState> => ipcRenderer.invoke('note:delete', noteId),
+  saveCharacter: (c: Character): Promise<CampaignState> => ipcRenderer.invoke('character:save', c),
+  createCharacter: (name: string): Promise<{ state: CampaignState; characterId: string }> =>
+    ipcRenderer.invoke('character:create', name),
+  deleteCharacter: (characterId: string): Promise<CampaignState> =>
+    ipcRenderer.invoke('character:delete', characterId),
   updateLibraryAsset: (file: string, patch: LibraryAssetPatch): Promise<CampaignState> =>
     ipcRenderer.invoke('library:update', file, patch),
   deleteLibraryAsset: (file: string): Promise<CampaignState> =>

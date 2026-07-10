@@ -6,6 +6,7 @@ import chokidar, { type FSWatcher } from 'chokidar'
 import type {
   AssetKind,
   CampaignNote,
+  Character,
   CampaignState,
   Library,
   LibraryAsset,
@@ -19,7 +20,7 @@ import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import { AUTHORING_MD } from './authoring'
 
 const CONFIG_FILE = () => path.join(app.getPath('userData'), 'hearth-config.json')
-const SUBFOLDERS = ['scenes', 'notes', 'music', 'ambience', 'sfx', 'art']
+const SUBFOLDERS = ['scenes', 'notes', 'characters', 'music', 'ambience', 'sfx', 'art']
 const TRIAGE_AUDIO_EXTS = new Set(['.mp3', '.ogg', '.wav', '.flac', '.m4a'])
 
 interface Config {
@@ -149,7 +150,7 @@ function writeConfig(cfg: Config): void {
  */
 async function writeJsonAtomic(dest: string, data: unknown): Promise<void> {
   const tmp = `${dest}.${process.pid}.tmp`
-  await writeJsonAtomic(tmp, data)
+  await fs.writeFile(tmp, JSON.stringify(data, null, 2))
   await fs.rename(tmp, dest)
 }
 
@@ -231,8 +232,85 @@ export class CampaignManager {
     const errors: string[] = []
     const scenes = await this.loadScenes(errors)
     const notes = await this.loadNotes(errors)
+    const characters = await this.loadCharacters(errors)
     const library = await this.loadLibrary(errors)
-    return { path: this.campaignPath, scenes, notes, library, errors }
+    return { path: this.campaignPath, scenes, notes, characters, library, errors }
+  }
+
+  private async loadCharacters(errors: string[]): Promise<Character[]> {
+    const dir = path.join(this.campaignPath, 'characters')
+    let files: string[] = []
+    try {
+      files = (await fs.readdir(dir)).filter((f) => f.toLowerCase().endsWith('.json'))
+    } catch {
+      return []
+    }
+    const characters: Character[] = []
+    for (const file of files) {
+      try {
+        const raw = await fs.readFile(path.join(dir, file), 'utf-8')
+        const c = JSON.parse(raw) as Character
+        c._sourceFile = `characters/${file}`
+        if (!c.id) c.id = file.replace(/\.json$/i, '')
+        if (!c.name) c.name = c.id
+        if (!c.abilities) c.abilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }
+        if (!c.level) c.level = 1
+        if (c.maxHp == null) c.maxHp = 10
+        if (c.hp == null) c.hp = c.maxHp
+        if (c.ac == null) c.ac = 10
+        if (!c.skillProfs) c.skillProfs = []
+        characters.push(c)
+      } catch (err) {
+        errors.push(`characters/${file}: ${(err as Error).message}`)
+      }
+    }
+    characters.sort((a, b) => a.name.localeCompare(b.name))
+    return characters
+  }
+
+  /** Persist a character back to its JSON file. */
+  async saveCharacter(c: Character): Promise<CampaignState> {
+    const rel = c._sourceFile
+    if (!rel) throw new Error('character has no source file to save to')
+    const { _sourceFile, ...rest } = c
+    void _sourceFile
+    const dest = path.join(this.campaignPath, rel)
+    const root = path.resolve(this.campaignPath)
+    if (!path.resolve(dest).startsWith(root + path.sep)) throw new Error('bad character path')
+    await writeJsonAtomic(dest, rest)
+    this.markWrite()
+    return this.load()
+  }
+
+  async createCharacter(name: string): Promise<{ state: CampaignState; characterId: string }> {
+    const dir = path.join(this.campaignPath, 'characters')
+    await fs.mkdir(dir, { recursive: true })
+    const base = slugify(name || 'character')
+    let stem = base
+    for (let n = 2; fsSync.existsSync(path.join(dir, `${stem}.json`)); n++) stem = `${base}-${n}`
+    const c: Character = {
+      id: stem,
+      name: name || stem,
+      level: 1,
+      abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+      skillProfs: [],
+      ac: 10,
+      maxHp: 10,
+      hp: 10
+    }
+    await writeJsonAtomic(path.join(dir, `${stem}.json`), c)
+    this.markWrite()
+    return { state: await this.load(), characterId: stem }
+  }
+
+  /** Move a character's JSON to the OS trash (recoverable). */
+  async deleteCharacter(characterId: string): Promise<CampaignState> {
+    const c = (await this.loadCharacters([])).find((x) => x.id === characterId)
+    if (!c?._sourceFile) throw new Error(`character "${characterId}" not found`)
+    const abs = path.join(this.campaignPath, c._sourceFile)
+    await shell.trashItem(abs)
+    this.markWrite()
+    return this.load()
   }
 
   private async loadScenes(errors: string[]): Promise<Scene[]> {
@@ -321,6 +399,7 @@ export class CampaignManager {
       [
         path.join(this.campaignPath, 'scenes'),
         path.join(this.campaignPath, 'notes'),
+        path.join(this.campaignPath, 'characters'),
         path.join(this.campaignPath, 'library.json')
       ],
       {

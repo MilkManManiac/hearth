@@ -36,7 +36,7 @@ converged on the plan below.
   `maps/*.json` = image + **vector fog shapes** (brush/polygon, add/subtract,
   undoable) + tokens[]; dungeon-revealer's "commit reveal" push model. NO
   dynamic lighting/walls/vision — that's the Foundry trap.
-- **C4 — Characters**: party dashboard first (AC/HP/passives/slots grid —
+- **C4 — Characters** ✅ v1 SHIPPED 2026-07-10 (guided step-by-step builder wizard + DDB import still open): party dashboard first (AC/HP/passives/slots grid —
   GAMEPLAN Phase 4, DDB's biggest unfilled need), fed by DDB import or manual
   JSON. Then a 2024 builder/level-up on SRD data (class→origin→abilities→
   equipment flow), storing CHOICES and deriving stats (never persisting

@@ -25,6 +25,7 @@ import QuickCapture from './QuickCapture'
 import ShortcutsHelp from './ShortcutsHelp'
 import CompendiumPanel from './CompendiumPanel'
 import MapEditor from './MapEditor'
+import PartyPanel from './PartyPanel'
 
 /**
  * Width-adjustable side panel: drag the inner edge to resize; drag it small
@@ -153,7 +154,7 @@ export default function ControlBoard() {
     const onKey = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return
       const st = useStore.getState()
-      if (st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen || st.mapEditorOpen || st.libraryOpen || st.triage || st.discordOpen) return
+      if (st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen || st.mapEditorOpen || st.partyOpen || st.libraryOpen || st.triage || st.discordOpen) return
       if (isTypingTarget(e.target)) return
       e.preventDefault()
       if (e.key === 'ArrowLeft') st.goNoteBack()
@@ -262,6 +263,7 @@ export default function ControlBoard() {
       <QuickSwitcher />
       <QuickCapture />
       <CompendiumPanel />
+      <PartyPanel />
       {mapEditorOpen && scene?.map && <MapEditor scene={scene} onClose={() => setMapEditorOpen(false)} />}
       <ShortcutsHelp />
       <Toasts />

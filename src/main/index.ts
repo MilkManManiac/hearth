@@ -6,6 +6,7 @@ import { DiscordBridge } from './discord'
 import type {
   AssetKind,
   CampaignNote,
+  Character,
   LibraryAsset,
   NoteKind,
   PlaylistPreset,
@@ -210,6 +211,21 @@ function registerIpc(): void {
   })
   ipcMain.handle('note:delete', async (_e, noteId: string) => {
     const state = await campaign.deleteNote(noteId)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('character:save', async (_e, c: Character) => {
+    const state = await campaign.saveCharacter(c)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('character:create', async (_e, name: string) => {
+    const result = await campaign.createCharacter(name)
+    broadcast('campaign:changed', result.state)
+    return result
+  })
+  ipcMain.handle('character:delete', async (_e, characterId: string) => {
+    const state = await campaign.deleteCharacter(characterId)
     broadcast('campaign:changed', state)
     return state
   })

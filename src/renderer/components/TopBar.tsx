@@ -178,6 +178,12 @@ export default function TopBar() {
         >
           📖 Rules
         </Btn>
+        <Btn
+          onClick={() => useStore.getState().setPartyOpen(true)}
+          title="The party: character sheets + the at-a-glance dashboard (AC/HP/passives/conditions)"
+        >
+          🛡 Party
+        </Btn>
         {!run && <ToolsMenu />}
         <button
           onClick={() => useStore.getState().setHelpOpen(true)}
