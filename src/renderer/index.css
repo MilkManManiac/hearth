@@ -59,6 +59,30 @@ input[type='range'] {
   color: #6b6157;
 }
 
+/* DM-note callouts. The read-only renderers (ScriptPanel, NoteBody) carry
+   their own Tailwind, but inside the TipTap editors this class is the ONLY
+   styling a callout gets — without it a DM note is indistinguishable prose. */
+.script-editor .script-callout {
+  margin: 0.6rem 0;
+  padding: 0.35rem 0.8rem;
+  border-left: 2px solid rgba(224, 179, 65, 0.6);
+  border-radius: 0 6px 6px 0;
+  background: rgba(224, 179, 65, 0.06);
+  font-size: 0.92em;
+  line-height: 1.8;
+}
+/* "This is for YOUR eyes" label — instantly separable when skimming at 2am. */
+.script-callout::before {
+  content: '🕯 DM';
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(224, 179, 65, 0.7);
+  margin-bottom: 1px;
+  user-select: none;
+}
+
 .cue-chip {
   display: inline-flex;
   align-items: center;

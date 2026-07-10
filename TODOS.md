@@ -481,7 +481,16 @@ The bottom strip's sounds are hard to read live. The emojis don't carry meaning.
 
 ---
 
-## 11.5 Notes readability pass (captured 2026-07-08)
+## 11.5 Notes readability pass (captured 2026-07-08) — rendering half started 2026-07-09
+Done: `> [!dm]` callouts are now visually distinct EVERYWHERE — a "🕯 DM"
+small-caps label + gold spine/tint, including inside the TipTap editors
+(`.script-callout` previously had zero CSS in the editor, so DM notes read as
+plain prose while editing); NoteBody got calmer paragraph rhythm (leading-6,
+my-1.5). Still open (content half — pair with the DM): shorter paragraphs,
+front-loaded one-liners, fewer mid-sentence links, consistent per-kind
+skeletons, plainer wording.
+
+### Original notes
 The DM finds the generated Elor notes **hard to read / decipher** — formatting
 and wording, not content. Cleanup ideas for a future pass (pair with the grill
 session so we only polish what survives):
@@ -549,8 +558,12 @@ script renders + navigates without shifting Space-cue order.
 row creates a campaign note of the mapped kind (npc/monster→NPC + tag,
 item→Item, location→Location, hook→Thread), seeds it with the row's note text
 + a provenance callout, and the row keeps a 📓 button that opens the note.
-**Next (rest of N4):** secrets carry-forward / unlinked mentions / docx import
-of Elor sessions.
+**N4 unlinked mentions ✅ (2026-07-09):** a note page's backlinks section now
+also lists 💬 places whose prose says the note's title without a [[link]]
+(word-boundary match — "Kena" won't fire inside "Kennarea"); each has a
+🔗 button that linkifies every mention in that note/scene in place (casing
+preserved via label; `linkifyMentions`/`docMentions` in scriptCompile).
+**Next (rest of N4):** secrets carry-forward / docx import of Elor sessions.
 
 ## 12. Mac support / packaging + distribution (parked until we're happy with everything else)
 The app is already mac-compatible (no Windows-specific code; davey has mac

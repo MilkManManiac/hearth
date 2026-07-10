@@ -258,6 +258,89 @@ export function docLinks(doc: ScriptDoc | undefined): string[] {
   return refs
 }
 
+const isWordChar = (c: string | undefined) => !!c && /[\p{L}\p{N}_]/u.test(c)
+
+/**
+ * Case-insensitive word-boundary search for `needle` in `hay` starting at
+ * `from`. Boundary = the adjacent chars aren't letters/digits (so "Kena"
+ * doesn't match inside "Kennarea"). Returns -1 when absent.
+ */
+function findMention(hay: string, needle: string, from: number): number {
+  const h = hay.toLowerCase()
+  const n = needle.toLowerCase()
+  let i = h.indexOf(n, from)
+  while (i !== -1) {
+    if (!isWordChar(hay[i - 1]) && !isWordChar(hay[i + n.length])) return i
+    i = h.indexOf(n, i + 1)
+  }
+  return -1
+}
+
+/** True if any text run in the doc mentions `title` (word-boundary, case-insensitive). */
+export function docMentions(doc: ScriptDoc | undefined, title: string): boolean {
+  if (!doc || title.trim().length < 3) return false
+  let found = false
+  const walk = (blocks: ScriptBlock[]): void => {
+    for (const b of blocks) {
+      if (found) return
+      if (b.type === 'callout') {
+        walk(b.content)
+        continue
+      }
+      for (const n of b.content) {
+        if (n.type === 'text' && findMention(n.text, title, 0) !== -1) {
+          found = true
+          return
+        }
+      }
+    }
+  }
+  walk(doc)
+  return found
+}
+
+/**
+ * Replace every plain-text mention of `title` with a [[link]] to `ref`
+ * (the "unlinked mentions → link it" action). The matched text becomes the
+ * link's label when its casing differs from the title, so prose is preserved
+ * verbatim; marks on the split run carry to the surrounding text only.
+ * Returns the new doc and how many mentions were linked (0 = unchanged input).
+ */
+export function linkifyMentions(doc: ScriptDoc, title: string, ref: string): { doc: ScriptDoc; count: number } {
+  let count = 0
+  const linkifyInlines = (content: ScriptInline[]): ScriptInline[] => {
+    const out: ScriptInline[] = []
+    for (const n of content) {
+      if (n.type !== 'text') {
+        out.push(n)
+        continue
+      }
+      let rest = n.text
+      let i = findMention(rest, title, 0)
+      while (i !== -1) {
+        if (i > 0) out.push(n.marks?.length ? { type: 'text', text: rest.slice(0, i), marks: n.marks } : { type: 'text', text: rest.slice(0, i) })
+        const matched = rest.slice(i, i + title.length)
+        const link: ScriptInline = { type: 'link', ref }
+        if (matched !== title) link.label = matched
+        out.push(link)
+        count++
+        rest = rest.slice(i + title.length)
+        i = findMention(rest, title, 0)
+      }
+      if (rest) out.push(n.marks?.length ? { type: 'text', text: rest, marks: n.marks } : { type: 'text', text: rest })
+    }
+    return out
+  }
+  const walkBlocks = (blocks: ScriptBlock[]): ScriptBlock[] =>
+    blocks.map((b) =>
+      b.type === 'callout'
+        ? { ...b, content: walkBlocks(b.content) }
+        : { ...b, content: linkifyInlines(b.content) }
+    )
+  const next = walkBlocks(doc)
+  return { doc: count > 0 ? next : doc, count }
+}
+
 const BLOCK_TYPES = new Set(['paragraph', 'heading', 'callout'])
 
 /** True if `raw` is already the new block tree (vs. a legacy flat array). */

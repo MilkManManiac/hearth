@@ -65,7 +65,7 @@ function renderBlock(block: ScriptBlock, key: number): ReactNode {
     return (
       <div
         key={key}
-        className="my-1.5 rounded border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-2.5 py-1 text-[13px] text-hearth-muted"
+        className="script-callout my-2 rounded-r border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-2.5 py-1.5 text-[13px] text-hearth-muted"
       >
         {block.content.map((b, i) => renderBlock(b, i))}
       </div>
@@ -79,7 +79,7 @@ function renderBlock(block: ScriptBlock, key: number): ReactNode {
     return <h5 key={key} className={cls}>{inlines}</h5>
   }
   return (
-    <p key={key} className="my-1 text-sm leading-relaxed text-hearth-text">
+    <p key={key} className="my-1.5 text-sm leading-6 text-hearth-text">
       {inlines}
     </p>
   )

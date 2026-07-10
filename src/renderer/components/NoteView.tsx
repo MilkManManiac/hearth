@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER, type CampaignNote, type NoteKind } from '../../shared/types'
-import { docLinks } from '../../shared/scriptCompile'
+import { docLinks, docMentions, linkifyMentions } from '../../shared/scriptCompile'
 import { useStore } from '../store'
 import NoteEditor from './NoteEditor'
 
@@ -166,74 +166,135 @@ export default function NoteView({ note }: { note: CampaignNote }) {
         onSave={(doc) => void updateNote(note.id, (n) => ({ ...n, body: doc, bodyText: undefined }))}
       />
 
-      <Backlinks noteId={note.id} />
+      <Backlinks noteId={note.id} title={note.title} />
     </div>
   )
 }
 
 /**
- * Everything that [[links]] to this note — notes AND scene scripts. The
- * organizing fan-out happens automatically: write links going forward, read
- * them backward here.
+ * Everything that [[links]] to this note — notes AND scene scripts — plus
+ * "unlinked mentions": places whose prose says this note's title without a
+ * link yet, each with a one-click 🔗 that linkifies every mention in place.
  */
-function Backlinks({ noteId }: { noteId: string }) {
+function Backlinks({ noteId, title }: { noteId: string; title: string }) {
   const notes = useStore((s) => s.campaign.notes)
   const scenes = useStore((s) => s.campaign.scenes)
   const selectNote = useStore((s) => s.selectNote)
   const selectScene = useStore((s) => s.selectScene)
   const setLeftTab = useStore((s) => s.setLeftTab)
+  const updateNote = useStore((s) => s.updateNote)
+  const updateScene = useStore((s) => s.updateScene)
+  const pushToast = useStore((s) => s.pushToast)
 
-  const sources = useMemo(() => {
-    const out: { key: string; icon: string; title: string; open: () => void }[] = []
+  const { linked, mentions } = useMemo(() => {
+    const linked: { key: string; icon: string; title: string; open: () => void }[] = []
+    const mentions: { key: string; icon: string; title: string; open: () => void; link: () => void }[] = []
     for (const n of notes) {
       if (n.id === noteId) continue
+      const open = () => selectNote(n.id)
+      const icon = NOTE_KINDS[n.kind]?.icon ?? '📝'
       if (docLinks(n.body).includes(noteId)) {
-        out.push({
+        linked.push({ key: `note:${n.id}`, icon, title: n.title, open })
+      } else if (docMentions(n.body, title)) {
+        mentions.push({
           key: `note:${n.id}`,
-          icon: NOTE_KINDS[n.kind]?.icon ?? '📝',
+          icon,
           title: n.title,
-          open: () => selectNote(n.id)
-        })
-      }
-    }
-    for (const sc of scenes) {
-      if (docLinks(sc.script).includes(noteId)) {
-        out.push({
-          key: `scene:${sc.id}`,
-          icon: '🎬',
-          title: sc.name,
-          open: () => {
-            setLeftTab('scenes')
-            void selectScene(sc.id)
+          open,
+          link: () => {
+            void updateNote(n.id, (src) => {
+              const res = linkifyMentions(src.body ?? [], title, noteId)
+              pushToast(`Linked ${res.count} mention${res.count === 1 ? '' : 's'} in "${src.title}"`, 'info')
+              return { ...src, body: res.doc, bodyText: undefined }
+            })
           }
         })
       }
     }
-    return out
+    for (const sc of scenes) {
+      const open = () => {
+        setLeftTab('scenes')
+        void selectScene(sc.id)
+      }
+      if (docLinks(sc.script).includes(noteId)) {
+        linked.push({ key: `scene:${sc.id}`, icon: '🎬', title: sc.name, open })
+      } else if (docMentions(sc.script, title)) {
+        mentions.push({
+          key: `scene:${sc.id}`,
+          icon: '🎬',
+          title: sc.name,
+          open,
+          link: () => {
+            void updateScene(sc.id, (src) => {
+              const res = linkifyMentions(src.script ?? [], title, noteId)
+              pushToast(`Linked ${res.count} mention${res.count === 1 ? '' : 's'} in "${src.name}"`, 'info')
+              return { ...src, script: res.doc }
+            })
+          }
+        })
+      }
+    }
+    return { linked, mentions }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noteId, notes, scenes])
+  }, [noteId, title, notes, scenes])
 
-  if (sources.length === 0) return null
+  if (linked.length === 0 && mentions.length === 0) return null
 
   return (
-    <div className="border-t border-hearth-border pt-3">
-      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
-        ⤷ Linked from {sources.length} {sources.length === 1 ? 'place' : 'places'}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {sources.map((s) => (
-          <button
-            key={s.key}
-            onClick={s.open}
-            className="flex items-center gap-1.5 rounded-full border border-hearth-border bg-hearth-panel2/60 px-2.5 py-1 text-sm text-hearth-muted transition-colors hover:border-hearth-gold hover:text-hearth-gold"
+    <div className="space-y-3 border-t border-hearth-border pt-3">
+      {linked.length > 0 && (
+        <div>
+          <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+            ⤷ Linked from {linked.length} {linked.length === 1 ? 'place' : 'places'}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {linked.map((s) => (
+              <button
+                key={s.key}
+                onClick={s.open}
+                className="flex items-center gap-1.5 rounded-full border border-hearth-border bg-hearth-panel2/60 px-2.5 py-1 text-sm text-hearth-muted transition-colors hover:border-hearth-gold hover:text-hearth-gold"
+              >
+                <span aria-hidden className="text-xs">
+                  {s.icon}
+                </span>
+                {s.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {mentions.length > 0 && (
+        <div>
+          <div
+            className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted"
+            title={`Prose that says “${title}” without a [[link]] yet`}
           >
-            <span aria-hidden className="text-xs">
-              {s.icon}
-            </span>
-            {s.title}
-          </button>
-        ))}
-      </div>
+            💬 Unlinked mentions ({mentions.length})
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {mentions.map((s) => (
+              <span
+                key={s.key}
+                className="flex items-center gap-1 rounded-full border border-dashed border-hearth-border bg-hearth-panel2/40 py-1 pl-2.5 pr-1 text-sm text-hearth-muted"
+              >
+                <button onClick={s.open} className="flex items-center gap-1.5 transition-colors hover:text-hearth-text">
+                  <span aria-hidden className="text-xs">
+                    {s.icon}
+                  </span>
+                  {s.title}
+                </button>
+                <button
+                  onClick={s.link}
+                  title={`Turn every “${title}” in this ${s.key.startsWith('scene') ? 'scene' : 'note'} into a link`}
+                  className="rounded-full px-1.5 text-xs text-hearth-gold transition-colors hover:bg-hearth-gold/15"
+                >
+                  🔗 link
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
