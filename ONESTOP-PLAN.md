@@ -64,5 +64,27 @@ converged on the plan below.
   LAN by default; remote players via a tunnel (cloudflared/Tailscale) — no
   auth (table of friends). End-to-end tested over HTTP.
 
+## Round 2 — DDB mechanics study (2026-07-10, see DDB-MECHANICS.md)
+Five-agent research pass on D&D Beyond's app mechanics (builder, play flow, DM tools,
+Maps VTT, community sentiment). Verdict: DDB's moat = guided builder/level-up +
+click-to-roll with a shared Game Log; its graveyard = tracker that can't touch PCs,
+inert conditions, homebrew ceiling, silo'd sheet (Beyond20/Avrae exist to fix it).
+Plan phases (full detail in DDB-MECHANICS.md; build order D1→D2→D4→D3→D5):
+- **D1 — Dice + Game Log**: click-to-roll everywhere, visible adv/dis, campaign roll
+  feed (DM app + portal via SSE + optional Discord embeds), roll→damage applies to
+  the tracker.
+- **D2 — Builder wizard + level-up**: guided create steps, owed-choices ⚠ engine,
+  level-up modal with "what you gained" summary; per-class progression tables added
+  to build-compendium.
+- **D3 — Play-state depth**: limited-use pips, CAST button w/ upcast, concentration
+  tracking, standard-condition picker, attunement slots.
+- **D4 — Maps ↔ everything**: tokens linked to sheets/stat blocks w/ HP rings,
+  ⚔→map stamping, presenter initiative strip, condition badges, ruler/AoE/ping;
+  portal token-moving later.
+- **D5 — Campaign glue**: DM grant flow (item/gold/XP), milestone level-up flag,
+  party rest-all.
+Non-goals stay: no dynamic lighting/vision, no midi-qol automation depth, no portal
+auth (link-is-the-table), no dual-ruleset engine.
+
 ## Papercuts
 Log every friction hit during this build in PAPERCUTS.md.
