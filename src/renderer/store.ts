@@ -219,6 +219,9 @@ interface AppState {
   /** 🛡 Party dashboard / character sheets open? Owns the keyboard while true. */
   partyOpen: boolean
   setPartyOpen: (open: boolean) => void
+  /** Player portal (C5): local web server where players open their sheets. */
+  portalStatus: { running: boolean; url: string } | null
+  togglePortal: () => Promise<void>
   updateCharacter: (characterId: string, mutate: (c: Character) => Character) => Promise<void>
   createCharacter: (name: string) => Promise<string | null>
   deleteCharacter: (characterId: string) => Promise<void>
@@ -969,7 +972,25 @@ export const useStore = create<AppState>((set, get) => ({
   setMapEditorOpen: (open) => set({ mapEditorOpen: open }),
 
   partyOpen: false,
-  setPartyOpen: (open) => set({ partyOpen: open }),
+  setPartyOpen: (open) => {
+    set({ partyOpen: open })
+    // Refresh the portal indicator whenever the panel opens.
+    if (open) void window.hearth.portalStatus().then((s) => set({ portalStatus: s }))
+  },
+
+  portalStatus: null,
+  togglePortal: async () => {
+    try {
+      const s = await window.hearth.portalToggle()
+      set({ portalStatus: s })
+      get().pushToast(
+        s.running ? `Player portal ON — send your players ${s.url}` : 'Player portal stopped',
+        'info'
+      )
+    } catch (err) {
+      get().pushToast(`Portal failed: ${(err as Error).message}`, 'error')
+    }
+  },
 
   updateCharacter: async (characterId, mutate) => {
     const c = get().campaign.characters.find((x) => x.id === characterId)

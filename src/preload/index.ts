@@ -105,6 +105,9 @@ const api = {
     ipcRenderer.invoke('triage:keep', req),
   /** Existence sweep for referenced assets — returns the missing files. */
   probeFiles: (files: string[]): Promise<string[]> => ipcRenderer.invoke('campaign:probe', files),
+  /** Player portal (C5): players open their character in a browser. */
+  portalStatus: (): Promise<{ running: boolean; url: string }> => ipcRenderer.invoke('portal:status'),
+  portalToggle: (): Promise<{ running: boolean; url: string }> => ipcRenderer.invoke('portal:toggle'),
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),

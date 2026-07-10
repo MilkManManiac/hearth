@@ -1,0 +1,32 @@
+{
+  "id": "felson",
+  "name": "Felson",
+  "player": "Seth",
+  "classKey": "monk",
+  "subclassKey": "warrior-of-the-open-hand",
+  "level": 6,
+  "speciesKey": "human",
+  "backgroundKey": "criminal",
+  "abilities": {
+    "str": 12,
+    "dex": 16,
+    "con": 14,
+    "int": 10,
+    "wis": 15,
+    "cha": 8
+  },
+  "skillProfs": [
+    "acrobatics",
+    "stealth",
+    "perception"
+  ],
+  "equipment": [
+    "Gabriel’s Keg (combat brews)",
+    "Bottled pool-liquid (S25!)",
+    "Darts"
+  ],
+  "ac": 15,
+  "maxHp": 45,
+  "hp": 45,
+  "notes": "DRAFT (background approximated: only acolyte/criminal/sage/soldier exist in SRD 5.2) — set real level/scores. Cavernborn human, Way of Shadow at the table (SRD 5.2 only ships Open Hand — flavor-mismatch; keep playing Shadow). Combat brewer; parents lost to the pool (see notes/pc-felson)."
+}

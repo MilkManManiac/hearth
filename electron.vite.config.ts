@@ -23,7 +23,11 @@ export default defineConfig({
     root: '.',
     build: {
       rollupOptions: {
-        input: { index: resolve(__dirname, 'index.html') }
+        input: {
+          index: resolve(__dirname, 'index.html'),
+          // The player portal page, served to browsers by src/main/playerServer.ts.
+          player: resolve(__dirname, 'player.html')
+        }
       }
     },
     plugins: [react()]

@@ -52,5 +52,12 @@ converged on the plan below.
 - Stat blocks: fixed single-column, actions as rows, math pre-parsed — never
   accordion-hidden.
 
+- **C5 — Player portal** ✅ SHIPPED 2026-07-10: Hearth hosts a local web
+  server (🌐 toggle in 🛡 Party); each player opens THEIR sheet in any browser
+  — build, level up, swap spells, inventory, HP — saves land in
+  characters/*.json and the DM sees them live (SSE keeps players in sync).
+  LAN by default; remote players via a tunnel (cloudflared/Tailscale) — no
+  auth (table of friends). End-to-end tested over HTTP.
+
 ## Papercuts
 Log every friction hit during this build in PAPERCUTS.md.

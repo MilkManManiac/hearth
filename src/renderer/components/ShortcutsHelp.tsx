@@ -9,7 +9,7 @@ const SECTIONS: { title: string; rows: Row[] }[] = [
   {
     title: 'Anywhere',
     rows: [
-      { keys: ['Ctrl', 'K'], what: 'Find any scene or note (fuzzy; 3+ letters searches inside them)' },
+      { keys: ['Ctrl', 'K'], what: 'Find any scene, note, or SRD monster/spell (fuzzy)' },
       { keys: ['Ctrl', 'J'], what: 'Quick capture — one line straight into the session log' },
       { keys: ['Esc'], what: 'Panic: fade ALL sound out (in a text field: just leave the field)' },
       { keys: ['?'], what: 'This cheat-sheet' }
@@ -39,6 +39,15 @@ const SECTIONS: { title: string; rows: Row[] }[] = [
       { keys: ['dbl-click'], what: 'A scene row: arm it AND go live (single click arms silently)' },
       { keys: ['dbl-click'], what: 'Any volume fader: reset it to its default' },
       { keys: ['Ctrl', 'Z'], what: 'Undo in the script/note editors' }
+    ]
+  },
+  {
+    title: 'One-stop shop (TopBar buttons)',
+    rows: [
+      { keys: ['📖'], what: 'Rules — the full 2024 SRD: monsters, spells, classes, conditions (offline)' },
+      { keys: ['🛡'], what: 'Party — character sheets + the AC/HP/passives dashboard' },
+      { keys: ['⚔'], what: 'Right panel tab — encounter tracker (SRD search, initiative, XP budget)' },
+      { keys: ['🗺'], what: 'Hover a scene image — fog-of-war map; 📤 sends reveals to the presenter' }
     ]
   }
 ]

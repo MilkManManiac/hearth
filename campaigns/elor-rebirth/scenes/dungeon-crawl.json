@@ -2,8 +2,74 @@
   "id": "dungeon-crawl",
   "name": "Dungeon Crawl",
   "dmNotes": "Template scene — rename it. Low drones and drip/echo ambience sell a dungeon better than music; keep the music sparse.",
-  "scriptText": "# Dungeon Crawl\n\nYour torchlight gutters against stone that has not felt wind in a hundred years. The passage ahead swallows the light after a dozen paces, and from somewhere below comes a slow, patient *drip... drip... drip*.\n\nThe air tastes of dust and old iron. Something down here is waiting to be found — or waiting for you.\n\n> [!dm] Add a cave/dungeon ambience bed and a sparse exploration track from the library. Save a stinger SFX for the first trap or door — drop it as a {{sfx:...}} cue right where you'll read it.",
   "music": [],
   "ambience": [],
-  "sfx": []
+  "sfx": [],
+  "script": [
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "Dungeon Crawl"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Your torchlight gutters against stone that has not felt wind in a hundred years. The passage ahead swallows the light after a dozen paces, and from somewhere below comes a slow, patient "
+        },
+        {
+          "type": "text",
+          "text": "drip... drip... drip",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The air tastes of dust and old iron. Something down here is waiting to be found — or waiting for you."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Add a cave/dungeon ambience bed and a sparse exploration track from the library. Save a stinger SFX for the first trap or door — drop it as a "
+            },
+            {
+              "type": "cue",
+              "kind": "sfx",
+              "ref": "...",
+              "label": "🔊 ..."
+            },
+            {
+              "type": "text",
+              "text": " cue right where you'll read it."
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

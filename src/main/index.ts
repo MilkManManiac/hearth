@@ -3,6 +3,7 @@ import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
 import { DiscordBridge } from './discord'
+import { PlayerPortal } from './playerServer'
 import type {
   AssetKind,
   CampaignNote,
@@ -62,6 +63,7 @@ let mainWindow: BrowserWindow | null = null
 let presenterWindow: BrowserWindow | null = null
 let campaign: CampaignManager
 let discord: DiscordBridge
+let portal: PlayerPortal
 
 const isDev = !!process.env['ELECTRON_RENDERER_URL']
 const preloadPath = path.join(__dirname, '../preload/index.js')
@@ -80,6 +82,8 @@ function broadcast(channel: string, payload: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(channel, payload)
   }
+  // Connected player-portal browsers refetch on any campaign change.
+  if (channel === 'campaign:changed') portal?.notifyChange()
 }
 
 function createMainWindow(): void {
@@ -229,6 +233,13 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  ipcMain.handle('portal:status', () => portal.status())
+  ipcMain.handle('portal:toggle', async () => {
+    const status = portal.status().running ? await portal.stop() : await portal.start()
+    // Player saves come back through the campaign manager → rebroadcast so the
+    // DM's windows see them; the watcher also covers this, belt-and-braces.
+    return status
+  })
   ipcMain.handle('library:update', async (_e, file: string, patch: Partial<LibraryAsset>) => {
     const state = await campaign.updateLibraryAsset(file, patch)
     broadcast('campaign:changed', state)
@@ -302,11 +313,27 @@ app.whenReady().then(async () => {
 
   campaign = new CampaignManager((state) => broadcast('campaign:changed', state))
   discord = new DiscordBridge((status) => broadcast('discord:status-changed', status))
+  portal = new PlayerPortal({
+    getCharacters: async () => (await campaign.load()).characters,
+    // Player saves broadcast immediately so the DM's windows update live
+    // (the folder watcher would also catch it, just ~1.5s later).
+    saveCharacter: async (c) => {
+      const state = await campaign.saveCharacter(c)
+      broadcast('campaign:changed', state)
+      return state
+    },
+    rendererDir: path.join(__dirname, '../renderer')
+  })
   const initial = await campaign.init()
   console.log(
     `[hearth] campaign: ${campaign.path}\n[hearth] scenes: ${initial.scenes.length}, ` +
       `library assets: ${initial.library.assets.length}, errors: ${initial.errors.length}`
   )
+  // Headless/testing hook: auto-start the player portal.
+  if (process.env.HEARTH_PORTAL === '1') {
+    const s = await portal.start()
+    console.log(`[hearth] player portal: ${s.url}`)
+  }
 
   createMainWindow()
 

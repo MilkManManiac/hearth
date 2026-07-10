@@ -237,6 +237,42 @@ Two optional lists power the side panels the DM checks off during play:
 When drafting a scene, populate these: likely NPCs/monsters, findable loot, and
 2–4 "what might happen here" ideas. It turns the scene into a live checklist.
 
+## characters/ — the party (ONESTOP-PLAN C4)
+
+One JSON per character in \`characters/\`. Choices are the source of truth;
+the sheet derives PB/mods/saves/skills/passives/spell slots at render — never
+write computed values. Compendium keys come from public/compendium/ (SRD
+5.2.1): classKey/subclassKey/speciesKey/backgroundKey/spells.
+
+\`\`\`jsonc
+{
+  "id": "varen",                    // = filename stem
+  "name": "Varen",
+  "player": "David",
+  "classKey": "wizard", "subclassKey": "evoker", "level": 5,
+  "speciesKey": "elf", "backgroundKey": "sage",
+  "abilities": { "str": 8, "dex": 14, "con": 13, "int": 17, "wis": 12, "cha": 10 },
+  "skillProfs": ["arcana", "history"],  // + optional "expertise": [...]
+  "spells": ["fireball", "shield"],     // spell keys from the compendium
+  "equipment": ["Quarterstaff", "Spellbook"],
+  "ac": 12, "maxHp": 32, "hp": 32       // AC/maxHp are manual (no armor math)
+}
+\`\`\`
+
+Mutable table state (the app writes these): hp, tempHp, hitDiceSpent,
+deathSaves, conditions, slotsUsed, inspiration, notes.
+
+## Scene extras: encounter + map
+
+- \`scene.encounter\` — the ⚔ tracker: \`{ combatants: [...], round, turn }\`;
+  a combatant is \`{ id, name, ref?: "<monster key>", side: "foe"|"ally"|"pc",
+  maxHp, hp, ac?, initBonus?, initiative?, xp?, conditions: [{name, untilRound?}] }\`.
+  When drafting an encounter for the DM, use compendium monster keys in \`ref\`
+  so stat blocks are one click away, and copy hp/ac/xp from the monster.
+- \`scene.map\` — fog-of-war battle map: \`{ image: "art/dungeon.jpg",
+  strokes: [] }\`. Leave strokes empty (fully fogged); the DM paints reveals
+  in-app. Any scene image works.
+
 ## notes/ — the campaign notebook
 
 One JSON file per note in \`notes/\`. Notes are the DM's campaign-wide knowledge

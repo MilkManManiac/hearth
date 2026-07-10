@@ -9,6 +9,14 @@ session (see bottom) to turn the big ones into concrete specs before building.
 
 ## 🔔 WES — review queue (updated 2026-07-10; everything Claude needs from you)
 
+**One-stop shop (2026-07-10, ONESTOP-PLAN.md — C1–C4 all shipped):**
+- [ ] Try: 📖 Rules (search "goblin"), 🛡 Party (your 3 PCs are drafted —
+  fix their levels/scores, marked DRAFT), ⚔ tab on a scene (stock a fight),
+  🗺 on a scene image (fog editor → 📤 Send with the Presenter open).
+- [ ] Tell Claude: are the SRD subclass stand-ins OK (Varen shows Evoker not
+  Diviner, Felson shows Open Hand not Shadow — SRD 5.2 ships one subclass per
+  class; homebrew JSON can add the real ones anytime).
+
 **Decisions / answers:**
 - [ ] **Discord bridge truth:** did a live voice test ever actually pass? DISCORD-BRIDGE.md's
   header says yes, its own checklist says no. Answer decides whether we trust it next session

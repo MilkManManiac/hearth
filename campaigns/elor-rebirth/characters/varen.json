@@ -1,0 +1,39 @@
+{
+  "id": "varen",
+  "name": "Varen",
+  "player": "David",
+  "classKey": "wizard",
+  "subclassKey": "evoker",
+  "level": 6,
+  "speciesKey": "elf",
+  "backgroundKey": "sage",
+  "abilities": {
+    "str": 8,
+    "dex": 14,
+    "con": 14,
+    "int": 17,
+    "wis": 12,
+    "cha": 10
+  },
+  "skillProfs": [
+    "arcana",
+    "history",
+    "investigation"
+  ],
+  "spells": [
+    "fireball",
+    "shield",
+    "misty-step",
+    "detect-magic",
+    "mage-armor",
+    "counterspell"
+  ],
+  "equipment": [
+    "Spellbook (coded journal)",
+    "Quarterstaff"
+  ],
+  "ac": 12,
+  "maxHp": 38,
+  "hp": 38,
+  "notes": "DRAFT — set real level/scores/spell list. Drow (Elf species stands in). Divination-flavored at the table (portent = seeing possibilities); SRD 5.2 only ships Evoker — treat subclass as flavor-mismatch or homebrew Diviner later. Eilistraee’s mark on his hand (see notes/pc-varen)."
+}
