@@ -38912,6 +38912,2480 @@
       "tags": [],
       "source": "user-upload",
       "license": "owned"
+    },
+    {
+      "file": "ambience/nox-cave-dark-loop.ogg",
+      "kind": "ambience",
+      "name": "Cave, Dark",
+      "category": "places",
+      "categories": [
+        "places",
+        "horror"
+      ],
+      "tags": [
+        "cave",
+        "underdark",
+        "dark",
+        "drone",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-cave-deep-loop.ogg",
+      "kind": "ambience",
+      "name": "Cave, Deep",
+      "category": "places",
+      "categories": [
+        "places",
+        "horror"
+      ],
+      "tags": [
+        "cave",
+        "underdark",
+        "deep",
+        "drone",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-cave-drips-loop.ogg",
+      "kind": "ambience",
+      "name": "Cave Drips",
+      "category": "places",
+      "categories": [
+        "places",
+        "water"
+      ],
+      "tags": [
+        "cave",
+        "drips",
+        "underdark",
+        "wet",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-campfire-small-loop.ogg",
+      "kind": "ambience",
+      "name": "Campfire, Small",
+      "category": "fire",
+      "categories": [
+        "fire",
+        "travel"
+      ],
+      "tags": [
+        "campfire",
+        "crackle",
+        "camp",
+        "rest",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-campfire-medium-loop.ogg",
+      "kind": "ambience",
+      "name": "Campfire, Medium",
+      "category": "fire",
+      "categories": [
+        "fire",
+        "travel"
+      ],
+      "tags": [
+        "campfire",
+        "crackle",
+        "camp",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-fire-big-loop.ogg",
+      "kind": "ambience",
+      "name": "Fire, Big Blaze",
+      "category": "fire",
+      "categories": [
+        "fire"
+      ],
+      "tags": [
+        "fire",
+        "blaze",
+        "burning",
+        "inferno",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-forest-birds-loop.ogg",
+      "kind": "ambience",
+      "name": "Forest Birds",
+      "category": "places",
+      "categories": [
+        "places",
+        "exploration"
+      ],
+      "tags": [
+        "forest",
+        "birds",
+        "day",
+        "nature",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-night-crickets-loop.ogg",
+      "kind": "ambience",
+      "name": "Night Crickets",
+      "category": "places",
+      "categories": [
+        "places",
+        "travel"
+      ],
+      "tags": [
+        "night",
+        "crickets",
+        "camp",
+        "nature",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-cicadas-loop.ogg",
+      "kind": "ambience",
+      "name": "Cicadas",
+      "category": "places",
+      "categories": [
+        "places",
+        "weather"
+      ],
+      "tags": [
+        "cicadas",
+        "hot",
+        "day",
+        "swamp",
+        "summer",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-rain-calm-loop.ogg",
+      "kind": "ambience",
+      "name": "Rain, Calm",
+      "category": "weather",
+      "categories": [
+        "weather"
+      ],
+      "tags": [
+        "rain",
+        "drizzle",
+        "calm",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-rain-strong-loop.ogg",
+      "kind": "ambience",
+      "name": "Rain, Strong",
+      "category": "weather",
+      "categories": [
+        "weather"
+      ],
+      "tags": [
+        "rain",
+        "downpour",
+        "storm",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-river-loop.ogg",
+      "kind": "ambience",
+      "name": "River, Moderate",
+      "category": "water",
+      "categories": [
+        "water",
+        "places"
+      ],
+      "tags": [
+        "river",
+        "flowing",
+        "nature",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-stream-calm-loop.ogg",
+      "kind": "ambience",
+      "name": "Stream, Calm",
+      "category": "water",
+      "categories": [
+        "water",
+        "places"
+      ],
+      "tags": [
+        "stream",
+        "brook",
+        "trickle",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-stream-big-loop.ogg",
+      "kind": "ambience",
+      "name": "Stream, Big",
+      "category": "water",
+      "categories": [
+        "water",
+        "places"
+      ],
+      "tags": [
+        "stream",
+        "rushing",
+        "iceland",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-waterfall-calm-loop.ogg",
+      "kind": "ambience",
+      "name": "Waterfall, Calm",
+      "category": "water",
+      "categories": [
+        "water",
+        "places"
+      ],
+      "tags": [
+        "waterfall",
+        "cascade",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-waterfall-strong-loop.ogg",
+      "kind": "ambience",
+      "name": "Waterfall, Strong",
+      "category": "water",
+      "categories": [
+        "water",
+        "places"
+      ],
+      "tags": [
+        "waterfall",
+        "roaring",
+        "cascade",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-waterfall-distant-loop.ogg",
+      "kind": "ambience",
+      "name": "Waterfall, Distant",
+      "category": "water",
+      "categories": [
+        "water",
+        "places"
+      ],
+      "tags": [
+        "waterfall",
+        "distant",
+        "far",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-sea-loop.ogg",
+      "kind": "ambience",
+      "name": "Sea Waves",
+      "category": "water",
+      "categories": [
+        "water",
+        "seafaring"
+      ],
+      "tags": [
+        "sea",
+        "waves",
+        "shore",
+        "ocean",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-sea-big-waves-loop.ogg",
+      "kind": "ambience",
+      "name": "Sea, Big Waves",
+      "category": "water",
+      "categories": [
+        "water",
+        "seafaring"
+      ],
+      "tags": [
+        "sea",
+        "waves",
+        "crashing",
+        "storm",
+        "ocean",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-sea-distant-loop.ogg",
+      "kind": "ambience",
+      "name": "Sea, Distant",
+      "category": "water",
+      "categories": [
+        "water",
+        "seafaring"
+      ],
+      "tags": [
+        "sea",
+        "waves",
+        "distant",
+        "cliffs",
+        "ocean",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-ocean-shore-loop.ogg",
+      "kind": "ambience",
+      "name": "Ocean Shore",
+      "category": "water",
+      "categories": [
+        "water",
+        "seafaring"
+      ],
+      "tags": [
+        "ocean",
+        "shore",
+        "beach",
+        "waves",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-bubbling-spring-loop.ogg",
+      "kind": "ambience",
+      "name": "Bubbling Hot Spring",
+      "category": "water",
+      "categories": [
+        "water",
+        "places"
+      ],
+      "tags": [
+        "bubbling",
+        "spring",
+        "pool",
+        "mud",
+        "alchemy",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-old-mill-loop.ogg",
+      "kind": "ambience",
+      "name": "Old Water Mill",
+      "category": "places",
+      "categories": [
+        "places",
+        "town",
+        "water"
+      ],
+      "tags": [
+        "mill",
+        "waterwheel",
+        "creak",
+        "village",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-wind-calm-loop.ogg",
+      "kind": "ambience",
+      "name": "Wind, Calm",
+      "category": "weather",
+      "categories": [
+        "weather"
+      ],
+      "tags": [
+        "wind",
+        "breeze",
+        "open",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-wind-forest-loop.ogg",
+      "kind": "ambience",
+      "name": "Wind in Forest",
+      "category": "weather",
+      "categories": [
+        "weather",
+        "places"
+      ],
+      "tags": [
+        "wind",
+        "forest",
+        "leaves",
+        "trees",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/nox-underwater-murk-loop.ogg",
+      "kind": "ambience",
+      "name": "Underwater Murk",
+      "category": "water",
+      "categories": [
+        "water",
+        "mystery"
+      ],
+      "tags": [
+        "underwater",
+        "deep",
+        "submerged",
+        "murky",
+        "pool",
+        "loop"
+      ],
+      "source": "nox-sound (itch.io, lowpass edit)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-dungeon-ambient-loop.ogg",
+      "kind": "ambience",
+      "name": "Dungeon Ambient",
+      "category": "places",
+      "categories": [
+        "places",
+        "horror"
+      ],
+      "tags": [
+        "dungeon",
+        "drone",
+        "dark",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-drips-basement-loop.ogg",
+      "kind": "ambience",
+      "name": "Dripping Cellar",
+      "category": "places",
+      "categories": [
+        "places",
+        "water"
+      ],
+      "tags": [
+        "drips",
+        "crypt",
+        "cellar",
+        "cave",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-swamp-loop.ogg",
+      "kind": "ambience",
+      "name": "Swamp Environment",
+      "category": "places",
+      "categories": [
+        "places",
+        "water"
+      ],
+      "tags": [
+        "swamp",
+        "frogs",
+        "insects",
+        "marsh",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-rain-thunder-loop.ogg",
+      "kind": "ambience",
+      "name": "Rain with Thunder",
+      "category": "weather",
+      "categories": [
+        "weather"
+      ],
+      "tags": [
+        "rain",
+        "thunder",
+        "storm",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-deep-rumble-loop.ogg",
+      "kind": "ambience",
+      "name": "Deep Rumble",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery",
+        "places"
+      ],
+      "tags": [
+        "rumble",
+        "deep",
+        "otherworldly",
+        "underdark",
+        "eldritch",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-cerhern-horror-drone.mp3",
+      "kind": "ambience",
+      "name": "Cerhern Horror Drone",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "tension"
+      ],
+      "tags": [
+        "drone",
+        "dissonant",
+        "dread",
+        "dark",
+        "long"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-eerie-atmosphere-1.ogg",
+      "kind": "ambience",
+      "name": "Eerie Atmosphere I",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "ghostly",
+        "eerie",
+        "drone",
+        "otherworldly",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-eerie-atmosphere-2.ogg",
+      "kind": "ambience",
+      "name": "Eerie Atmosphere II",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "ghostly",
+        "eerie",
+        "drone",
+        "otherworldly",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-eerie-atmosphere-3.ogg",
+      "kind": "ambience",
+      "name": "Eerie Atmosphere III",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "ghostly",
+        "eerie",
+        "drone",
+        "otherworldly",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-eerie-atmosphere-4.ogg",
+      "kind": "ambience",
+      "name": "Eerie Atmosphere IV",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "ghostly",
+        "eerie",
+        "drone",
+        "otherworldly",
+        "loop"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-cult-chanting-bed.ogg",
+      "kind": "ambience",
+      "name": "Cult Chanting",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "chanting",
+        "ritual",
+        "cult",
+        "voices",
+        "temple",
+        "loop"
+      ],
+      "source": "opengameart (concatenated clips)",
+      "license": "CC0"
+    },
+    {
+      "file": "ambience/oga-ethereal-chant-bed.ogg",
+      "kind": "ambience",
+      "name": "Ethereal Chant",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "magic"
+      ],
+      "tags": [
+        "chanting",
+        "ethereal",
+        "otherworldly",
+        "ritual",
+        "voices",
+        "loop"
+      ],
+      "source": "opengameart (concatenated clips)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-celestial-gardens.mp3",
+      "kind": "music",
+      "name": "Celestial Gardens",
+      "category": "victory",
+      "categories": [
+        "victory",
+        "magic"
+      ],
+      "tags": [
+        "celestial",
+        "sacred",
+        "heavenly",
+        "calm",
+        "dawn"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-celestial-grotto.ogg",
+      "kind": "music",
+      "name": "Celestial Grotto",
+      "category": "victory",
+      "categories": [
+        "victory",
+        "magic"
+      ],
+      "tags": [
+        "celestial",
+        "sacred",
+        "grotto",
+        "calm"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-sky-gardens.mp3",
+      "kind": "music",
+      "name": "Sky Gardens",
+      "category": "exploration",
+      "categories": [
+        "exploration",
+        "victory"
+      ],
+      "tags": [
+        "celestial",
+        "airy",
+        "wonder"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-dungeonwave.mp3",
+      "kind": "music",
+      "name": "Dungeonwave",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "places"
+      ],
+      "tags": [
+        "dungeon",
+        "synth",
+        "dark",
+        "crawl"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-dungeonwave-depths.mp3",
+      "kind": "music",
+      "name": "Dungeonwave Depths",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "places"
+      ],
+      "tags": [
+        "dungeon",
+        "synth",
+        "depths",
+        "underdark"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-eerie-castle.mp3",
+      "kind": "music",
+      "name": "Eerie Castle",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "castle",
+        "eerie",
+        "cold",
+        "haunted"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-creepy-eerie-ambient.mp3",
+      "kind": "music",
+      "name": "Creepy Eerie Ambient",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "eerie",
+        "ambient",
+        "unease"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-horror-ambience-1.mp3",
+      "kind": "music",
+      "name": "Horror Ambience I",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "tension"
+      ],
+      "tags": [
+        "horror",
+        "ambient",
+        "dread"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-horror-ambience-2.mp3",
+      "kind": "music",
+      "name": "Horror Ambience II",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "tension"
+      ],
+      "tags": [
+        "horror",
+        "ambient",
+        "dread"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-stalker-strings.mp3",
+      "kind": "music",
+      "name": "Stalker Strings",
+      "category": "tension",
+      "categories": [
+        "tension",
+        "horror"
+      ],
+      "tags": [
+        "strings",
+        "stalking",
+        "intense",
+        "pursuit"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-horror-walking.mp3",
+      "kind": "music",
+      "name": "Horror Walking",
+      "category": "tension",
+      "categories": [
+        "tension",
+        "horror"
+      ],
+      "tags": [
+        "creeping",
+        "walking",
+        "suspense"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-creepy-tension.mp3",
+      "kind": "music",
+      "name": "Creepy Tension",
+      "category": "tension",
+      "categories": [
+        "tension",
+        "horror"
+      ],
+      "tags": [
+        "tension",
+        "cinematic",
+        "creepy"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-cinematic-thriller.mp3",
+      "kind": "music",
+      "name": "Cinematic Thriller",
+      "category": "tension",
+      "categories": [
+        "tension"
+      ],
+      "tags": [
+        "thriller",
+        "cinematic",
+        "urgent"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-mystery-flutes-1.mp3",
+      "kind": "music",
+      "name": "Mystery Flutes",
+      "category": "mystery",
+      "categories": [
+        "mystery"
+      ],
+      "tags": [
+        "flutes",
+        "pipes",
+        "curious",
+        "fey"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-sneaky-piano.mp3",
+      "kind": "music",
+      "name": "Sneaky Piano",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "tension"
+      ],
+      "tags": [
+        "piano",
+        "sneaky",
+        "moody",
+        "heist"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-mystery-eerie-magic.mp3",
+      "kind": "music",
+      "name": "Mystery Eerie Magic",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "magic"
+      ],
+      "tags": [
+        "eerie",
+        "magic",
+        "arcane",
+        "wonder"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-sad-piano.mp3",
+      "kind": "music",
+      "name": "Sad Piano",
+      "category": "somber",
+      "categories": [
+        "somber"
+      ],
+      "tags": [
+        "piano",
+        "sad",
+        "grief",
+        "loss"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-heavenly-choir.mp3",
+      "kind": "music",
+      "name": "Heavenly Choir",
+      "category": "victory",
+      "categories": [
+        "victory",
+        "magic"
+      ],
+      "tags": [
+        "choir",
+        "sacred",
+        "divine",
+        "radiant"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-magic-tingle-heaven.mp3",
+      "kind": "music",
+      "name": "Magic Tingle of Heaven",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "victory"
+      ],
+      "tags": [
+        "sacred",
+        "shimmer",
+        "divine",
+        "blessing"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-hopeful-dawn.mp3",
+      "kind": "music",
+      "name": "Hopeful Dawn",
+      "category": "victory",
+      "categories": [
+        "victory",
+        "exploration"
+      ],
+      "tags": [
+        "dawn",
+        "hope",
+        "sunrise",
+        "waking",
+        "renewal"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-tavern-band.mp3",
+      "kind": "music",
+      "name": "Tavern Band",
+      "category": "tavern",
+      "categories": [
+        "tavern"
+      ],
+      "tags": [
+        "tavern",
+        "band",
+        "folk",
+        "lively"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-tavern-lively.mp3",
+      "kind": "music",
+      "name": "Lively Tavern",
+      "category": "tavern",
+      "categories": [
+        "tavern"
+      ],
+      "tags": [
+        "tavern",
+        "upbeat",
+        "festive",
+        "band"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-sea-shanties.mp3",
+      "kind": "music",
+      "name": "Sea Shanties",
+      "category": "seafaring",
+      "categories": [
+        "seafaring",
+        "tavern"
+      ],
+      "tags": [
+        "shanty",
+        "pirates",
+        "sailing",
+        "folk"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-war-drums-1.mp3",
+      "kind": "music",
+      "name": "War Drums",
+      "category": "combat",
+      "categories": [
+        "combat",
+        "boss"
+      ],
+      "tags": [
+        "drums",
+        "war",
+        "percussion",
+        "battle"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-epic-adventure-vocal.mp3",
+      "kind": "music",
+      "name": "Epic Adventure (Vocal)",
+      "category": "boss",
+      "categories": [
+        "boss",
+        "victory"
+      ],
+      "tags": [
+        "epic",
+        "orchestra",
+        "vocal",
+        "adventure"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-sumerian-ritual-1.mp3",
+      "kind": "music",
+      "name": "Sumerian Ritual",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "horror"
+      ],
+      "tags": [
+        "ritual",
+        "temple",
+        "ancient",
+        "cult"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-meditation.mp3",
+      "kind": "music",
+      "name": "Meditation",
+      "category": "somber",
+      "categories": [
+        "somber",
+        "mystery"
+      ],
+      "tags": [
+        "meditation",
+        "slow",
+        "contemplative",
+        "trance"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-sands-of-time.mp3",
+      "kind": "music",
+      "name": "Sands of Time",
+      "category": "travel",
+      "categories": [
+        "travel",
+        "exploration"
+      ],
+      "tags": [
+        "desert",
+        "ancient",
+        "journey"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-firefly-fete.mp3",
+      "kind": "music",
+      "name": "The Firefly Fete",
+      "category": "exploration",
+      "categories": [
+        "exploration",
+        "magic"
+      ],
+      "tags": [
+        "fey",
+        "forest",
+        "whimsical",
+        "night"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/blacis-void-pads.mp3",
+      "kind": "music",
+      "name": "Void Pads",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "horror"
+      ],
+      "tags": [
+        "void",
+        "pads",
+        "otherworldly",
+        "drone",
+        "slow"
+      ],
+      "source": "blacis (itch.io)",
+      "license": "CC0"
+    },
+    {
+      "file": "music/km-ossuary-rest.mp3",
+      "kind": "music",
+      "name": "Ossuary: Rest",
+      "category": "somber",
+      "categories": [
+        "somber",
+        "places"
+      ],
+      "tags": [
+        "crypt",
+        "ossuary",
+        "still",
+        "death"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-ossuary-air.mp3",
+      "kind": "music",
+      "name": "Ossuary: Air",
+      "category": "somber",
+      "categories": [
+        "somber",
+        "places"
+      ],
+      "tags": [
+        "crypt",
+        "ossuary",
+        "airy",
+        "sacred"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-crypto.mp3",
+      "kind": "music",
+      "name": "Crypto",
+      "category": "mystery",
+      "categories": [
+        "mystery"
+      ],
+      "tags": [
+        "mystery",
+        "investigation",
+        "curious"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-the-dread.mp3",
+      "kind": "music",
+      "name": "The Dread",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "tension"
+      ],
+      "tags": [
+        "dread",
+        "fear",
+        "looming"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-gathering-darkness.mp3",
+      "kind": "music",
+      "name": "Gathering Darkness",
+      "category": "tension",
+      "categories": [
+        "tension",
+        "boss"
+      ],
+      "tags": [
+        "darkness",
+        "percussion",
+        "building",
+        "menace"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-penumbra.mp3",
+      "kind": "music",
+      "name": "Penumbra",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "dark",
+        "ambient",
+        "shadow"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-shadowlands-horizon.mp3",
+      "kind": "music",
+      "name": "Shadowlands: Horizon",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "eldritch",
+        "drone",
+        "otherworldly",
+        "void"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-shadowlands-breath.mp3",
+      "kind": "music",
+      "name": "Shadowlands: Breath",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "eldritch",
+        "drone",
+        "breathing",
+        "void"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-lightless-dawn.mp3",
+      "kind": "music",
+      "name": "Lightless Dawn",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "dark",
+        "ambient",
+        "hopeless",
+        "underdark"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-long-note-two.mp3",
+      "kind": "music",
+      "name": "Long Note Two",
+      "category": "tension",
+      "categories": [
+        "tension"
+      ],
+      "tags": [
+        "drone",
+        "sustained",
+        "unease"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-come-play-with-me.mp3",
+      "kind": "music",
+      "name": "Come Play with Me",
+      "category": "horror",
+      "categories": [
+        "horror"
+      ],
+      "tags": [
+        "creepy",
+        "children",
+        "haunted",
+        "music-box"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-anguish.mp3",
+      "kind": "music",
+      "name": "Anguish",
+      "category": "somber",
+      "categories": [
+        "somber"
+      ],
+      "tags": [
+        "grief",
+        "sorrow",
+        "strings"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-floating-cities.mp3",
+      "kind": "music",
+      "name": "Floating Cities",
+      "category": "somber",
+      "categories": [
+        "somber"
+      ],
+      "tags": [
+        "piano",
+        "melancholy",
+        "reflective"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-heart-of-nowhere.mp3",
+      "kind": "music",
+      "name": "Heart of Nowhere",
+      "category": "somber",
+      "categories": [
+        "somber",
+        "mystery"
+      ],
+      "tags": [
+        "lonely",
+        "vast",
+        "desolate"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-immersed.mp3",
+      "kind": "music",
+      "name": "Immersed",
+      "category": "water",
+      "categories": [
+        "water",
+        "mystery"
+      ],
+      "tags": [
+        "underwater",
+        "submerged",
+        "deep",
+        "floating"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-deep-haze.mp3",
+      "kind": "music",
+      "name": "Deep Haze",
+      "category": "water",
+      "categories": [
+        "water",
+        "mystery"
+      ],
+      "tags": [
+        "deep",
+        "haze",
+        "murky",
+        "slow"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-agnus-dei.mp3",
+      "kind": "music",
+      "name": "Agnus Dei X",
+      "category": "victory",
+      "categories": [
+        "victory",
+        "somber"
+      ],
+      "tags": [
+        "choral",
+        "sacred",
+        "church",
+        "divine",
+        "dawn"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-virtutes-instrumenti.mp3",
+      "kind": "music",
+      "name": "Virtutes Instrumenti",
+      "category": "victory",
+      "categories": [
+        "victory",
+        "magic"
+      ],
+      "tags": [
+        "sacred",
+        "orchestral",
+        "solemn",
+        "holy"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-angel-share.mp3",
+      "kind": "music",
+      "name": "Angel Share",
+      "category": "somber",
+      "categories": [
+        "somber",
+        "victory"
+      ],
+      "tags": [
+        "peaceful",
+        "gentle",
+        "warm",
+        "rest"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-oppressive-gloom.mp3",
+      "kind": "music",
+      "name": "Oppressive Gloom",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "places"
+      ],
+      "tags": [
+        "gloom",
+        "underdark",
+        "heavy",
+        "oppressive"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-chee-zee-cave.mp3",
+      "kind": "music",
+      "name": "Chee Zee Cave",
+      "category": "places",
+      "categories": [
+        "places",
+        "mystery"
+      ],
+      "tags": [
+        "cave",
+        "underdark",
+        "echo",
+        "strange"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-dark-fog.mp3",
+      "kind": "music",
+      "name": "Dark Fog",
+      "category": "boss",
+      "categories": [
+        "boss",
+        "horror"
+      ],
+      "tags": [
+        "boss",
+        "menace",
+        "fog",
+        "confrontation"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-giant-wyrm.mp3",
+      "kind": "music",
+      "name": "Giant Wyrm",
+      "category": "boss",
+      "categories": [
+        "boss",
+        "combat"
+      ],
+      "tags": [
+        "boss",
+        "dragon",
+        "epic",
+        "battle"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-curse-of-the-scarab.mp3",
+      "kind": "music",
+      "name": "Curse of the Scarab",
+      "category": "boss",
+      "categories": [
+        "boss",
+        "combat"
+      ],
+      "tags": [
+        "boss",
+        "ancient",
+        "tomb",
+        "battle"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "music/km-ritual.mp3",
+      "kind": "music",
+      "name": "Ritual",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "ritual",
+        "dark",
+        "ceremony",
+        "cult"
+      ],
+      "source": "incompetech (Kevin MacLeod)",
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+    },
+    {
+      "file": "sfx/oga-magic-cast-1.ogg",
+      "kind": "sfx",
+      "name": "Magic Cast I",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "cast",
+        "spell",
+        "arcane"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-magic-cast-2.ogg",
+      "kind": "sfx",
+      "name": "Magic Cast II",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "cast",
+        "spell",
+        "arcane"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-magic-cast-4.ogg",
+      "kind": "sfx",
+      "name": "Magic Cast III",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "cast",
+        "spell",
+        "arcane"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-teleport-zap.ogg",
+      "kind": "sfx",
+      "name": "Teleport Zap",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "teleport",
+        "zap",
+        "blink",
+        "misty-step"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-teleport-shimmer.ogg",
+      "kind": "sfx",
+      "name": "Teleport Shimmer",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "teleport",
+        "shimmer",
+        "portal"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-freeze-spell.ogg",
+      "kind": "sfx",
+      "name": "Freeze Spell",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "ice",
+        "freeze",
+        "frost",
+        "cold"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-cold-snap.ogg",
+      "kind": "sfx",
+      "name": "Cold Snap",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "ice",
+        "frost",
+        "snap",
+        "cold"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-ice-shard.ogg",
+      "kind": "sfx",
+      "name": "Ice Shard",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "ice",
+        "shard",
+        "crystal"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-earth-spell.ogg",
+      "kind": "sfx",
+      "name": "Earth Spell",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "earth",
+        "stone",
+        "rumble",
+        "cast"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-dark-magic-1.ogg",
+      "kind": "sfx",
+      "name": "Dark Magic I",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "horror"
+      ],
+      "tags": [
+        "dark",
+        "necrotic",
+        "cast",
+        "curse"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-dark-magic-2.ogg",
+      "kind": "sfx",
+      "name": "Dark Magic II",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "horror"
+      ],
+      "tags": [
+        "dark",
+        "necrotic",
+        "cast",
+        "curse"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-dark-magic-3.ogg",
+      "kind": "sfx",
+      "name": "Dark Magic III",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "horror"
+      ],
+      "tags": [
+        "dark",
+        "necrotic",
+        "cast",
+        "curse"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-necrotic-drain.ogg",
+      "kind": "sfx",
+      "name": "Necrotic Drain",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "horror"
+      ],
+      "tags": [
+        "drain",
+        "necrotic",
+        "life-steal",
+        "dark"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-holy-cure-1.ogg",
+      "kind": "sfx",
+      "name": "Holy Cure I",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "holy",
+        "heal",
+        "radiant",
+        "cure"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-holy-cure-2.ogg",
+      "kind": "sfx",
+      "name": "Holy Cure II",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "holy",
+        "heal",
+        "radiant",
+        "cure"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-healing-glow.ogg",
+      "kind": "sfx",
+      "name": "Healing Glow",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "heal",
+        "glow",
+        "restore",
+        "holy"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-lightning-spell-1.ogg",
+      "kind": "sfx",
+      "name": "Lightning Spell",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "lightning",
+        "electric",
+        "shock"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-fireball-blast.ogg",
+      "kind": "sfx",
+      "name": "Fireball Blast",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "fire"
+      ],
+      "tags": [
+        "fireball",
+        "explosion",
+        "blast",
+        "fire"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-spell-whoosh-1.ogg",
+      "kind": "sfx",
+      "name": "Spell Whoosh",
+      "category": "magic",
+      "categories": [
+        "magic"
+      ],
+      "tags": [
+        "whoosh",
+        "cast",
+        "swirl"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-fire-spell-1.ogg",
+      "kind": "sfx",
+      "name": "Fire Spell",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "fire"
+      ],
+      "tags": [
+        "fire",
+        "ignite",
+        "cast"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-battle-magic.ogg",
+      "kind": "sfx",
+      "name": "Battle Magic",
+      "category": "magic",
+      "categories": [
+        "magic",
+        "combat"
+      ],
+      "tags": [
+        "magic",
+        "impact",
+        "battle"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-heartbeat-slow.ogg",
+      "kind": "sfx",
+      "name": "Heartbeat, Slow",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "tension"
+      ],
+      "tags": [
+        "heartbeat",
+        "slow",
+        "reverb",
+        "fear"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-heartbeat-fast.ogg",
+      "kind": "sfx",
+      "name": "Heartbeat, Fast",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "tension"
+      ],
+      "tags": [
+        "heartbeat",
+        "fast",
+        "panic"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-ghost-breath.ogg",
+      "kind": "sfx",
+      "name": "Ghost Breath",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "creatures"
+      ],
+      "tags": [
+        "ghost",
+        "breath",
+        "whisper",
+        "cold"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-ghost-moan-1.ogg",
+      "kind": "sfx",
+      "name": "Ghost Moan I",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "creatures"
+      ],
+      "tags": [
+        "ghost",
+        "moan",
+        "wail",
+        "undead"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-ghost-moan-2.ogg",
+      "kind": "sfx",
+      "name": "Ghost Moan II",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "creatures"
+      ],
+      "tags": [
+        "ghost",
+        "moan",
+        "wail",
+        "undead"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-cult-chant-1.ogg",
+      "kind": "sfx",
+      "name": "Cult Chant Sting",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "mystery"
+      ],
+      "tags": [
+        "chant",
+        "ritual",
+        "cult",
+        "voices"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-ethereal-chant.ogg",
+      "kind": "sfx",
+      "name": "Ethereal Chant Sting",
+      "category": "mystery",
+      "categories": [
+        "mystery",
+        "magic"
+      ],
+      "tags": [
+        "chant",
+        "ethereal",
+        "otherworldly"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-shade-whisper-1.ogg",
+      "kind": "sfx",
+      "name": "Shade Whisper I",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "creatures"
+      ],
+      "tags": [
+        "shade",
+        "whisper",
+        "shadow",
+        "undead"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-shade-whisper-2.ogg",
+      "kind": "sfx",
+      "name": "Shade Whisper II",
+      "category": "horror",
+      "categories": [
+        "horror",
+        "creatures"
+      ],
+      "tags": [
+        "shade",
+        "whisper",
+        "shadow",
+        "undead"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-giant-roar.ogg",
+      "kind": "sfx",
+      "name": "Giant Roar",
+      "category": "creatures",
+      "categories": [
+        "creatures",
+        "combat"
+      ],
+      "tags": [
+        "giant",
+        "roar",
+        "bellow"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-ogre-grunt.ogg",
+      "kind": "sfx",
+      "name": "Ogre Grunt",
+      "category": "creatures",
+      "categories": [
+        "creatures"
+      ],
+      "tags": [
+        "ogre",
+        "grunt",
+        "brute"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-beast-growl.ogg",
+      "kind": "sfx",
+      "name": "Beast Growl",
+      "category": "creatures",
+      "categories": [
+        "creatures"
+      ],
+      "tags": [
+        "beast",
+        "growl",
+        "guttural",
+        "monster"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-wolfman-howl.ogg",
+      "kind": "sfx",
+      "name": "Wolfman Howl",
+      "category": "creatures",
+      "categories": [
+        "creatures",
+        "horror"
+      ],
+      "tags": [
+        "werewolf",
+        "howl",
+        "wolf",
+        "night"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-creature-roar-1.ogg",
+      "kind": "sfx",
+      "name": "Creature Roar",
+      "category": "creatures",
+      "categories": [
+        "creatures",
+        "combat"
+      ],
+      "tags": [
+        "creature",
+        "roar",
+        "monster"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-ghast-cry-1.ogg",
+      "kind": "sfx",
+      "name": "Ghast Cry",
+      "category": "creatures",
+      "categories": [
+        "creatures",
+        "horror"
+      ],
+      "tags": [
+        "ghast",
+        "cry",
+        "shriek",
+        "undead"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-sword-unsheathe.ogg",
+      "kind": "sfx",
+      "name": "Sword Unsheathe",
+      "category": "combat",
+      "categories": [
+        "combat",
+        "objects"
+      ],
+      "tags": [
+        "sword",
+        "unsheathe",
+        "draw",
+        "steel"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-sword-swing.ogg",
+      "kind": "sfx",
+      "name": "Sword Swing",
+      "category": "combat",
+      "categories": [
+        "combat"
+      ],
+      "tags": [
+        "sword",
+        "swing",
+        "whoosh",
+        "attack"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-heavy-door.ogg",
+      "kind": "sfx",
+      "name": "Heavy Door",
+      "category": "objects",
+      "categories": [
+        "objects",
+        "places"
+      ],
+      "tags": [
+        "door",
+        "creak",
+        "heavy",
+        "dungeon"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-coin-drop.ogg",
+      "kind": "sfx",
+      "name": "Coin Drop",
+      "category": "objects",
+      "categories": [
+        "objects"
+      ],
+      "tags": [
+        "coin",
+        "gold",
+        "drop",
+        "loot"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-metal-ringing.ogg",
+      "kind": "sfx",
+      "name": "Metal Ringing",
+      "category": "objects",
+      "categories": [
+        "objects"
+      ],
+      "tags": [
+        "metal",
+        "ring",
+        "clang"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-potion-bottle.ogg",
+      "kind": "sfx",
+      "name": "Potion Bottle",
+      "category": "objects",
+      "categories": [
+        "objects"
+      ],
+      "tags": [
+        "potion",
+        "bottle",
+        "glass",
+        "drink"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-chain-rattle.ogg",
+      "kind": "sfx",
+      "name": "Chain Rattle",
+      "category": "objects",
+      "categories": [
+        "objects",
+        "horror"
+      ],
+      "tags": [
+        "chain",
+        "rattle",
+        "dungeon",
+        "prisoner"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-lock-click.ogg",
+      "kind": "sfx",
+      "name": "Lock Click",
+      "category": "objects",
+      "categories": [
+        "objects",
+        "ui"
+      ],
+      "tags": [
+        "lock",
+        "click",
+        "unlock",
+        "door"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-book-page.ogg",
+      "kind": "sfx",
+      "name": "Book Page",
+      "category": "objects",
+      "categories": [
+        "objects",
+        "ui"
+      ],
+      "tags": [
+        "book",
+        "page",
+        "turn",
+        "tome"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
+    },
+    {
+      "file": "sfx/oga-wind-gust.ogg",
+      "kind": "sfx",
+      "name": "Wind Gust",
+      "category": "weather",
+      "categories": [
+        "weather"
+      ],
+      "tags": [
+        "wind",
+        "gust",
+        "whoosh"
+      ],
+      "source": "opengameart",
+      "license": "CC0"
     }
   ]
 }

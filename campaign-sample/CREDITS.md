@@ -156,6 +156,38 @@ WAVs transcoded to OGG. These files are **gitignored** (~750 MB — see
   only. Do not redistribute; excluded from the repo. Each entry is tagged
   `license: "UNKNOWN — do not redistribute"` in library.json.
 
+## Wave 8 — atmosphere expansion (2026-07-09, 139 assets, all Tier A)
+
+Curated headless from the SOUND-SOURCES.md wells (full acquisition detail in
+the session's SOURCES-REPORT). 55 music / 38 ambience / 46 sfx.
+
+- `nox-*` (26 ambience) — **Nox_Sound Essentials Series** (itch.io) — **CC0**.
+  Pro field-recorded seamless loops: dark/deep caves + drips, fires, rain, wind,
+  night insects, rivers/waterfalls/sea, hot spring, old water mill.
+  `nox-underwater-murk-loop.ogg` is a lowpass edit of the CC0 spring loop.
+- `blacis-*` (30 music) — **Blacis Fantasy Music Mega Pack** (itch.io) — **CC0**.
+  Horror ambiences, tension strings, mystery, tavern, shanties, war drums,
+  ritual, and celestial/heavenly-dawn tracks. (30 keepers of 233; the rest
+  didn't fit dark fantasy.)
+- `oga-*` (12 ambience + 46 sfx) — **OpenGameArt**, license verified per asset
+  page — **CC0**. Dungeon/swamp/eldritch drones, ghostly atmospheres, cult +
+  ethereal chanting (two ~40s beds concatenated from the CC0 one-shots),
+  21 magic spells (dark/holy/ice/earth/lightning/fire/teleport), heartbeats,
+  ghost voices, shade whispers, dungeon foley.
+- `km-*` (25 music) — **Kevin MacLeod (incompetech.com)** — **CC BY 4.0,
+  attribution REQUIRED**: *"Music: Kevin MacLeod (incompetech.com), licensed
+  under Creative Commons: By Attribution 4.0,
+  https://creativecommons.org/licenses/by/4.0/"* — one pinned line covers all:
+  ossuary-rest, ossuary-air, crypto, the-dread, gathering-darkness, penumbra,
+  shadowlands-horizon, shadowlands-breath, lightless-dawn, long-note-two,
+  come-play-with-me, anguish, floating-cities, heart-of-nowhere, immersed,
+  deep-haze, agnus-dei, virtutes-instrumenti, angel-share, oppressive-gloom,
+  chee-zee-cave, dark-fog, giant-wyrm, curse-of-the-scarab, ritual.
+
+Skipped on license grounds: TomMusic 200 SFX + Leohpaz Minifantasy (no
+redistribution), JDSherbert (non-CC custom license). kmontesdev CC0 pack needs
+a manual Google-Drive grab (2 GB, genre-perfect — worth it later).
+
 ## Art
 - `art/*.svg` — generated placeholders (swap for your own maps/handouts)
 

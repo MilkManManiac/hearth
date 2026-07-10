@@ -18,6 +18,12 @@ campaign-sample/ambience/noxx-*
 campaign-sample/sfx/fapx-*
 campaign-sample/sfx/noxx-*
 
+# Wave 8 music (2026-07-09): Tier-A licensed but 256 MB of MP3s — kept out of
+# the repo like the other bulk audio; travels via the campaign zip. The wave-8
+# ambience + sfx (31 MB) ARE tracked. library.json references everything.
+campaign-sample/music/blacis-*
+campaign-sample/music/km-*
+
 # Campaign source-material dumps (large, personal)
 /Elor Campaign Import/
 # Session recordings (The Chronicler)
