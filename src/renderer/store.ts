@@ -211,6 +211,9 @@ interface AppState {
   compendiumTarget: { kind: import('./lib/compendium').CompendiumKind; key: string } | null
   openCompendium: (target?: { kind: import('./lib/compendium').CompendiumKind; key: string }) => void
   closeCompendium: () => void
+  /** 🗺 Fog-of-war map editor open? Owns the keyboard while true. */
+  mapEditorOpen: boolean
+  setMapEditorOpen: (open: boolean) => void
   /**
    * Append a timestamped line to the active session note's log (the current
    * scene's session, else the newest session note, else a new one) — the
@@ -953,6 +956,9 @@ export const useStore = create<AppState>((set, get) => ({
   compendiumTarget: null,
   openCompendium: (target) => set({ compendiumOpen: true, compendiumTarget: target ?? null }),
   closeCompendium: () => set({ compendiumOpen: false, compendiumTarget: null }),
+
+  mapEditorOpen: false,
+  setMapEditorOpen: (open) => set({ mapEditorOpen: open }),
 
   captureToSession: async (text) => {
     const trimmed = text.trim()

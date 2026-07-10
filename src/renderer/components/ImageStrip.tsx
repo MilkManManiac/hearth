@@ -7,7 +7,18 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
   const { presenting, showImage, clearImage, importSceneImages, removeImage, setImageCaption } =
     useStore()
   const buildMode = useStore((s) => s.uiMode === 'build')
+  const updateScene = useStore((s) => s.updateScene)
+  const setMapEditorOpen = useStore((s) => s.setMapEditorOpen)
   const images = scene.images ?? []
+
+  /** Make (or reopen) this image as the scene's fog-of-war battle map. */
+  const openAsMap = (file: string) => {
+    if (scene.map?.image !== file) {
+      // New map image → fresh fog (fully hidden); same image keeps its fog.
+      void updateScene(scene.id, (s) => ({ ...s, map: { image: file, strokes: [] } }))
+    }
+    setMapEditorOpen(true)
+  }
   // Inline caption editing: which image file is being edited + the draft text.
   const [editingFile, setEditingFile] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
@@ -27,6 +38,15 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">Images</h3>
         <div className="flex items-center gap-2">
+          {scene.map && (
+            <button
+              onClick={() => setMapEditorOpen(true)}
+              title={`Open the fog-of-war map editor (${scene.map.image})`}
+              className="rounded-full border border-hearth-ember/60 bg-hearth-ember/10 px-2 py-0.5 text-[11px] text-hearth-ember hover:bg-hearth-ember/25"
+            >
+              🗺 Map
+            </button>
+          )}
           {presenting && (
             <button onClick={clearImage} className="text-xs text-hearth-muted hover:text-hearth-ember">
               clear
@@ -108,6 +128,21 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
                     live
                   </span>
                 )}
+                <button
+                  onClick={() => openAsMap(img.file)}
+                  title={
+                    scene.map?.image === img.file
+                      ? 'This is the scene map — open the fog editor'
+                      : 'Use as a fog-of-war battle map'
+                  }
+                  className={`absolute bottom-6 right-1 flex h-5 items-center justify-center rounded-full px-1.5 text-[10px] ${
+                    scene.map?.image === img.file
+                      ? 'flex bg-hearth-ember/90 text-black'
+                      : 'hidden bg-black/60 text-hearth-text hover:bg-hearth-ember/80 hover:text-black group-hover:flex'
+                  }`}
+                >
+                  🗺
+                </button>
                 {buildMode && (
                   <button
                     onClick={() => removeImage(img.file)}

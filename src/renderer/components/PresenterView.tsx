@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { PresenterPayload } from '../../preload'
 import { assetUrl } from '../lib/asset'
+import { PresenterMap } from './MapEditor'
 
 /**
  * Player-facing window (opened separately, screen-shareable in Phase 1).
@@ -14,6 +15,15 @@ export default function PresenterView() {
   }, [])
 
   const file = payload?.file ?? null
+
+  // Fog-of-war map mode: only the COMMITTED reveals ever reach this window.
+  if (file && payload?.map) {
+    return (
+      <div className="h-full w-full bg-black">
+        <PresenterMap file={file} strokes={payload.map.strokes} />
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center bg-black text-white/70">

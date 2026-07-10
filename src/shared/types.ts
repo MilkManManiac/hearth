@@ -360,6 +360,30 @@ export interface Encounter {
   turn: number
 }
 
+// ---------------------------------------------------------------------------
+// Battle maps (ONESTOP-PLAN C3): an image + vector fog strokes. The DM paints
+// reveals and explicitly SENDS the current state to the presenter window
+// (dungeon-revealer's commit model) — players never see an uncommitted brush.
+// Strokes live in image-pixel coordinates; no dynamic lighting, ever.
+// ---------------------------------------------------------------------------
+
+export interface FogStroke {
+  /** Flat [x1,y1,x2,y2,…] polyline in image coordinates. */
+  points: number[]
+  /** Brush radius (image pixels). */
+  radius: number
+  /** reveal = punch a hole in the fog; hide = paint fog back. */
+  mode: 'reveal' | 'hide'
+  /** 'fill' covers the whole image (Reveal all / Hide all), ignoring points. */
+  shape?: 'fill'
+}
+
+export interface SceneMap {
+  /** Campaign-relative image path (usually art/…). */
+  image: string
+  strokes: FogStroke[]
+}
+
 export interface Scene {
   id: string
   name: string
@@ -391,6 +415,8 @@ export interface Scene {
   session?: string
   /** Prepped/live combat for this scene (ONESTOP-PLAN C2). */
   encounter?: Encounter
+  /** Battle map + fog for this scene (ONESTOP-PLAN C3). */
+  map?: SceneMap
   /** Optional playlist mode for this scene's music (palette stays the default). */
   playlist?: PlaylistConfig
   transition?: { crossfadeMs?: number }
