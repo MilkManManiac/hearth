@@ -428,6 +428,42 @@ export interface SceneMap {
   grid?: number
 }
 
+/**
+ * A named fog region (SURFACES-PLAN ⚔ Table): drawn as a polygon in prep,
+ * toggled with one click at the table. hidden=true → players see black.
+ */
+export interface FogZone {
+  id: string
+  /** "Zone 3" by default; renamable ("Barracks"). */
+  name: string
+  /** Flat [x1,y1,x2,y2,…] polygon in image coordinates. */
+  points: number[]
+  hidden: boolean
+}
+
+/**
+ * A first-class battle map (M1) — one JSON file in <campaign>/maps/. The DM
+ * preps several like tabs; the LIVE one streams to players. Encounters live
+ * on the map (the fight happens where the map is), not on scenes.
+ */
+export interface CampaignMap {
+  id: string
+  name: string
+  /** Campaign-relative image path (usually art/…). */
+  image: string
+  /** Freehand fog layer (improv brush; reveal punches, hide repaints). */
+  strokes: FogStroke[]
+  /** Named one-click fog zones, composited over the strokes. */
+  zones?: FogZone[]
+  tokens?: MapToken[]
+  overlays?: MapOverlay[]
+  /** Grid cell size in image pixels; 0/undefined = no grid. */
+  grid?: number
+  encounter?: Encounter
+  /** Populated by the loader. */
+  _sourceFile?: string
+}
+
 export interface Scene {
   id: string
   name: string
@@ -647,6 +683,10 @@ export interface CampaignState {
   notes: CampaignNote[]
   /** Player characters (ONESTOP-PLAN C4), from characters/*.json. */
   characters: Character[]
+  /** Battle maps (SURFACES-PLAN M1), from maps/*.json. */
+  maps: CampaignMap[]
+  /** Which map the players see (table.json) — null = blackout/none. */
+  liveMapId: string | null
   library: Library
   /** Human-readable load errors (bad JSON, etc.) surfaced in the UI. */
   errors: string[]

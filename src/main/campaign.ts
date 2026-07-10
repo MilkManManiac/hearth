@@ -11,6 +11,7 @@ import type {
   Library,
   LibraryAsset,
   NoteKind,
+  CampaignMap,
   PlaylistPreset,
   Scene,
   SceneImage
@@ -20,7 +21,7 @@ import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import { AUTHORING_MD } from './authoring'
 
 const CONFIG_FILE = () => path.join(app.getPath('userData'), 'hearth-config.json')
-const SUBFOLDERS = ['scenes', 'notes', 'characters', 'music', 'ambience', 'sfx', 'art']
+const SUBFOLDERS = ['scenes', 'notes', 'characters', 'maps', 'music', 'ambience', 'sfx', 'art']
 const TRIAGE_AUDIO_EXTS = new Set(['.mp3', '.ogg', '.wav', '.flac', '.m4a'])
 
 interface Config {
@@ -230,11 +231,152 @@ export class CampaignManager {
 
   async load(): Promise<CampaignState> {
     const errors: string[] = []
+    await this.migrateSceneMaps(errors)
     const scenes = await this.loadScenes(errors)
     const notes = await this.loadNotes(errors)
     const characters = await this.loadCharacters(errors)
+    const maps = await this.loadMaps(errors)
     const library = await this.loadLibrary(errors)
-    return { path: this.campaignPath, scenes, notes, characters, library, errors }
+    const liveMapId = await this.readLiveMap(maps)
+    return { path: this.campaignPath, scenes, notes, characters, maps, liveMapId, library, errors }
+  }
+
+  // --- Battle maps (SURFACES-PLAN M1): maps/*.json + table.json live pointer ---
+
+  private migrating = false
+
+  /**
+   * One-time migration: scenes that still embed `map`/`encounter` (pre-M1)
+   * get them hoisted into maps/<scene-id>.json; the scene file is rewritten
+   * without them. Idempotent — migrated scenes simply have nothing to hoist.
+   */
+  private async migrateSceneMaps(errors: string[]): Promise<void> {
+    if (this.migrating) return
+    this.migrating = true
+    try {
+      const dir = path.join(this.campaignPath, 'scenes')
+      let files: string[] = []
+      try {
+        files = (await fs.readdir(dir)).filter((f) => f.toLowerCase().endsWith('.json'))
+      } catch {
+        return
+      }
+      for (const file of files) {
+        try {
+          const abs = path.join(dir, file)
+          const scene = JSON.parse(await fs.readFile(abs, 'utf-8')) as Scene & Record<string, unknown>
+          if (!scene.map && !scene.encounter) continue
+          const mapsDir = path.join(this.campaignPath, 'maps')
+          await fs.mkdir(mapsDir, { recursive: true })
+          const base = slugify(scene.name ?? file.replace(/\.json$/i, ''))
+          let stem = base
+          for (let n = 2; fsSync.existsSync(path.join(mapsDir, `${stem}.json`)); n++) stem = `${base}-${n}`
+          const m: CampaignMap = {
+            id: stem,
+            name: scene.name ?? stem,
+            image: scene.map?.image ?? '',
+            strokes: scene.map?.strokes ?? [],
+            tokens: scene.map?.tokens,
+            overlays: scene.map?.overlays,
+            grid: scene.map?.grid,
+            encounter: scene.encounter
+          }
+          await writeJsonAtomic(path.join(mapsDir, `${stem}.json`), m)
+          delete scene.map
+          delete scene.encounter
+          delete scene._sourceFile
+          await writeJsonAtomic(abs, scene)
+          this.markWrite()
+          console.log(`[hearth] migrated scene "${file}" map/encounter → maps/${stem}.json`)
+        } catch (err) {
+          errors.push(`migrate ${file}: ${(err as Error).message}`)
+        }
+      }
+    } finally {
+      this.migrating = false
+    }
+  }
+
+  private async loadMaps(errors: string[]): Promise<CampaignMap[]> {
+    const dir = path.join(this.campaignPath, 'maps')
+    let files: string[] = []
+    try {
+      files = (await fs.readdir(dir)).filter((f) => f.toLowerCase().endsWith('.json'))
+    } catch {
+      return []
+    }
+    const maps: CampaignMap[] = []
+    for (const file of files) {
+      try {
+        const raw = await fs.readFile(path.join(dir, file), 'utf-8')
+        const m = JSON.parse(raw) as CampaignMap
+        m._sourceFile = `maps/${file}`
+        if (!m.id) m.id = file.replace(/\.json$/i, '')
+        if (!m.name) m.name = m.id
+        if (!m.strokes) m.strokes = []
+        maps.push(m)
+      } catch (err) {
+        errors.push(`maps/${file}: ${(err as Error).message}`)
+      }
+    }
+    maps.sort((a, b) => a.name.localeCompare(b.name))
+    return maps
+  }
+
+  async saveMap(m: CampaignMap): Promise<CampaignState> {
+    const rel = m._sourceFile ?? `maps/${m.id}.json`
+    const { _sourceFile, ...rest } = m
+    void _sourceFile
+    const dest = path.join(this.campaignPath, rel)
+    const root = path.resolve(this.campaignPath)
+    if (!path.resolve(dest).startsWith(root + path.sep)) throw new Error('bad map path')
+    await writeJsonAtomic(dest, rest)
+    this.markWrite()
+    return this.load()
+  }
+
+  async createMap(name: string, image: string): Promise<{ state: CampaignState; mapId: string }> {
+    const dir = path.join(this.campaignPath, 'maps')
+    await fs.mkdir(dir, { recursive: true })
+    const base = slugify(name || 'map')
+    let stem = base
+    for (let n = 2; fsSync.existsSync(path.join(dir, `${stem}.json`)); n++) stem = `${base}-${n}`
+    const m: CampaignMap = { id: stem, name: name || stem, image, strokes: [] }
+    await writeJsonAtomic(path.join(dir, `${stem}.json`), m)
+    this.markWrite()
+    return { state: await this.load(), mapId: stem }
+  }
+
+  /** Move a map's JSON to the OS trash (the image stays in art/). */
+  async deleteMap(mapId: string): Promise<CampaignState> {
+    const m = (await this.loadMaps([])).find((x) => x.id === mapId)
+    if (!m?._sourceFile) throw new Error(`map "${mapId}" not found`)
+    await shell.trashItem(path.join(this.campaignPath, m._sourceFile))
+    if ((await this.readLiveMap(null)) === mapId) await this.setLiveMap(null)
+    this.markWrite()
+    return this.load()
+  }
+
+  private tablePath(): string {
+    return path.join(this.campaignPath, 'table.json')
+  }
+
+  /** Which map is live (validated against the loaded list when provided). */
+  private async readLiveMap(maps: CampaignMap[] | null): Promise<string | null> {
+    try {
+      const raw = JSON.parse(await fs.readFile(this.tablePath(), 'utf-8')) as { liveMapId?: string }
+      const id = raw.liveMapId ?? null
+      if (id && maps && !maps.some((m) => m.id === id)) return null
+      return id
+    } catch {
+      return null
+    }
+  }
+
+  async setLiveMap(mapId: string | null): Promise<CampaignState> {
+    await writeJsonAtomic(this.tablePath(), { liveMapId: mapId })
+    this.markWrite()
+    return this.load()
   }
 
   private async loadCharacters(errors: string[]): Promise<Character[]> {
@@ -400,6 +542,8 @@ export class CampaignManager {
         path.join(this.campaignPath, 'scenes'),
         path.join(this.campaignPath, 'notes'),
         path.join(this.campaignPath, 'characters'),
+        path.join(this.campaignPath, 'maps'),
+        path.join(this.campaignPath, 'table.json'),
         path.join(this.campaignPath, 'library.json')
       ],
       {

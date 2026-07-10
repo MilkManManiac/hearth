@@ -94,6 +94,36 @@ deadline pressure ("take our time and make sure those are set").
 4. **M4 — Inventory/equipment overhaul** + migration (can interleave with M2/M3).
 5. **M5 — Ember E2** (own token + ping + measure), then E3.
 
+## Research appendix (4-agent pass, 2026-07-10 — details in the session log)
+
+- **Fog zones** (dungeon-revealer / Owlbear 1.0 toggle-fog + 2.4 Forecast /
+  Simplefog / DDB polygon fog): polygon = the zone tool (click vertices; close
+  via visible first-vertex handle, double-click, or Enter; Esc cancels);
+  auto-name "Zone N" with optional inline rename; new zones SUBTRACT from
+  existing (no two zones own a pixel); zone reveal is a TOGGLE, never
+  consumption; sidebar list with eye toggles + click-on-canvas both, with
+  bidirectional hover-highlight; DM sees zones tinted ~40% with name labels,
+  players see solid black; brush stays for improv on a separate layer; undo for
+  polygon draw + Cover/Reveal All; no partial zone states ever (split in prep).
+- **Live model**: DDB-style — the LIVE map streams everything (zone toggles,
+  tokens, fog) in real time; non-live maps are the prep space; Blackout is the
+  safety valve. (dungeon-revealer's staged Send retires with the presenter.)
+- **Inventory** (DDB/Pathbuilder/Tidy5e/foundry-party-inventory): row =
+  equip icon-button + name + attuned dot + charge pips + qty; bottom-sheet
+  detail; search-first add with qty/equip-now/attune-now and optional "pay
+  from pouch" (Pathbuilder); `attuned` NEVER coupled to `equipped` (DDB's #1
+  complaint) — visible `Attuned n/3` tracker instead; coins with auto-make-
+  change + transaction ledger; party stash = transfer-never-copy + activity
+  log ("Cumb took the +1 Longsword"); NO containers (pointless without weight).
+- **Windows** (Electron research): keep mutation→main→broadcast (sane at our
+  scale), add revision gating later if needed; WindowManager module with
+  per-role singletons + electron-window-state; `backgroundThrottling: false`
+  on the Table window so Konva renders unfocused; toasts to focused window.
+- **Codebase seams**: equipment.json shipped WITHOUT armor ac/properties
+  (fixture gap) → hand-table the 13 SRD armors for auto-AC; probeAssets +
+  purgeTrash must include map images once maps are first-class; EncounterPanel
+  re-scopes from scene → map; App.tsx hash routing is the window switch point.
+
 ## Non-goals (standing)
 
 DDB parity remains the mechanics ceiling. No dynamic lighting/walls/vision, no

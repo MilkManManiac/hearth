@@ -24,6 +24,8 @@ const EMPTY_CAMPAIGN: CampaignState = {
   scenes: [],
   notes: [],
   characters: [],
+  maps: [],
+  liveMapId: null,
   library: { assets: [] },
   errors: []
 }
@@ -216,6 +218,18 @@ interface AppState {
   /** 🗺 Fog-of-war map editor open? Owns the keyboard while true. */
   mapEditorOpen: boolean
   setMapEditorOpen: (open: boolean) => void
+  // --- Battle maps (SURFACES-PLAN M1) ---
+  /** Which library map the editor / ⚔ tab is looking at. */
+  currentMapId: string | null
+  selectMap: (id: string | null) => void
+  updateMap: (mapId: string, mutate: (m: import('../shared/types').CampaignMap) => import('../shared/types').CampaignMap) => Promise<void>
+  createMap: (name: string, image: string) => Promise<string | null>
+  deleteMap: (mapId: string) => Promise<void>
+  /** Point the players' table at a map (null = blackout). */
+  goLiveMap: (mapId: string | null) => Promise<void>
+  /** 🗺 Map library browser open? Owns the keyboard while true. */
+  mapsOpen: boolean
+  setMapsOpen: (open: boolean) => void
   /** 🛡 Party dashboard / character sheets open? Owns the keyboard while true. */
   partyOpen: boolean
   setPartyOpen: (open: boolean) => void
@@ -668,13 +682,16 @@ export const useStore = create<AppState>((set, get) => ({
   setCampaign: (c) => {
     set({ campaign: c })
     // Keep a valid selection; default to first scene if none selected.
-    const { currentSceneId, currentNoteId } = get()
+    const { currentSceneId, currentNoteId, currentMapId } = get()
     const stillExists = c.scenes.some((s) => s.id === currentSceneId)
     if (!stillExists) {
       set({ currentSceneId: c.scenes[0]?.id ?? null })
     }
     if (currentNoteId && !c.notes.some((n) => n.id === currentNoteId)) {
       set({ currentNoteId: null })
+    }
+    if (currentMapId && !c.maps.some((m) => m.id === currentMapId)) {
+      set({ currentMapId: null, mapEditorOpen: false })
     }
   },
 
@@ -954,6 +971,60 @@ export const useStore = create<AppState>((set, get) => ({
       get().pushToast(`Scene save failed: ${(err as Error).message}`, 'error')
     }
   },
+
+  // --- Battle maps (SURFACES-PLAN M1): the ⚔ Table's map library -------------
+  currentMapId: null,
+  selectMap: (id) => set({ currentMapId: id }),
+  updateMap: async (mapId, mutate) => {
+    const m = get().campaign.maps.find((x) => x.id === mapId)
+    if (!m) return
+    const updated = mutate(m)
+    // Optimistic: reflect immediately, then persist to disk.
+    set((state) => ({
+      campaign: {
+        ...state.campaign,
+        maps: state.campaign.maps.map((x) => (x.id === mapId ? updated : x))
+      }
+    }))
+    try {
+      const fresh = await window.hearth.saveMap(updated)
+      get().setCampaign(fresh)
+    } catch (err) {
+      console.error('saveMap failed', err)
+      get().pushToast(`Map save failed: ${(err as Error).message}`, 'error')
+    }
+  },
+  createMap: async (name, image) => {
+    try {
+      const { state, mapId } = await window.hearth.createMap(name, image)
+      get().setCampaign(state)
+      set({ currentMapId: mapId })
+      return mapId
+    } catch (err) {
+      get().pushToast(`Create map failed: ${(err as Error).message}`, 'error')
+      return null
+    }
+  },
+  deleteMap: async (mapId) => {
+    try {
+      const fresh = await window.hearth.deleteMap(mapId)
+      get().setCampaign(fresh)
+      get().pushToast('Map moved to the recycle bin', 'info')
+    } catch (err) {
+      get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
+    }
+  },
+  goLiveMap: async (mapId) => {
+    try {
+      const fresh = await window.hearth.goLiveMap(mapId)
+      get().setCampaign(fresh)
+      get().pushToast(mapId ? 'Map is LIVE — players see it' : 'Table blacked out', 'info')
+    } catch (err) {
+      get().pushToast(`Go live failed: ${(err as Error).message}`, 'error')
+    }
+  },
+  mapsOpen: false,
+  setMapsOpen: (open) => set({ mapsOpen: open }),
 
   switcherOpen: false,
   setSwitcherOpen: (open) => set({ switcherOpen: open }),

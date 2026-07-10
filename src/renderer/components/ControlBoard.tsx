@@ -16,6 +16,7 @@ import IdeasPanel from './IdeasPanel'
 import CastPanel from './CastPanel'
 import EncounterPanel from './EncounterPanel'
 import GameLogPanel from './GameLog'
+import MapsPanel from './MapsPanel'
 import Toasts from './Toasts'
 import LibraryPanel from './LibraryPanel'
 import SoundConsole from './SoundConsole'
@@ -118,6 +119,13 @@ export default function ControlBoard() {
   const currentNoteId = useStore((s) => s.currentNoteId)
   const mapEditorOpen = useStore((s) => s.mapEditorOpen)
   const setMapEditorOpen = useStore((s) => s.setMapEditorOpen)
+  const currentMapId = useStore((s) => s.currentMapId)
+  // The ⚔ tab + editor target: the selected map, else the live one, else the first.
+  const currentMap =
+    campaign.maps.find((m) => m.id === currentMapId) ??
+    campaign.maps.find((m) => m.id === campaign.liveMapId) ??
+    campaign.maps[0] ??
+    null
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
   const isLive = !!scene && scene.id === liveSceneId
   // Run-mode rails rule: the left rail is SCENES ONLY during play (the notes
@@ -155,7 +163,7 @@ export default function ControlBoard() {
     const onKey = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return
       const st = useStore.getState()
-      if (st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen || st.mapEditorOpen || st.partyOpen || st.libraryOpen || st.triage || st.discordOpen) return
+      if (st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen || st.mapEditorOpen || st.mapsOpen || st.partyOpen || st.libraryOpen || st.triage || st.discordOpen) return
       if (isTypingTarget(e.target)) return
       e.preventDefault()
       if (e.key === 'ArrowLeft') st.goNoteBack()
@@ -265,7 +273,8 @@ export default function ControlBoard() {
       <QuickCapture />
       <CompendiumPanel />
       <PartyPanel />
-      {mapEditorOpen && scene?.map && <MapEditor scene={scene} onClose={() => setMapEditorOpen(false)} />}
+      <MapsPanel />
+      {mapEditorOpen && currentMap && <MapEditor map={currentMap} onClose={() => setMapEditorOpen(false)} />}
       <ShortcutsHelp />
       <Toasts />
     </div>
@@ -277,9 +286,18 @@ type Tab = 'images' | 'ideas' | 'cast' | 'fight' | 'log' | 'notes'
 function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => void }) {
   const [tab, setTab] = useState<Tab>('images')
   const currentNoteId = useStore((s) => s.currentNoteId)
+  const campaign = useStore((s) => s.campaign)
+  const currentMapId = useStore((s) => s.currentMapId)
+  const setMapsOpen = useStore((s) => s.setMapsOpen)
+  // ⚔ lives on the MAP now (M1): selected map, else live, else first.
+  const fightMap =
+    campaign.maps.find((m) => m.id === currentMapId) ??
+    campaign.maps.find((m) => m.id === campaign.liveMapId) ??
+    campaign.maps[0] ??
+    null
   const ideaCount = scene.ideas?.length ?? 0
   const castCount = scene.entities?.length ?? 0
-  const fightCount = scene.encounter?.combatants.length ?? 0
+  const fightCount = fightMap?.encounter?.combatants.length ?? 0
 
   // Picking a note (quick switcher, session header) surfaces it here — in run
   // mode this is how notes appear without taking the script off the screen.
@@ -325,7 +343,25 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
         {tab === 'images' && <ImageStrip scene={scene} />}
         {tab === 'ideas' && <IdeasPanel scene={scene} />}
         {tab === 'cast' && <CastPanel scene={scene} />}
-        {tab === 'fight' && <EncounterPanel scene={scene} />}
+        {tab === 'fight' &&
+          (fightMap ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-[11px] text-hearth-muted">
+                <span className="min-w-0 truncate">
+                  on <span className="text-hearth-text">🗺 {fightMap.name}</span>
+                  {fightMap.id === campaign.liveMapId ? ' · 🔴 live' : ''}
+                </span>
+                <button onClick={() => setMapsOpen(true)} className="ml-auto rounded border border-hearth-border px-1.5 py-0.5 hover:text-hearth-text" title="Switch map (library)">
+                  ⇄
+                </button>
+              </div>
+              <EncounterPanel map={fightMap} />
+            </div>
+          ) : (
+            <p className="pt-4 text-center text-xs text-hearth-muted">
+              Fights live on maps now — hit 🗺 on a scene image (or the TopBar 🗺 library) to create one.
+            </p>
+          ))}
         {tab === 'log' && <GameLogPanel />}
         {tab === 'notes' && <NotesPeek />}
       </div>

@@ -2,9 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Arc, Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Wedge } from 'react-konva'
 import type Konva from 'konva'
 import useImage from 'use-image'
-import type { Combatant, FogStroke, MapOverlay, MapToken, Scene, SceneMap, TokenDecor } from '../../shared/types'
+import type { CampaignMap, Combatant, FogStroke, FogZone, MapOverlay, MapToken, TokenDecor } from '../../shared/types'
 import { assetUrl } from '../lib/asset'
-import { stem } from '../../shared/paths'
 import { loadMonsters, type Monster } from '../lib/compendium'
 import { useStore } from '../store'
 import { MonsterStatBlock } from './StatBlock'
@@ -23,11 +22,14 @@ export function FogLayer({
   w,
   h,
   strokes,
+  zones = [],
   opacity
 }: {
   w: number
   h: number
   strokes: FogStroke[]
+  /** Named fog zones composited AFTER the strokes: hidden paints black, revealed punches through. */
+  zones?: FogZone[]
   opacity: number
 }) {
   return (
@@ -57,8 +59,42 @@ export function FogLayer({
           />
         )
       )}
+      {zones.map((z) => (
+        <Line
+          key={z.id}
+          points={z.points}
+          closed
+          fill="black"
+          globalCompositeOperation={z.hidden ? 'source-over' : 'destination-out'}
+        />
+      ))}
     </Group>
   )
+}
+
+/** Point-in-polygon (ray cast) for zone click hit-testing. */
+export function pointInPolygon(x: number, y: number, points: number[]): boolean {
+  let inside = false
+  const n = points.length / 2
+  for (let i = 0, j = n - 1; i < n; j = i++) {
+    const xi = points[i * 2]
+    const yi = points[i * 2 + 1]
+    const xj = points[j * 2]
+    const yj = points[j * 2 + 1]
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside
+  }
+  return inside
+}
+
+const zoneCentroid = (points: number[]): { x: number; y: number } => {
+  let x = 0
+  let y = 0
+  const n = points.length / 2
+  for (let i = 0; i < n; i++) {
+    x += points[i * 2]
+    y += points[i * 2 + 1]
+  }
+  return { x: x / n, y: y / n }
 }
 
 /** Square grid overlay (under the fog, so unrevealed cells stay dark). */
@@ -287,6 +323,7 @@ export function PresenterMap({
   strokes,
   tokens = [],
   grid,
+  zones = [],
   overlays = [],
   decor,
   initiative,
@@ -296,6 +333,7 @@ export function PresenterMap({
   strokes: FogStroke[]
   tokens?: MapToken[]
   grid?: number
+  zones?: FogZone[]
   overlays?: MapOverlay[]
   decor?: Record<string, TokenDecor>
   initiative?: { names: string[]; turn: number }
@@ -318,7 +356,7 @@ export function PresenterMap({
         <Layer x={x} y={y} scaleX={scale} scaleY={scale}>
           <KImage image={img} />
           {grid ? <GridLayer w={img.width} h={img.height} cell={grid} /> : null}
-          <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={1} />
+          <FogLayer w={img.width} h={img.height} strokes={strokes} zones={zones} opacity={1} />
           <OverlayLayer overlays={overlays} grid={grid ?? 0} />
           <TokenLayer tokens={tokens.filter((t) => !t.hidden)} decor={decor} />
           <PingLayer pings={pings} scale={scale} />
@@ -345,7 +383,7 @@ export function PresenterMap({
   )
 }
 
-type Tool = 'reveal' | 'hide' | 'pan' | 'token' | 'ruler' | 'aoe'
+type Tool = 'reveal' | 'hide' | 'zone' | 'pan' | 'token' | 'ruler' | 'aoe'
 
 const TOKEN_COLORS = ['#d8b26a', '#e08a3c', '#c0392b', '#8e44ad', '#2980b9', '#27ae60', '#7f8c8d']
 
@@ -359,19 +397,64 @@ const SIZE_CELLS: Record<string, number> = {
   gargantuan: 1.9
 }
 
-/** Full-screen DM fog editor over the scene's map image. */
-export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: () => void }) {
-  const updateScene = useStore((s) => s.updateScene)
+/**
+ * What players may see of a map right now (M1 live-follow): PC-only HP rings
+ * (enemy HP stays the DM's secret), condition tags on visible tokens, and the
+ * initiative strip. Shared by the presenter, the one-shot send, and Ember (M2).
+ */
+export function playerTableView(
+  map: CampaignMap,
+  characters: { id: string; hp: number; maxHp: number }[]
+): { decor: Record<string, TokenDecor>; initiative?: { names: string[]; turn: number } } {
+  const tokens = map.tokens ?? []
+  const enc = map.encounter
+  const decor: Record<string, TokenDecor> = {}
+  for (const tk of tokens) {
+    if (tk.hidden) continue
+    const d: TokenDecor = {}
+    if (tk.characterId) {
+      const ch = characters.find((x) => x.id === tk.characterId)
+      if (ch && ch.maxHp > 0) d.hpFrac = ch.hp / ch.maxHp
+    }
+    const cb =
+      enc?.combatants.find((x) => x.id === tk.combatantId) ??
+      (tk.characterId ? enc?.combatants.find((x) => x.characterId === tk.characterId) : undefined)
+    const conds = cb?.conditions?.map((x) => x.name) ?? []
+    if (conds.length) d.conds = conds
+    if (d.hpFrac != null || d.conds) decor[tk.id] = d
+  }
+  let initiative: { names: string[]; turn: number } | undefined
+  if (enc && enc.turn >= 0 && enc.combatants.length > 0) {
+    const ordered = [...enc.combatants].sort((a, b) => (b.initiative ?? -99) - (a.initiative ?? -99))
+    const active = ordered[Math.min(enc.turn, ordered.length - 1)]
+    const visible = ordered.filter((cb) => {
+      const tk = tokens.find((t) => t.combatantId === cb.id || (cb.characterId && t.characterId === cb.characterId))
+      return !tk?.hidden
+    })
+    initiative = { names: visible.map((cb) => cb.name), turn: visible.findIndex((cb) => cb.id === active?.id) }
+  }
+  return { decor, initiative }
+}
+
+/** Full-screen DM fog/zone/token editor over a library map (SURFACES-PLAN ⚔ Table). */
+export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose: () => void }) {
+  const updateMap = useStore((s) => s.updateMap)
   const pushToast = useStore((s) => s.pushToast)
-  const map = scene.map!
+  const liveMapId = useStore((s) => s.campaign.liveMapId)
+  const goLiveMap = useStore((s) => s.goLiveMap)
+  const isLive = liveMapId === map.id
   const [img] = useImage(assetUrl(map.image))
   const [tool, setTool] = useState<Tool>('reveal')
   const [brush, setBrush] = useState(60)
-  // Live strokes: scene strokes + the one being drawn, for lag-free painting.
+  // Live strokes: map strokes + the one being drawn, for lag-free painting.
   const [drawing, setDrawing] = useState<FogStroke | null>(null)
   const [view, setView] = useState({ x: 40, y: 40, scale: 0.8 })
   const stageRef = useRef<Konva.Stage | null>(null)
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
+  // Zone drafting (M1): vertices of the polygon being drawn.
+  const [draftZone, setDraftZone] = useState<number[] | null>(null)
+  const draftRef = useRef<number[] | null>(null)
+  draftRef.current = draftZone
 
   useEffect(() => {
     const onResize = () => setSize({ w: window.innerWidth, h: window.innerHeight })
@@ -381,11 +464,19 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      // Esc cancels a zone draft before it closes the editor; Enter closes the polygon.
+      if (e.key === 'Escape') {
+        if (draftRef.current) setDraftZone(null)
+        else onClose()
+      }
+      if (e.key === 'Enter' && draftRef.current && draftRef.current.length >= 6) {
+        finishZoneRef.current?.()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
+  const finishZoneRef = useRef<(() => void) | null>(null)
 
   // Fit the image on first load.
   useEffect(() => {
@@ -406,7 +497,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   // --- D4: token ↔ sheet/tracker links -------------------------------------
   const characters = useStore((s) => s.campaign.characters)
   const updateCharacter = useStore((s) => s.updateCharacter)
-  const enc = scene.encounter
+  const enc = map.encounter
   const [monsters, setMonsters] = useState<Monster[] | null>(null)
   useEffect(() => {
     loadMonsters().then(setMonsters).catch(() => setMonsters([]))
@@ -423,7 +514,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   // Aiming is local (angle persisted once on mouse-up — no save storm).
   const [aiming, setAiming] = useState<{ id: string; angle: number } | null>(null)
   const persistOverlays = (next: MapOverlay[]) =>
-    updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), overlays: next.length ? next : undefined } }))
+    updateMap(map.id, (m) => ({ ...m, overlays: next.length ? next : undefined }))
   const liveOverlays = aiming
     ? overlays.map((o) => (o.id === aiming.id ? { ...o, angle: aiming.angle } : o))
     : overlays
@@ -487,15 +578,31 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
     pushToast(`${fresh.length} token${fresh.length > 1 ? 's' : ''} stamped from ⚔ (foes hidden — double-click to reveal)`, 'info')
   }
 
-  const persist = (next: FogStroke[]) =>
-    updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), strokes: next } }))
+  const persist = (next: FogStroke[]) => updateMap(map.id, (m) => ({ ...m, strokes: next }))
 
-  const persistTokens = (next: MapToken[]) =>
-    updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), tokens: next } }))
+  const persistTokens = (next: MapToken[]) => updateMap(map.id, (m) => ({ ...m, tokens: next }))
 
   const grid = map.grid ?? 0
-  const persistGrid = (cell: number) =>
-    updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), grid: cell || undefined } }))
+  const persistGrid = (cell: number) => updateMap(map.id, (m) => ({ ...m, grid: cell || undefined }))
+
+  // --- Fog zones (M1): draw polygons in prep, toggle at the table ------------
+  const zones = map.zones ?? []
+  const persistZones = (next: FogZone[]) =>
+    updateMap(map.id, (m) => ({ ...m, zones: next.length ? next : undefined }))
+
+  const finishZone = () => {
+    const pts = draftRef.current
+    if (!pts || pts.length < 6) return
+    setDraftZone(null)
+    persistZones([
+      ...zones,
+      { id: crypto.randomUUID(), name: `Zone ${zones.length + 1}`, points: pts, hidden: true }
+    ])
+  }
+  finishZoneRef.current = finishZone
+
+  const toggleZone = (id: string) =>
+    persistZones(zones.map((z) => (z.id === id ? { ...z, hidden: !z.hidden } : z)))
 
   const imgPos = (): { x: number; y: number } | null => {
     const stage = stageRef.current
@@ -522,6 +629,25 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
     if (!p) return
     if (tool === 'ruler') {
       setRuler({ x1: p.x, y1: p.y, x2: p.x, y2: p.y })
+      return
+    }
+    if (tool === 'zone') {
+      // Drafting: click adds a vertex; clicking the FIRST vertex (visible
+      // handle) closes the polygon. No draft: clicking inside a zone toggles it.
+      if (draftZone) {
+        const fx = draftZone[0]
+        const fy = draftZone[1]
+        const near = Math.hypot(p.x - fx, p.y - fy) < 18 / view.scale
+        if (near && draftZone.length >= 6) finishZone()
+        else setDraftZone([...draftZone, p.x, p.y])
+        return
+      }
+      const hit = [...zones].reverse().find((z) => pointInPolygon(p.x, p.y, z.points))
+      if (hit) {
+        toggleZone(hit.id)
+        return
+      }
+      setDraftZone([p.x, p.y])
       return
     }
     if (tool === 'aoe') {
@@ -604,40 +730,17 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   }
 
   const send = () => {
-    // Bake presenter decor: PC HP rings only (enemy HP stays the DM's secret),
-    // condition tags for everyone visible.
-    const baked: Record<string, TokenDecor> = {}
-    for (const tk of tokens) {
-      if (tk.hidden) continue
-      const d: TokenDecor = {}
-      if (tk.characterId) {
-        const ch = characters.find((x) => x.id === tk.characterId)
-        if (ch && ch.maxHp > 0) d.hpFrac = ch.hp / ch.maxHp
-      }
-      const conds = combatantOf(tk)?.conditions?.map((x) => x.name) ?? []
-      if (conds.length) d.conds = conds
-      if (d.hpFrac != null || d.conds) baked[tk.id] = d
-    }
-    // Initiative strip: only once the fight started; hidden tokens' combatants omitted.
-    let initiative: { names: string[]; turn: number } | undefined
-    if (enc && enc.turn >= 0 && enc.combatants.length > 0) {
-      const ordered = [...enc.combatants].sort((a, b) => (b.initiative ?? -99) - (a.initiative ?? -99))
-      const active = ordered[Math.min(enc.turn, ordered.length - 1)]
-      const visible = ordered.filter((cb) => {
-        const tk = tokens.find((t) => t.combatantId === cb.id || (cb.characterId && t.characterId === cb.characterId))
-        return !tk?.hidden
-      })
-      initiative = { names: visible.map((cb) => cb.name), turn: visible.findIndex((cb) => cb.id === active?.id) }
-    }
+    const pv = playerTableView(map, characters)
     void window.hearth.presenterShow({
       file: map.image,
       map: {
         strokes: map.strokes,
+        zones,
         tokens,
         overlays: overlays.length ? overlays : undefined,
         grid: grid || undefined,
-        decor: Object.keys(baked).length ? baked : undefined,
-        initiative
+        decor: Object.keys(pv.decor).length ? pv.decor : undefined,
+        initiative: pv.initiative
       }
     })
     pushToast('Map sent to the presenter window', 'info')
@@ -661,10 +764,20 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
     <div className="fixed inset-0 z-40 bg-hearth-bg">
       {/* Toolbar */}
       <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center gap-2 border-b border-hearth-border bg-hearth-panel/95 px-4 py-2">
-        <span className="font-display text-sm font-semibold text-hearth-text">🗺 {stem(map.image)}</span>
+        <span className="font-display text-sm font-semibold text-hearth-text">🗺 {map.name}</span>
+        {isLive && (
+          <span className="flex items-center gap-1 rounded-full border border-red-500/60 bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-300">
+            <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-red-400" /> Live
+          </span>
+        )}
         <div className="mx-2 h-4 w-px bg-hearth-border" />
         <ToolBtn t="reveal" label="🔦 Reveal" title="Paint away the fog (what players will see)" />
         <ToolBtn t="hide" label="🌫 Hide" title="Paint fog back over a revealed area" />
+        <ToolBtn
+          t="zone"
+          label="◇ Zones"
+          title="Prep: click vertices to draw a named fog region (click the first point, double-click, or Enter closes; Esc cancels). Play: click a zone to reveal/re-fog it in one click."
+        />
         <ToolBtn t="pan" label="✋ Pan" title="Drag to move the map (wheel zooms anytime)" />
         <ToolBtn t="token" label="⛂ Token" title="Click empty ground to place; drag to move; click a token = inspect (stat block / HP); double-click = hide from players; right-click = remove" />
         <ToolBtn t="ruler" label="📏 Ruler" title={grid >= 8 ? 'Drag to measure (5 ft per cell)' : 'Drag to measure (set a Grid for feet)'} />
@@ -758,18 +871,26 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
         </button>
         <div className="ml-auto flex items-center gap-2">
           <button
-            onClick={send}
-            className="rounded border border-hearth-ember bg-hearth-ember/20 px-3 py-1 text-sm text-hearth-ember shadow-ember hover:bg-hearth-ember/30"
-            title="Push the current fog state to the player-facing presenter window — players never see uncommitted brushing"
+            onClick={() => void goLiveMap(isLive ? null : map.id)}
+            className={`rounded border px-3 py-1 text-sm ${
+              isLive
+                ? 'border-red-500/60 bg-red-500/15 text-red-300 hover:bg-red-500/30'
+                : 'border-hearth-ember bg-hearth-ember/20 text-hearth-ember shadow-ember hover:bg-hearth-ember/30'
+            }`}
+            title={
+              isLive
+                ? 'Players are following this map live — click to black out the table'
+                : 'Make this THE live map: players (and the presenter) follow it — zone toggles, tokens, and fog update in real time'
+            }
           >
-            📤 Send to players
+            {isLive ? '⏸ Blackout table' : '🔴 Go live'}
           </button>
           <button
-            onClick={() => void window.hearth.presenterShow({ file: null })}
+            onClick={send}
             className="rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:text-hearth-text"
-            title="Blank the presenter window"
+            title="One-shot push of the current state to the presenter window (legacy — Go live streams continuously)"
           >
-            ⬛ Blackout
+            📤 Send once
           </button>
           <button onClick={onClose} className="rounded px-2 py-1 text-hearth-muted hover:text-hearth-text" title="Close (Esc)">
             ✕ Close
@@ -794,13 +915,84 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
         onMouseMove={onMove}
         onMouseUp={onUp}
         onWheel={onWheel}
+        onDblClick={() => {
+          // Double-click closes a zone draft (the two dbl-click vertices are dropped).
+          if (draftZone && draftZone.length >= 10) {
+            const pts = draftZone.slice(0, -4)
+            setDraftZone(null)
+            persistZones([
+              ...zones,
+              { id: crypto.randomUUID(), name: `Zone ${zones.length + 1}`, points: pts, hidden: true }
+            ])
+          }
+        }}
         style={{ cursor: tool === 'pan' ? 'grab' : 'crosshair' }}
       >
         <Layer>
           {img && <KImage image={img} />}
           {img && grid >= 8 && <GridLayer w={img.width} h={img.height} cell={grid} />}
           {/* DM sees dim fog (players get full black in the presenter). */}
-          {img && <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={0.6} />}
+          {img && <FogLayer w={img.width} h={img.height} strokes={strokes} zones={zones} opacity={0.6} />}
+          {/* Zone outlines + labels: DM-only orientation layer. */}
+          <Group listening={false}>
+            {zones.map((z) => {
+              const c = zoneCentroid(z.points)
+              return (
+                <Group key={z.id}>
+                  <Line
+                    points={z.points}
+                    closed
+                    stroke={z.hidden ? '#e0a83c' : '#27ae60'}
+                    strokeWidth={2 / view.scale}
+                    dash={[10 / view.scale, 6 / view.scale]}
+                    opacity={tool === 'zone' ? 0.9 : 0.35}
+                  />
+                  {tool === 'zone' && (
+                    <Text
+                      text={`${z.hidden ? '🌫' : '👁'} ${z.name}`}
+                      x={c.x}
+                      y={c.y}
+                      offsetX={40 / view.scale}
+                      fontSize={18 / view.scale}
+                      fontStyle="bold"
+                      fill={z.hidden ? '#e0a83c' : '#27ae60'}
+                      stroke="black"
+                      strokeWidth={0.8 / view.scale}
+                    />
+                  )}
+                </Group>
+              )
+            })}
+            {draftZone && (
+              <Group>
+                <Line
+                  points={draftZone}
+                  stroke="#e08a3c"
+                  strokeWidth={2.5 / view.scale}
+                  dash={[8 / view.scale, 5 / view.scale]}
+                />
+                {/* The visible close handle: click the first vertex to finish. */}
+                <Circle
+                  x={draftZone[0]}
+                  y={draftZone[1]}
+                  radius={9 / view.scale}
+                  fill="#e08a3c"
+                  stroke="black"
+                  strokeWidth={1 / view.scale}
+                />
+                {draftZone.length >= 4 &&
+                  Array.from({ length: draftZone.length / 2 - 1 }, (_, i) => (
+                    <Circle
+                      key={i}
+                      x={draftZone[(i + 1) * 2]}
+                      y={draftZone[(i + 1) * 2 + 1]}
+                      radius={4 / view.scale}
+                      fill="#e08a3c"
+                    />
+                  ))}
+              </Group>
+            )}
+          </Group>
           {/* AoE templates ride above fog (like DDB's) and under tokens. */}
           <Group listening={tool === 'aoe'}>
             <OverlayLayer
@@ -861,15 +1053,60 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
           monsters={monsters}
           onPatchCharacterHp={(id, hp) => void updateCharacter(id, (x) => ({ ...x, hp }))}
           onPatchCombatantHp={(id, hp) =>
-            updateScene(scene.id, (s) => ({
-              ...s,
-              encounter: s.encounter
-                ? { ...s.encounter, combatants: s.encounter.combatants.map((cb) => (cb.id === id ? { ...cb, hp } : cb)) }
-                : s.encounter
+            void updateMap(map.id, (m) => ({
+              ...m,
+              encounter: m.encounter
+                ? { ...m.encounter, combatants: m.encounter.combatants.map((cb) => (cb.id === id ? { ...cb, hp } : cb)) }
+                : m.encounter
             }))
           }
           onClose={() => setInspectId(null)}
         />
+      )}
+
+      {/* Zone list (M1): prep review + reveals you don't want to hunt for. */}
+      {tool === 'zone' && !inspectId && (
+        <div className="absolute bottom-4 right-4 top-16 z-20 flex w-64 flex-col rounded-lg border border-hearth-border bg-hearth-panel/95 shadow-2xl">
+          <div className="border-b border-hearth-border px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+            Fog zones {draftZone ? '— drawing… (Enter closes, Esc cancels)' : ''}
+          </div>
+          <div className="flex-1 space-y-1 overflow-y-auto p-2">
+            {zones.length === 0 && !draftZone && (
+              <p className="px-1 pt-2 text-xs text-hearth-muted/70">
+                Click around a room to draw its fog zone — close it on the first point. At the table, one click
+                on the zone (or its 🌫 here) reveals it.
+              </p>
+            )}
+            {zones.map((z) => (
+              <div key={z.id} className="group/zone flex items-center gap-1.5 rounded px-1 py-0.5 hover:bg-hearth-panel2">
+                <button
+                  onClick={() => toggleZone(z.id)}
+                  title={z.hidden ? 'Hidden from players — click to reveal' : 'Revealed — click to fog again'}
+                  className="text-sm"
+                >
+                  {z.hidden ? '🌫' : '👁'}
+                </button>
+                <input
+                  value={z.name}
+                  onChange={(e) =>
+                    persistZones(zones.map((x) => (x.id === z.id ? { ...x, name: e.target.value } : x)))
+                  }
+                  className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-0.5 text-xs text-hearth-text focus:border-hearth-border focus:outline-none"
+                />
+                <button
+                  onClick={() => persistZones(zones.filter((x) => x.id !== z.id))}
+                  title="Delete zone (the fog under it follows the brush layer again)"
+                  className="px-1 text-hearth-muted opacity-0 hover:text-red-400 group-hover/zone:opacity-100"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="border-t border-hearth-border px-3 py-2 text-[10px] text-hearth-muted/70">
+            🌫 hidden · 👁 revealed — toggles are LIVE when the map is live
+          </div>
+        </div>
       )}
 
       {!img && (

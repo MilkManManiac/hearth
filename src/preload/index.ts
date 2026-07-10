@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
   AssetKind,
+  CampaignMap,
   CampaignNote,
   CampaignState,
   Character,
@@ -25,6 +26,7 @@ export interface PresenterPayload {
   /** Fog-of-war map mode: `file` is the map image; strokes are the COMMITTED reveals. */
   map?: {
     strokes: import('../shared/types').FogStroke[]
+    zones?: import('../shared/types').FogZone[]
     tokens?: import('../shared/types').MapToken[]
     overlays?: import('../shared/types').MapOverlay[]
     grid?: number
@@ -97,6 +99,12 @@ const api = {
   createNote: (kind: NoteKind, title: string): Promise<NoteWriteResult> =>
     ipcRenderer.invoke('note:create', kind, title),
   deleteNote: (noteId: string): Promise<CampaignState> => ipcRenderer.invoke('note:delete', noteId),
+  /** Battle maps (SURFACES-PLAN M1). */
+  saveMap: (m: CampaignMap): Promise<CampaignState> => ipcRenderer.invoke('map:save', m),
+  createMap: (name: string, image: string): Promise<{ state: CampaignState; mapId: string }> =>
+    ipcRenderer.invoke('map:create', name, image),
+  deleteMap: (mapId: string): Promise<CampaignState> => ipcRenderer.invoke('map:delete', mapId),
+  goLiveMap: (mapId: string | null): Promise<CampaignState> => ipcRenderer.invoke('map:go-live', mapId),
   saveCharacter: (c: Character): Promise<CampaignState> => ipcRenderer.invoke('character:save', c),
   createCharacter: (name: string): Promise<{ state: CampaignState; characterId: string }> =>
     ipcRenderer.invoke('character:create', name),

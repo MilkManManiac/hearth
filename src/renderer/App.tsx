@@ -24,7 +24,7 @@ function MainApp() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       const s = useStore.getState()
-      if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen || s.helpOpen || s.compendiumOpen || s.mapEditorOpen || s.partyOpen) return
+      if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen || s.helpOpen || s.compendiumOpen || s.mapEditorOpen || s.mapsOpen || s.partyOpen) return
       const t = e.target as HTMLElement | null
       if (isTypingTarget(t)) {
         t?.blur()
@@ -45,7 +45,7 @@ function MainApp() {
       const k = e.key.toLowerCase()
       if (k !== 'k' && k !== 'j') return
       const s = useStore.getState()
-      if (s.libraryOpen || s.triage || s.discordOpen || s.compendiumOpen || s.mapEditorOpen || s.partyOpen) return
+      if (s.libraryOpen || s.triage || s.discordOpen || s.compendiumOpen || s.mapEditorOpen || s.mapsOpen || s.partyOpen) return
       e.preventDefault()
       e.stopPropagation()
       if (k === 'k') {
@@ -67,7 +67,7 @@ function MainApp() {
       if (e.key !== '?' || e.ctrlKey || e.metaKey || e.altKey) return
       if (isTypingTarget(e.target)) return
       const s = useStore.getState()
-      if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen || s.compendiumOpen || s.mapEditorOpen || s.partyOpen) return
+      if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen || s.compendiumOpen || s.mapEditorOpen || s.mapsOpen || s.partyOpen) return
       e.preventDefault()
       s.setHelpOpen(!s.helpOpen)
     }

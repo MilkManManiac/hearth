@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Combatant, Encounter, Scene } from '../../shared/types'
+import type { CampaignMap, Combatant, Encounter } from '../../shared/types'
 import { formatCR, loadMonsters, type Monster } from '../lib/compendium'
 import { fuzzyScore } from '../lib/fuzzy'
 import { rateEncounter } from '../lib/encounter'
@@ -17,17 +17,18 @@ const SIDE_STYLE: Record<Combatant['side'], string> = {
 }
 
 /**
- * ⚔ Encounter tracker (ONESTOP-PLAN C2): combatants = compendium monsters +
- * PCs/allies, roll initiative, walk turns/rounds, tick HP and round-timed
- * conditions — all persisted on the scene so prep survives restarts. The 2024
- * XP budget readout rates the fight while you stock it.
+ * ⚔ Encounter tracker (ONESTOP-PLAN C2, re-homed onto library maps in M1):
+ * combatants = compendium monsters + PCs/allies, roll initiative, walk
+ * turns/rounds, tick HP and round-timed conditions — persisted on the MAP
+ * (the fight happens where the map is). The 2024 XP budget readout rates the
+ * fight while you stock it.
  */
-export default function EncounterPanel({ scene }: { scene: Scene }) {
-  const updateScene = useStore((s) => s.updateScene)
+export default function EncounterPanel({ map }: { map: CampaignMap }) {
+  const updateMap = useStore((s) => s.updateMap)
   const openCompendium = useStore((s) => s.openCompendium)
   const partyChars = useStore((s) => s.campaign.characters)
   const updateCharacter = useStore((s) => s.updateCharacter)
-  const enc = scene.encounter ?? EMPTY
+  const enc = map.encounter ?? EMPTY
 
   const [monsters, setMonsters] = useState<Monster[] | null>(null)
   const [query, setQuery] = useState('')
@@ -40,7 +41,7 @@ export default function EncounterPanel({ scene }: { scene: Scene }) {
   }, [])
 
   const mutate = (fn: (e: Encounter) => Encounter) =>
-    updateScene(scene.id, (s) => ({ ...s, encounter: fn(s.encounter ?? EMPTY) }))
+    void updateMap(map.id, (m) => ({ ...m, encounter: fn(m.encounter ?? EMPTY) }))
 
   // --- adding -----------------------------------------------------------------
   const monsterHits = useMemo(() => {

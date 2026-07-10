@@ -47,7 +47,7 @@ const SECTIONS: { title: string; rows: Row[] }[] = [
       { keys: ['📖'], what: 'Rules — the full 2024 SRD: monsters, spells, classes, conditions (offline)' },
       { keys: ['🛡'], what: 'Party — character sheets + the AC/HP/passives dashboard' },
       { keys: ['⚔'], what: 'Right panel tab — encounter tracker (SRD search, initiative, XP budget)' },
-      { keys: ['🗺'], what: 'Hover a scene image — fog-of-war map; 📤 sends reveals to the presenter' },
+      { keys: ['🗺'], what: 'Maps — the library (TopBar) or hover a scene image; draw ◇ fog zones in prep, 🔴 Go live streams the map to players (zone clicks reveal rooms one at a time)' },
       { keys: ['🎲'], what: 'Click any number on a sheet or stat block to roll it — the 🎲 right-panel tab is the shared Game Log (streams to the portal + optional Discord channel)' }
     ]
   }

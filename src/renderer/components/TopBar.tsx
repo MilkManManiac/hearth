@@ -184,6 +184,12 @@ export default function TopBar() {
         >
           🛡 Party
         </Btn>
+        <Btn
+          onClick={() => useStore.getState().setMapsOpen(true)}
+          title="The Table: map library — prep several maps, make one LIVE for the players (fog zones, tokens, tracker)"
+        >
+          🗺 Maps
+        </Btn>
         {!run && <ToolsMenu />}
         <button
           onClick={() => useStore.getState().setHelpOpen(true)}

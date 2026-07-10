@@ -6,6 +6,7 @@ import { DiscordBridge } from './discord'
 import { PlayerPortal } from './playerServer'
 import type {
   AssetKind,
+  CampaignMap,
   CampaignNote,
   Character,
   LibraryAsset,
@@ -247,6 +248,27 @@ function registerIpc(): void {
   })
   ipcMain.handle('character:delete', async (_e, characterId: string) => {
     const state = await campaign.deleteCharacter(characterId)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  // --- Battle maps (SURFACES-PLAN M1) ---
+  ipcMain.handle('map:save', async (_e, m: CampaignMap) => {
+    const state = await campaign.saveMap(m)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('map:create', async (_e, name: string, image: string) => {
+    const result = await campaign.createMap(name, image)
+    broadcast('campaign:changed', result.state)
+    return result
+  })
+  ipcMain.handle('map:delete', async (_e, mapId: string) => {
+    const state = await campaign.deleteMap(mapId)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle('map:go-live', async (_e, mapId: string | null) => {
+    const state = await campaign.setLiveMap(mapId)
     broadcast('campaign:changed', state)
     return state
   })

@@ -7,17 +7,24 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
   const { presenting, showImage, clearImage, importSceneImages, removeImage, setImageCaption } =
     useStore()
   const buildMode = useStore((s) => s.uiMode === 'build')
-  const updateScene = useStore((s) => s.updateScene)
+  const maps = useStore((s) => s.campaign.maps)
+  const createMap = useStore((s) => s.createMap)
+  const selectMap = useStore((s) => s.selectMap)
   const setMapEditorOpen = useStore((s) => s.setMapEditorOpen)
+  const setMapsOpen = useStore((s) => s.setMapsOpen)
   const images = scene.images ?? []
 
-  /** Make (or reopen) this image as the scene's fog-of-war battle map. */
-  const openAsMap = (file: string) => {
-    if (scene.map?.image !== file) {
-      // New map image → fresh fog (fully hidden); same image keeps its fog.
-      void updateScene(scene.id, (s) => ({ ...s, map: { image: file, strokes: [] } }))
+  /** Open this image's library map — creating it on first use (M1). */
+  const openAsMap = async (file: string) => {
+    const existing = maps.find((m) => m.image === file)
+    if (existing) {
+      selectMap(existing.id)
+      setMapEditorOpen(true)
+      return
     }
-    setMapEditorOpen(true)
+    const stem = file.split('/').pop()?.replace(/\.[^.]+$/, '') ?? 'map'
+    const id = await createMap(stem.replace(/[-_]+/g, ' '), file)
+    if (id) setMapEditorOpen(true)
   }
   // Inline caption editing: which image file is being edited + the draft text.
   const [editingFile, setEditingFile] = useState<string | null>(null)
@@ -38,13 +45,13 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-hearth-muted">Images</h3>
         <div className="flex items-center gap-2">
-          {scene.map && (
+          {maps.length > 0 && (
             <button
-              onClick={() => setMapEditorOpen(true)}
-              title={`Open the fog-of-war map editor (${scene.map.image})`}
+              onClick={() => setMapsOpen(true)}
+              title="Open the map library (prep tabs; one map is live for the players)"
               className="rounded-full border border-hearth-ember/60 bg-hearth-ember/10 px-2 py-0.5 text-[11px] text-hearth-ember hover:bg-hearth-ember/25"
             >
-              🗺 Map
+              🗺 Maps {maps.length}
             </button>
           )}
           {presenting && (
@@ -129,14 +136,14 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
                   </span>
                 )}
                 <button
-                  onClick={() => openAsMap(img.file)}
+                  onClick={() => void openAsMap(img.file)}
                   title={
-                    scene.map?.image === img.file
-                      ? 'This is the scene map — open the fog editor'
-                      : 'Use as a fog-of-war battle map'
+                    maps.some((m) => m.image === img.file)
+                      ? 'Open this image\'s battle map (in the library)'
+                      : 'Add to the map library as a fog-of-war battle map'
                   }
                   className={`absolute bottom-6 right-1 flex h-5 items-center justify-center rounded-full px-1.5 text-[10px] ${
-                    scene.map?.image === img.file
+                    maps.some((m) => m.image === img.file)
                       ? 'flex bg-hearth-ember/90 text-black'
                       : 'hidden bg-black/60 text-hearth-text hover:bg-hearth-ember/80 hover:text-black group-hover:flex'
                   }`}
