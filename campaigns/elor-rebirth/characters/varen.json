@@ -68,5 +68,27 @@
   "maxHp": 26,
   "speed": 30,
   "hp": 26,
-  "notes": "Elf (Drow lineage) Wizard 6 — Diviner. Darkvision 120 ft. Fey Ancestry; Trance; immune to magical sleep. PORTENT: roll 2d20 after each Long Rest — replace any d20 Test you can see (Varen's signature; the mark on his hand is Eilistraee's handhold, see notes/pc-varen). Expert Divination: L2+ Divination spell regains a lower slot. Arcane Recovery 1/LR (3 slot levels on a short rest). Faerie Fire + Dancing Lights + Darkness 1/LR each (drow lineage). Spell DC 15, atk +7. Keen Mind + Skilled feats (Arcana/History expertise). Imported from D&D Beyond sheet 2026-07-10."
+  "notes": "Elf (Drow lineage) Wizard 6 — Diviner. Darkvision 120 ft. Fey Ancestry; Trance; immune to magical sleep. PORTENT: roll 2d20 after each Long Rest — replace any d20 Test you can see (Varen's signature; the mark on his hand is Eilistraee's handhold, see notes/pc-varen). Expert Divination: L2+ Divination spell regains a lower slot. Arcane Recovery 1/LR (3 slot levels on a short rest). Faerie Fire + Dancing Lights + Darkness 1/LR each (drow lineage). Spell DC 15, atk +7. Keen Mind + Skilled feats (Arcana/History expertise). Imported from D&D Beyond sheet 2026-07-10.",
+  "limitedUses": [
+    {
+      "name": "Portent rolls",
+      "max": 2,
+      "reset": "long"
+    },
+    {
+      "name": "Arcane Recovery",
+      "max": 1,
+      "reset": "long"
+    },
+    {
+      "name": "Faerie Fire (drow)",
+      "max": 1,
+      "reset": "long"
+    },
+    {
+      "name": "Darkness (drow)",
+      "max": 1,
+      "reset": "long"
+    }
+  ]
 }

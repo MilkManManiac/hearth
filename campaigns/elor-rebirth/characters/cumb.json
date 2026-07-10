@@ -48,5 +48,12 @@
   "maxHp": 31,
   "speed": 30,
   "hp": 31,
-  "notes": "Goblin Rogue 4 — Thief. Small; Speed 30 ft walking AND climbing (Second-Story Work). Darkvision 60 ft. Sneak Attack 2d6. Cunning Action (Dash/Disengage/Hide bonus action) + Nimble Escape. Fast Hands (Sleight of Hand / Utilize / Use Magic Item as bonus action). Steady Aim. Fury of the Small: +2 damage vs larger creatures, 2/LR. Fey Ancestry (adv. vs charmed). Thieves' Cant. Carries the party's Bag of Holding. The goblin who joined the descent (see notes/cumb). Imported from D&D Beyond sheet 2026-07-10."
+  "notes": "Goblin Rogue 4 — Thief. Small; Speed 30 ft walking AND climbing (Second-Story Work). Darkvision 60 ft. Sneak Attack 2d6. Cunning Action (Dash/Disengage/Hide bonus action) + Nimble Escape. Fast Hands (Sleight of Hand / Utilize / Use Magic Item as bonus action). Steady Aim. Fury of the Small: +2 damage vs larger creatures, 2/LR. Fey Ancestry (adv. vs charmed). Thieves' Cant. Carries the party's Bag of Holding. The goblin who joined the descent (see notes/cumb). Imported from D&D Beyond sheet 2026-07-10.",
+  "limitedUses": [
+    {
+      "name": "Fury of the Small",
+      "max": 2,
+      "reset": "long"
+    }
+  ]
 }

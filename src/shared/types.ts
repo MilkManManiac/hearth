@@ -567,6 +567,10 @@ export interface Character {
   slotsUsed?: Record<string, number>
   /** Per-feature uses ticked off (name → used count). */
   usesSpent?: Record<string, number>
+  /** User-defined limited-use counters (Focus Points, Channel Divinity…). */
+  limitedUses?: Array<{ name: string; max: number; reset: 'short' | 'long' }>
+  /** Spell (name) currently concentrated on — one at a time (D3). */
+  concentratingOn?: string
   inspiration?: boolean
   notes?: string
   /** Populated by the loader. */

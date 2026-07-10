@@ -6,7 +6,10 @@
   "subclassKey": "light-domain",
   "level": 6,
   "multiclass": [
-    { "classKey": "bard", "level": 1 }
+    {
+      "classKey": "bard",
+      "level": 1
+    }
   ],
   "speciesKey": "dwarf",
   "backgroundKey": "noble",
@@ -81,5 +84,22 @@
   "maxHp": 39,
   "speed": 25,
   "hp": 39,
-  "notes": "RETIRED PC (see notes/pc-brolin) — kept on the roster for the record. Mountain Dwarf Cleric 5 (Light Domain, 2014 rules) / Bard 1. Darkvision 60 ft; poison resistance + adv. vs poison; Stonecunning. Warding Flare 3/LR. Channel Divinity 1/SR: Radiance of the Dawn (2d10+5 radiant, CON DC 14). Bardic Inspiration d6 ×2/LR. Spell DC 14 (WIS) / 13 (CHA). Faith: Gond, god of craft. Ally: Seth the Monk (Felsen). 'In fact, the world does revolve around me.' Imported from D&D Beyond sheet 2026-07-10."
+  "notes": "RETIRED PC (see notes/pc-brolin) — kept on the roster for the record. Mountain Dwarf Cleric 5 (Light Domain, 2014 rules) / Bard 1. Darkvision 60 ft; poison resistance + adv. vs poison; Stonecunning. Warding Flare 3/LR. Channel Divinity 1/SR: Radiance of the Dawn (2d10+5 radiant, CON DC 14). Bardic Inspiration d6 ×2/LR. Spell DC 14 (WIS) / 13 (CHA). Faith: Gond, god of craft. Ally: Seth the Monk (Felsen). 'In fact, the world does revolve around me.' Imported from D&D Beyond sheet 2026-07-10.",
+  "limitedUses": [
+    {
+      "name": "Channel Divinity",
+      "max": 1,
+      "reset": "short"
+    },
+    {
+      "name": "Warding Flare",
+      "max": 3,
+      "reset": "long"
+    },
+    {
+      "name": "Bardic Inspiration",
+      "max": 2,
+      "reset": "long"
+    }
+  ]
 }

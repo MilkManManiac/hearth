@@ -6,7 +6,10 @@
   "subclassKey": "oath-of-glory",
   "level": 6,
   "multiclass": [
-    { "classKey": "sorcerer", "level": 2 }
+    {
+      "classKey": "sorcerer",
+      "level": 2
+    }
   ],
   "speciesKey": "aasimar",
   "backgroundKey": "outlander",
@@ -80,5 +83,42 @@
   "maxHp": 48,
   "speed": 30,
   "hp": 48,
-  "notes": "Aasimar Paladin 4 (Oath of Glory) / Sorcerer 2. Resistances: Necrotic, Radiant. Darkvision 60 ft. Lay on Hands pool 20. Channel Divinity 1/SR (Peerless Athlete / Inspiring Smite). Divine Sense 4/LR. Healing Hands 3d4 1/LR. Celestial Revelation: Radiant Soul (fly + 3 radiant 1/turn, 1/LR). Sorcery Points 2. War Caster (adv. on concentration). Spell DC 14 (both classes CHA). Fighting style: Great Weapon Fighting. 18yo, NG, pale gray eyes. Secretly Lathander's avatar body + Edrelon's mind + Silus's soul (see notes/pc-eddy). Imported from D&D Beyond sheet 2026-07-10."
+  "notes": "Aasimar Paladin 4 (Oath of Glory) / Sorcerer 2. Resistances: Necrotic, Radiant. Darkvision 60 ft. Lay on Hands pool 20. Channel Divinity 1/SR (Peerless Athlete / Inspiring Smite). Divine Sense 4/LR. Healing Hands 3d4 1/LR. Celestial Revelation: Radiant Soul (fly + 3 radiant 1/turn, 1/LR). Sorcery Points 2. War Caster (adv. on concentration). Spell DC 14 (both classes CHA). Fighting style: Great Weapon Fighting. 18yo, NG, pale gray eyes. Secretly Lathander's avatar body + Edrelon's mind + Silus's soul (see notes/pc-eddy). Imported from D&D Beyond sheet 2026-07-10.",
+  "limitedUses": [
+    {
+      "name": "Channel Divinity",
+      "max": 1,
+      "reset": "short"
+    },
+    {
+      "name": "Divine Sense",
+      "max": 4,
+      "reset": "long"
+    },
+    {
+      "name": "Lay on Hands (5s of 20 pool)",
+      "max": 4,
+      "reset": "long"
+    },
+    {
+      "name": "Sorcery Points",
+      "max": 2,
+      "reset": "long"
+    },
+    {
+      "name": "Healing Hands",
+      "max": 1,
+      "reset": "long"
+    },
+    {
+      "name": "Celestial Revelation",
+      "max": 1,
+      "reset": "long"
+    },
+    {
+      "name": "Velmire: Misty Step",
+      "max": 2,
+      "reset": "long"
+    }
+  ]
 }

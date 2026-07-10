@@ -153,9 +153,23 @@ export default function CharacterSheet({
       hp: c.maxHp,
       tempHp: 0,
       slotsUsed: {},
+      usesSpent: {},
+      concentratingOn: undefined,
       deathSaves: { success: 0, fail: 0 },
       hitDiceSpent: Math.max(0, (c.hitDiceSpent ?? 0) - Math.max(1, Math.floor(c.level / 2)))
     })
+
+  const shortRest = () => {
+    // Warlock Pact slots return; short-rest counters reset.
+    const uses = { ...c.usesSpent }
+    for (const u of c.limitedUses ?? []) {
+      if (u.reset === 'short') delete uses[u.name]
+    }
+    patch({
+      slotsUsed: levels.some((e) => e.classKey === 'warlock') ? {} : c.slotsUsed,
+      usesSpent: uses
+    })
+  }
 
   return (
     <div className="space-y-4 text-sm">
@@ -334,8 +348,17 @@ export default function CharacterSheet({
             ⚡ Init {fmtMod(mod(c.abilities.dex))}
           </button>
         )}
+        {c.concentratingOn && (
+          <button
+            onClick={() => patch({ concentratingOn: undefined })}
+            title="Concentrating — casting another concentration spell replaces this; click to drop"
+            className="rounded-full border border-purple-400/60 bg-purple-500/15 px-2 py-0.5 text-xs text-purple-300 hover:bg-red-500/20 hover:text-red-300"
+          >
+            🧠 {c.concentratingOn} ✕
+          </button>
+        )}
         <span className="ml-auto flex gap-1.5">
-          <button onClick={() => patch({ slotsUsed: levels.some((e) => e.classKey === 'warlock') ? {} : c.slotsUsed })} className="rounded border border-hearth-border px-2 py-0.5 text-xs text-hearth-muted hover:text-hearth-text" title="Short rest: warlock Pact slots return">
+          <button onClick={shortRest} className="rounded border border-hearth-border px-2 py-0.5 text-xs text-hearth-muted hover:text-hearth-text" title="Short rest: warlock Pact slots + short-rest features return">
             🌙 Short rest
           </button>
           <button onClick={longRest} className="rounded border border-hearth-ember bg-hearth-ember/15 px-2 py-0.5 text-xs text-hearth-ember hover:bg-hearth-ember/30" title="Long rest: full HP, all slots, half your hit dice back">
@@ -493,6 +516,7 @@ export default function CharacterSheet({
 
         <div className="space-y-3">
           <ConditionsBox c={c} onPatch={patch} />
+          <LimitedUsesBox c={c} onPatch={patch} />
           {Object.keys(slots).length > 0 && (
             <div className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2">
               <div className="mb-1 flex items-baseline gap-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
@@ -538,7 +562,7 @@ export default function CharacterSheet({
         </div>
       </div>
 
-      <SpellsBox c={c} onPatch={patch} onOpenSpell={cb.onOpenSpell} counts={spellCounts} />
+      <SpellsBox c={c} onPatch={patch} onOpenSpell={cb.onOpenSpell} counts={spellCounts} slots={slots} />
 
       {levelUpOpen && (
         <LevelUpModal c={c} classes={classes} onApply={patch} onClose={() => setLevelUpOpen(false)} />
@@ -573,7 +597,24 @@ export default function CharacterSheet({
       {/* Equipment + notes */}
       <div className="grid gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">Equipment (one per line)</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+            Equipment (one per line)
+            {(() => {
+              const attuned = (c.equipment ?? []).filter((l) => l.trimStart().startsWith('*')).length
+              return attuned > 0 ? (
+                <span
+                  className={`ml-2 normal-case ${attuned > 3 ? 'font-bold text-red-400' : 'text-hearth-gold'}`}
+                  title="Lines starting with * count as attuned magic items (max 3)"
+                >
+                  ✦ attuned {attuned}/3
+                </span>
+              ) : (
+                <span className="ml-2 normal-case text-hearth-muted/50" title="Start a line with * to mark an attuned magic item (max 3)">
+                  (* = attuned)
+                </span>
+              )
+            })()}
+          </span>
           <textarea
             value={(c.equipment ?? []).join('\n')}
             onChange={(e) => patch({ equipment: e.target.value.split('\n') })}
@@ -809,13 +850,20 @@ function RollBar({
   )
 }
 
+/** 2024 standard conditions for the quick-pick. */
+const STD_CONDITIONS = [
+  'Blinded', 'Charmed', 'Deafened', 'Frightened', 'Grappled', 'Incapacitated', 'Invisible',
+  'Paralyzed', 'Petrified', 'Poisoned', 'Prone', 'Restrained', 'Stunned', 'Unconscious',
+  'Exhaustion 1', 'Exhaustion 2', 'Exhaustion 3', 'Exhaustion 4', 'Exhaustion 5', 'Exhaustion 6'
+]
+
 function ConditionsBox({ c, onPatch }: { c: Character; onPatch: (p: Partial<Character>) => void }) {
   const [draft, setDraft] = useState('')
-  const add = () => {
-    const v = draft.trim()
-    if (!v) return
+  const add = (v: string) => {
+    const clean = v.trim()
+    if (!clean) return
     setDraft('')
-    onPatch({ conditions: [...(c.conditions ?? []), v] })
+    onPatch({ conditions: [...(c.conditions ?? []), clean] })
   }
   return (
     <div className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2">
@@ -831,13 +879,109 @@ function ConditionsBox({ c, onPatch }: { c: Character; onPatch: (p: Partial<Char
             {x}
           </button>
         ))}
+        <select
+          value=""
+          onChange={(e) => e.target.value && add(e.target.value)}
+          className="rounded border border-transparent bg-transparent px-0.5 py-px text-[11px] text-hearth-muted focus:border-hearth-border focus:outline-none"
+          title="Standard 2024 conditions (exhaustion by level)"
+        >
+          <option value="">＋</option>
+          {STD_CONDITIONS.filter((x) => !(c.conditions ?? []).includes(x)).map((x) => (
+            <option key={x} value={x}>
+              {x}
+            </option>
+          ))}
+        </select>
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && add()}
-          placeholder="+ condition"
-          className="w-24 rounded border border-transparent bg-transparent px-1 py-px text-[11px] text-hearth-muted placeholder:text-hearth-muted/40 focus:border-hearth-border focus:outline-none"
+          onKeyDown={(e) => e.key === 'Enter' && add(draft)}
+          placeholder="custom…"
+          className="w-20 rounded border border-transparent bg-transparent px-1 py-px text-[11px] text-hearth-muted placeholder:text-hearth-muted/40 focus:border-hearth-border focus:outline-none"
         />
+      </div>
+    </div>
+  )
+}
+
+/** DDB's Limited Uses: user-defined pips (Focus Points, Channel Divinity…) reset by rests. */
+function LimitedUsesBox({ c, onPatch }: { c: Character; onPatch: (p: Partial<Character>) => void }) {
+  const [name, setName] = useState('')
+  const [max, setMax] = useState(1)
+  const [reset, setReset] = useState<'short' | 'long'>('long')
+  const uses = c.limitedUses ?? []
+  const add = () => {
+    const clean = name.trim()
+    if (!clean || uses.some((u) => u.name === clean)) return
+    setName('')
+    onPatch({ limitedUses: [...uses, { name: clean, max: Math.max(1, max), reset }] })
+  }
+  return (
+    <div className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2">
+      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+        Limited uses <span className="normal-case">(tick = spent; rests reset)</span>
+      </div>
+      {uses.map((u) => {
+        const spent = c.usesSpent?.[u.name] ?? 0
+        return (
+          <div key={u.name} className="group/use flex items-center gap-1.5 py-0.5 text-xs text-hearth-muted">
+            <span className="min-w-0 flex-1 truncate" title={`Resets on a ${u.reset} rest`}>
+              {u.name} <span className="text-[9px] text-hearth-muted/60">{u.reset === 'short' ? '🌙' : '☀️'}</span>
+            </span>
+            {Array.from({ length: Math.min(12, u.max) }, (_, i) => (
+              <input
+                key={i}
+                type="checkbox"
+                checked={i < spent}
+                onChange={(e) =>
+                  onPatch({ usesSpent: { ...c.usesSpent, [u.name]: e.target.checked ? i + 1 : i } })
+                }
+                className="h-3.5 w-3.5 accent-hearth-gold"
+              />
+            ))}
+            <button
+              onClick={() => {
+                const rest = { ...c.usesSpent }
+                delete rest[u.name]
+                onPatch({ limitedUses: uses.filter((x) => x.name !== u.name), usesSpent: rest })
+              }}
+              className="text-hearth-muted opacity-0 hover:text-red-400 group-hover/use:opacity-100"
+              title="Remove this counter"
+            >
+              ×
+            </button>
+          </div>
+        )
+      })}
+      <div className="mt-1 flex items-center gap-1">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && add()}
+          placeholder="+ Focus Points…"
+          className="min-w-0 flex-1 rounded border border-transparent bg-transparent px-1 py-px text-[11px] text-hearth-muted placeholder:text-hearth-muted/40 focus:border-hearth-border focus:outline-none"
+        />
+        <input
+          type="number"
+          min={1}
+          max={12}
+          value={max}
+          onChange={(e) => setMax(Number(e.target.value) || 1)}
+          className="w-10 rounded border border-hearth-border bg-hearth-bg px-1 py-px text-center text-[11px] text-hearth-text"
+          title="Uses per rest"
+        />
+        <select
+          value={reset}
+          onChange={(e) => setReset(e.target.value as 'short' | 'long')}
+          className="rounded border border-hearth-border bg-hearth-bg px-0.5 py-px text-[11px] text-hearth-muted"
+          title="Which rest resets it"
+        >
+          <option value="short">🌙 short</option>
+          <option value="long">☀️ long</option>
+        </select>
+        <button onClick={add} className="rounded px-1 text-xs text-hearth-muted hover:text-hearth-ember" title="Add counter">
+          ＋
+        </button>
       </div>
     </div>
   )
@@ -847,16 +991,38 @@ function SpellsBox({
   c,
   onPatch,
   onOpenSpell,
-  counts
+  counts,
+  slots
 }: {
   c: Character
   onPatch: (p: Partial<Character>) => void
   onOpenSpell?: (key: string) => void
   /** DDB-style live counters vs the 2024 class tables (advisory). */
   counts?: { cantrips: number; leveled: number; exp: { cantrips: number; prepared: number } } | null
+  /** Slot totals by level, for the ⚡ CAST menu. */
+  slots?: Record<string, number>
 }) {
   const [all, setAll] = useState<Spell[] | null>(null)
   const [query, setQuery] = useState('')
+  const [castFor, setCastFor] = useState<string | null>(null)
+
+  /** Spend a slot (0 = no slot: cantrip/ritual) and track concentration. */
+  const cast = (s: Spell, slotLvl: number) => {
+    setCastFor(null)
+    const p: Partial<Character> = {}
+    if (slotLvl > 0) p.slotsUsed = { ...c.slotsUsed, [String(slotLvl)]: (c.slotsUsed?.[String(slotLvl)] ?? 0) + 1 }
+    if (s.concentration) p.concentratingOn = s.name
+    onPatch(p)
+  }
+
+  /** Slot levels this spell can be cast at with a slot still open. */
+  const castable = (s: Spell): number[] => {
+    if (!slots) return []
+    return Object.keys(slots)
+      .map(Number)
+      .filter((lvl) => lvl >= s.level && (c.slotsUsed?.[String(lvl)] ?? 0) < (slots[String(lvl)] ?? 0))
+      .sort((a, b) => a - b)
+  }
   useEffect(() => {
     loadSpells().then(setAll).catch(() => setAll([]))
   }, [])
@@ -899,21 +1065,55 @@ function SpellsBox({
         )}
       </div>
       <div className="flex flex-wrap gap-1">
-        {known.map((s) => (
-          <span key={s.key} className="group/spell flex items-center gap-1 rounded-full border border-hearth-border bg-hearth-panel px-2 py-0.5 text-xs">
-            <button onClick={() => onOpenSpell?.(s.key)} className="text-hearth-text hover:text-hearth-ember" title={`${SPELL_LEVEL_LABEL(s.level)} — open card (📖)`}>
-              {s.name}
-            </button>
-            <span className="text-[9px] text-hearth-muted">{s.level === 0 ? 'c' : s.level}</span>
-            <button
-              onClick={() => onPatch({ spells: (c.spells ?? []).filter((x) => x !== s.key) })}
-              className="text-hearth-muted opacity-40 hover:text-red-400 group-hover/spell:opacity-100"
-              title="Forget"
-            >
-              ×
-            </button>
-          </span>
-        ))}
+        {known.map((s) => {
+          const lvls = s.level > 0 ? castable(s) : []
+          const canCast = s.level > 0 ? lvls.length > 0 : s.concentration
+          return (
+            <span key={s.key} className="group/spell relative flex items-center gap-1 rounded-full border border-hearth-border bg-hearth-panel px-2 py-0.5 text-xs">
+              <button onClick={() => onOpenSpell?.(s.key)} className="text-hearth-text hover:text-hearth-ember" title={`${SPELL_LEVEL_LABEL(s.level)} — open card (📖)`}>
+                {s.name}
+              </button>
+              <span className="text-[9px] text-hearth-muted">{s.level === 0 ? 'c' : s.level}</span>
+              {s.concentration && <span className="text-[9px] text-purple-300" title="Concentration">©</span>}
+              {canCast && (
+                <button
+                  onClick={() => {
+                    if (s.level === 0) cast(s, 0)
+                    else if (lvls.length === 1) cast(s, lvls[0])
+                    else setCastFor(castFor === s.key ? null : s.key)
+                  }}
+                  className="text-hearth-gold opacity-50 hover:opacity-100 group-hover/spell:opacity-100"
+                  title={s.level === 0 ? 'Cast (concentration)' : 'Cast — spends a slot (pick the level when upcasting)'}
+                >
+                  ⚡
+                </button>
+              )}
+              <button
+                onClick={() => onPatch({ spells: (c.spells ?? []).filter((x) => x !== s.key) })}
+                className="text-hearth-muted opacity-40 hover:text-red-400 group-hover/spell:opacity-100"
+                title="Forget"
+              >
+                ×
+              </button>
+              {castFor === s.key && (
+                <span className="absolute left-0 top-full z-30 mt-1 flex gap-1 rounded-md border border-hearth-border bg-hearth-panel2 p-1 shadow-2xl">
+                  {lvls.map((lvl) => (
+                    <button
+                      key={lvl}
+                      onClick={() => cast(s, lvl)}
+                      className={`rounded px-1.5 py-0.5 text-[11px] ${
+                        lvl === s.level ? 'bg-hearth-ember/20 text-hearth-ember' : 'text-hearth-muted hover:text-hearth-text'
+                      }`}
+                      title={`Cast at level ${lvl}${lvl > s.level ? ' (upcast)' : ''}`}
+                    >
+                      L{lvl}
+                    </button>
+                  ))}
+                </span>
+              )}
+            </span>
+          )
+        })}
       </div>
       <div className="relative mt-1.5">
         <input
