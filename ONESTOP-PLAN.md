@@ -47,8 +47,10 @@ converged on the plan below.
   has the peek-card pattern — extend it to compendium refs.
 - Beat DDB where it's weak: party dashboard, unrestricted homebrew (any JSON),
   offline/local-first, combat tracker that actually syncs PC state.
-- Homebrew = drop a JSON file in the campaign folder; no forms required, no
-  gates. Claude authors homebrew stat blocks like it authors scenes.
+- Homebrew ✅ SHIPPED 2026-07-10: <campaign>/homebrew/*.json (same schemas as
+  public/compendium) merges into the compendium/pickers/Ctrl+K with a 🏠
+  badge; served to the player portal too. Elor ships Aasimar + Way of Shadow
+  + Diviner (paraphrased) — the party drafts now use their REAL identities.
 - Stat blocks: fixed single-column, actions as rows, math pre-parsed — never
   accordion-hidden.
 

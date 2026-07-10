@@ -35,6 +35,8 @@ export interface PortalDeps {
   saveCharacter: (c: Character) => Promise<unknown>
   /** Where the built renderer lives (player.html + assets + compendium). */
   rendererDir: string
+  /** Current campaign folder (for /homebrew/*). */
+  campaignDir: () => string
 }
 
 function lanIp(): string {
@@ -118,6 +120,21 @@ export class PlayerPortal {
         res.write('data: hello\n\n')
         this.sseClients.add(res)
         req.on('close', () => this.sseClients.delete(res))
+        return
+      }
+      // Campaign homebrew (merged into the compendium client-side).
+      const hb = url.match(/^\/homebrew\/([a-z0-9.-]+\.json)$/)
+      if (hb) {
+        const hbRoot = path.resolve(this.deps.campaignDir(), 'homebrew')
+        const hbAbs = path.resolve(hbRoot, hb[1])
+        if (!hbAbs.startsWith(hbRoot + path.sep)) return this.text(res, 'Forbidden', 403)
+        try {
+          const data = await fs.readFile(hbAbs)
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(data)
+        } catch {
+          this.text(res, '[]', 404)
+        }
         return
       }
       // Static: the built renderer (player.html + hashed assets + compendium).

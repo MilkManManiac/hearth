@@ -5,7 +5,7 @@
   "classKey": "paladin",
   "subclassKey": "oath-of-devotion",
   "level": 6,
-  "speciesKey": "human",
+  "speciesKey": "aasimar",
   "backgroundKey": "soldier",
   "abilities": {
     "str": 16,
@@ -28,5 +28,5 @@
   "ac": 18,
   "maxHp": 52,
   "hp": 52,
-  "notes": "DRAFT (background approximated: only acolyte/criminal/sage/soldier exist in SRD 5.2) — set real level/scores/spells. Aasimar in-fiction (white-eyed, spectral wings; SRD 5.2 has no Aasimar species — Human as the mechanical stand-in). Secretly Lathander’s avatar body + Edrelon’s mind + Silus’s soul (see notes/pc-eddy)."
+  "notes": "DRAFT (background approximated: only acolyte/criminal/sage/soldier exist in SRD 5.2) — set real level/scores/spells. Aasimar via campaign homebrew (homebrew/species.json). Secretly Lathander’s avatar body + Edrelon’s mind + Silus’s soul (see notes/pc-eddy)."
 }

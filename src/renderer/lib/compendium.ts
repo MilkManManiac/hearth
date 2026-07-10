@@ -64,6 +64,8 @@ export interface NamedEntry {
   name: string
   desc?: string
   section?: string
+  /** True when merged from <campaign>/homebrew/ (🏠 badge). */
+  homebrew?: boolean
   benefits?: { name: string; desc: string }[]
   traits?: { name: string; desc: string }[]
   [extra: string]: unknown
@@ -126,10 +128,49 @@ async function fetchJson<T>(file: string): Promise<T> {
   return cache.get(file) as Promise<T>
 }
 
-export const loadKind = (kind: CompendiumKind) => fetchJson<NamedEntry[]>(KIND_META[kind].file)
-export const loadMonsters = () => fetchJson<Monster[]>('monsters.json')
-export const loadSpells = () => fetchJson<Spell[]>('spells.json')
-export const loadIndex = () => fetchJson<IndexEntry[]>('index.json')
+/**
+ * Campaign homebrew: <campaign>/homebrew/<kind file> in the SAME schema as
+ * the bundled data merges on top of the SRD — any monster, spell, species,
+ * or subclass, no forms, no gates. The Electron renderer reads it over
+ * asset://; the player portal serves it at /homebrew/. Entries are tagged
+ * `homebrew: true` for the 🏠 badge. Requires a reload after edits (the
+ * compendium caches for the session).
+ */
+async function fetchHomebrew(kind: CompendiumKind): Promise<NamedEntry[]> {
+  const file = KIND_META[kind].file
+  const key = `hb:${file}`
+  if (!cache.has(key)) {
+    const url =
+      typeof window !== 'undefined' && (window as { hearth?: unknown }).hearth
+        ? `asset:///homebrew/${file}`
+        : `/homebrew/${file}`
+    cache.set(
+      key,
+      fetch(url)
+        .then(async (r) => {
+          if (!r.ok) return []
+          const rows = (await r.json()) as NamedEntry[]
+          return Array.isArray(rows) ? rows.map((e) => ({ ...e, homebrew: true })) : []
+        })
+        .catch(() => [])
+    )
+  }
+  return cache.get(key) as Promise<NamedEntry[]>
+}
+
+export const loadKind = (kind: CompendiumKind): Promise<NamedEntry[]> =>
+  Promise.all([fetchJson<NamedEntry[]>(KIND_META[kind].file), fetchHomebrew(kind)]).then(
+    ([base, hb]) => (hb.length ? [...base, ...hb] : base)
+  )
+export const loadMonsters = () => loadKind('monster') as unknown as Promise<Monster[]>
+export const loadSpells = () => loadKind('spell') as unknown as Promise<Spell[]>
+export const loadIndex = (): Promise<IndexEntry[]> =>
+  Promise.all([
+    fetchJson<IndexEntry[]>('index.json'),
+    ...KIND_ORDER.map((k) =>
+      fetchHomebrew(k).then((rows) => rows.map((e) => ({ k, key: e.key, name: e.name }) as IndexEntry))
+    )
+  ]).then((lists) => lists.flat())
 export const loadMeta = () =>
   fetchJson<{ attribution: string; counts: Record<string, number> }>('meta.json')
 

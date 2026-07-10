@@ -199,7 +199,10 @@ export default function CompendiumPanel() {
                     selected?.key === e.key ? 'bg-hearth-ember/15 text-hearth-text' : 'text-hearth-muted hover:text-hearth-text'
                   }`}
                 >
-                  <span className="min-w-0 flex-1 truncate">{e.name}</span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {e.homebrew ? <span title="Campaign homebrew" aria-hidden>🏠 </span> : null}
+                    {e.name}
+                  </span>
                   <span className="flex-none text-[10px] text-hearth-muted/60">
                     {kind === 'monster'
                       ? `CR ${formatCR((e as unknown as Monster).cr)}`

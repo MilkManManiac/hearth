@@ -322,7 +322,8 @@ app.whenReady().then(async () => {
       broadcast('campaign:changed', state)
       return state
     },
-    rendererDir: path.join(__dirname, '../renderer')
+    rendererDir: path.join(__dirname, '../renderer'),
+    campaignDir: () => campaign.path
   })
   const initial = await campaign.init()
   console.log(

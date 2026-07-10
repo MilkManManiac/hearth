@@ -237,6 +237,16 @@ Two optional lists power the side panels the DM checks off during play:
 When drafting a scene, populate these: likely NPCs/monsters, findable loot, and
 2–4 "what might happen here" ideas. It turns the scene into a live checklist.
 
+## homebrew/ — unrestricted homebrew (the anti-DDB)
+
+Drop JSON into \`<campaign>/homebrew/\` using the SAME file names + schemas as
+\`public/compendium/\` (species.json, classes.json, monsters.json, spells.json,
+magic-items.json…) and it merges into the 📖 compendium, character pickers,
+and Ctrl+K with a 🏠 badge — any species, subclass, monster, or spell, no
+forms, no gates. Claude authors these like it authors scenes. Reload the app
+after edits (the compendium caches per session). Keep verbatim book text out
+of PUBLIC repos — paraphrase mechanics.
+
 ## characters/ — the party (ONESTOP-PLAN C4)
 
 One JSON per character in \`characters/\`. Choices are the source of truth;

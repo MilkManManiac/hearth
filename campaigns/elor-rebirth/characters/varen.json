@@ -3,7 +3,7 @@
   "name": "Varen",
   "player": "David",
   "classKey": "wizard",
-  "subclassKey": "evoker",
+  "subclassKey": "diviner",
   "level": 6,
   "speciesKey": "elf",
   "backgroundKey": "sage",
@@ -35,5 +35,5 @@
   "ac": 12,
   "maxHp": 38,
   "hp": 38,
-  "notes": "DRAFT — set real level/scores/spell list. Drow (Elf species stands in). Divination-flavored at the table (portent = seeing possibilities); SRD 5.2 only ships Evoker — treat subclass as flavor-mismatch or homebrew Diviner later. Eilistraee’s mark on his hand (see notes/pc-varen)."
+  "notes": "DRAFT — set real level/scores/spell list. Drow (Elf species stands in). Divination-flavored at the table (portent = seeing possibilities); Diviner via campaign homebrew (homebrew/classes.json) — Portent lives! Eilistraee’s mark on his hand (see notes/pc-varen)."
 }

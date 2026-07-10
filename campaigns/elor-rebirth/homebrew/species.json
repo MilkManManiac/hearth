@@ -1,0 +1,29 @@
+[
+  {
+    "key": "aasimar",
+    "name": "Aasimar",
+    "desc": "Mortals carrying a spark of the celestial planes — in Elor, the blood of Lathander and Leliana surfacing every few generations (white/grey eyes, gold-flecked blood, wings later). Medium or Small; Speed 30 ft. (Paraphrased homebrew import of the 2024 species.)",
+    "traits": [
+      {
+        "name": "Celestial Resistance",
+        "desc": "You have Resistance to Necrotic and Radiant damage."
+      },
+      {
+        "name": "Darkvision",
+        "desc": "You can see in dim light within 60 feet as if it were bright light, and in darkness as if it were dim light."
+      },
+      {
+        "name": "Healing Hands",
+        "desc": "As a Magic action, touch a creature and roll a number of d4s equal to your Proficiency Bonus; it regains that many Hit Points. Once used, not again until you finish a Long Rest."
+      },
+      {
+        "name": "Light Bearer",
+        "desc": "You know the Light cantrip (Charisma is your spellcasting ability for it)."
+      },
+      {
+        "name": "Celestial Revelation",
+        "desc": "From level 3, as a Bonus Action you can transform for 1 minute (once per Long Rest). Choose Heavenly Wings (Fly Speed equal to your Speed), Inner Radiance (shed light; creatures within 10 ft take Radiant damage equal to your PB at end of your turn), or Necrotic Shroud (creatures within 10 ft must save or be Frightened until end of your next turn). While transformed, once per turn add your PB as extra Radiant or Necrotic damage to one attack or spell."
+      }
+    ]
+  }
+]

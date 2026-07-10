@@ -3,7 +3,7 @@
   "name": "Felson",
   "player": "Seth",
   "classKey": "monk",
-  "subclassKey": "warrior-of-the-open-hand",
+  "subclassKey": "way-of-shadow",
   "level": 6,
   "speciesKey": "human",
   "backgroundKey": "criminal",
@@ -28,5 +28,5 @@
   "ac": 15,
   "maxHp": 45,
   "hp": 45,
-  "notes": "DRAFT (background approximated: only acolyte/criminal/sage/soldier exist in SRD 5.2) — set real level/scores. Cavernborn human, Way of Shadow at the table (SRD 5.2 only ships Open Hand — flavor-mismatch; keep playing Shadow). Combat brewer; parents lost to the pool (see notes/pc-felson)."
+  "notes": "DRAFT (background approximated: only acolyte/criminal/sage/soldier exist in SRD 5.2) — set real level/scores. Cavernborn human, Way of Shadow at the table (Way of Shadow via campaign homebrew (homebrew/classes.json)). Combat brewer; parents lost to the pool (see notes/pc-felson)."
 }

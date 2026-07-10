@@ -1,0 +1,87 @@
+[
+  {
+    "key": "way-of-shadow",
+    "name": "Way of Shadow",
+    "subclassOf": "monk",
+    "hitDice": "d8",
+    "primaryAbilities": [],
+    "savingThrows": [],
+    "desc": "Monks of shadow and silence — G’s teaching, Roman’s trick. (Paraphrased homebrew import; SRD 5.2 only ships Open Hand.)",
+    "features": [
+      {
+        "name": "Shadow Arts",
+        "desc": "You know the Minor Illusion cantrip. Spend 1 Focus Point to cast Darkness (no components); you can see within it, and can move its area at the start of your turns. You also gain Darkvision 60 ft (or +60 ft).",
+        "levels": [
+          3
+        ]
+      },
+      {
+        "name": "Shadow Step",
+        "desc": "While in Dim Light or Darkness, as a Bonus Action teleport up to 60 feet to another space in Dim Light or Darkness; your next melee attack before the end of the turn has Advantage.",
+        "levels": [
+          6
+        ]
+      },
+      {
+        "name": "Improved Shadow Step",
+        "desc": "Spend 1 Focus Point to remove the light requirement on either end of your Shadow Step, and make an Unarmed Strike as part of the same Bonus Action.",
+        "levels": [
+          11
+        ]
+      },
+      {
+        "name": "Cloak of Shadows",
+        "desc": "As a Magic action in Dim Light or Darkness, spend 3 Focus Points to become Invisible for 1 minute (while conscious): you partially phase, gaining resistance to all damage except Force, Psychic, and Radiant, and can move through occupied spaces.",
+        "levels": [
+          17
+        ]
+      }
+    ]
+  },
+  {
+    "key": "diviner",
+    "name": "Diviner (Divination Wizard)",
+    "subclassOf": "wizard",
+    "hitDice": "d6",
+    "primaryAbilities": [],
+    "savingThrows": [],
+    "desc": "A wizard who reads the branching futures — Varen’s portent as rules text. (Paraphrased homebrew import; SRD 5.2 only ships Evoker.)",
+    "features": [
+      {
+        "name": "Divination Savant",
+        "desc": "Adding a Divination spell to your spellbook costs half the usual gold and time; you gain two free Divination spells for your book at this level and more as you level.",
+        "levels": [
+          3
+        ]
+      },
+      {
+        "name": "Portent",
+        "desc": "After a Long Rest, roll two d20s and record them. Before any creature you can see makes a d20 Test, you can replace their roll with one of these foretelling rolls (once per turn). Each roll is used once; unused rolls are lost at your next Long Rest.",
+        "levels": [
+          3
+        ]
+      },
+      {
+        "name": "Expert Divination",
+        "desc": "When you cast a Divination spell of level 2+ using a spell slot, you regain an expended slot of a lower level (max level 5).",
+        "levels": [
+          6
+        ]
+      },
+      {
+        "name": "The Third Eye",
+        "desc": "As a Bonus Action (once per Short/Long Rest), gain one until you rest: Darkvision 120 ft, see into the Ethereal Plane within 60 ft, or read any language.",
+        "levels": [
+          10
+        ]
+      },
+      {
+        "name": "Greater Portent",
+        "desc": "Your Portent gives three foretelling rolls instead of two.",
+        "levels": [
+          14
+        ]
+      }
+    ]
+  }
+]
