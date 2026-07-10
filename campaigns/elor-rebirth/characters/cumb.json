@@ -1,0 +1,52 @@
+{
+  "id": "cumb",
+  "name": "Cumb",
+  "player": "NPC — rides with the party",
+  "classKey": "rogue",
+  "subclassKey": "thief",
+  "level": 4,
+  "speciesKey": "goblin",
+  "backgroundKey": "soldier",
+  "abilities": {
+    "str": 9,
+    "dex": 20,
+    "con": 14,
+    "int": 12,
+    "wis": 16,
+    "cha": 9
+  },
+  "skillProfs": [
+    "acrobatics",
+    "athletics",
+    "intimidation",
+    "perception",
+    "sleight_of_hand",
+    "stealth"
+  ],
+  "expertise": [
+    "sleight_of_hand",
+    "stealth"
+  ],
+  "featKeys": [
+    "savage-attacker",
+    "ability-score-improvement"
+  ],
+  "equipment": [
+    "Bag of Holding",
+    "Leather armor",
+    "Dagger ×2 (Nick mastery)",
+    "Dart ×3 (Vex mastery)",
+    "Shortbow",
+    "Thieves' Tools",
+    "Potion of Healing ×2",
+    "Ball Bearings ×1,000",
+    "Fishing tackle",
+    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope 50ft, tinderbox, waterskin",
+    "80 gp"
+  ],
+  "ac": 16,
+  "maxHp": 31,
+  "speed": 30,
+  "hp": 31,
+  "notes": "Goblin Rogue 4 — Thief. Small; Speed 30 ft walking AND climbing (Second-Story Work). Darkvision 60 ft. Sneak Attack 2d6. Cunning Action (Dash/Disengage/Hide bonus action) + Nimble Escape. Fast Hands (Sleight of Hand / Utilize / Use Magic Item as bonus action). Steady Aim. Fury of the Small: +2 damage vs larger creatures, 2/LR. Fey Ancestry (adv. vs charmed). Thieves' Cant. Carries the party's Bag of Holding. The goblin who joined the descent (see notes/cumb). Imported from D&D Beyond sheet 2026-07-10."
+}

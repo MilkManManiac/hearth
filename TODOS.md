@@ -10,17 +10,22 @@ session (see bottom) to turn the big ones into concrete specs before building.
 ## 🔔 WES — review queue (updated 2026-07-10; everything Claude needs from you)
 
 **One-stop shop (2026-07-10, ONESTOP-PLAN.md — C1–C5 all shipped):**
-- [ ] Try: 📖 Rules (search "goblin"), 🛡 Party (your 3 PCs are drafted —
-  fix their levels/scores, marked DRAFT), ⚔ tab on a scene (stock a fight),
-  🗺 on a scene image (fog editor → 📤 Send with the Presenter open).
+- [ ] Try: 📖 Rules (search "goblin"), 🛡 Party (all 5 REAL sheets imported from your
+  D&D Beyond PDFs 2026-07-10 — Eddy Pal4/Sor2, Varen Wiz6, Felsen Monk6, Cumb Rogue4,
+  Brolin retired; multiclass supported now), ⚔ tab on a scene (stock a fight),
+  🗺 on a scene image (fog editor → 📤 Send with the Presenter open; Grid box = token snap).
+- [ ] Character-import sanity checks: HP is set to MAX (the PDFs had blank current HP —
+  dock anyone hurt mid-Eekso); non-SRD content (smites, Mind Sliver, Oath of Glory,
+  Light Domain, Goblin, War Caster, Tavern Brawler, Noble/Outlander backgrounds…) was
+  paraphrased into `homebrew/` — spot-check anything that reads wrong at the table.
 - [ ] 🌐 PLAYER PORTAL (C5): in 🛡 Party hit '🌐 Player portal' → copy the URL → open it on
   your phone (same wifi). REVIEW: is no-auth-on-LAN acceptable, and pick the remote-player
   route (cloudflared tunnel vs Tailscale vs port-forward) — Claude can wire whichever.
 - [ ] ⚔↔🛡 sync: add a party PC to an encounter via its gold chip, damage it in the tracker,
   watch the sheet + dashboard + player browser all update.
-- [ ] Tell Claude: are the SRD subclass stand-ins OK (Varen shows Evoker not
-  Diviner, Felson shows Open Hand not Shadow — SRD 5.2 ships one subclass per
-  class; homebrew JSON can add the real ones anytime).
+- [x] ~~SRD subclass stand-ins~~ — RESOLVED 2026-07-10: real subclasses live in
+  `homebrew/classes.json` (Diviner, Warrior of Shadow, Oath of Glory, Light Domain)
+  and every PC now uses their true identity.
 
 **Decisions / answers:**
 - [ ] **Discord bridge truth:** did a live voice test ever actually pass? DISCORD-BRIDGE.md's

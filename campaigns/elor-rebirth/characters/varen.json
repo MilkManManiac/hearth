@@ -1,39 +1,72 @@
 {
   "id": "varen",
-  "name": "Varen",
+  "name": "Varen Zalenna",
   "player": "David",
   "classKey": "wizard",
   "subclassKey": "diviner",
   "level": 6,
   "speciesKey": "elf",
-  "backgroundKey": "sage",
+  "backgroundKey": "noble",
   "abilities": {
     "str": 8,
-    "dex": 14,
-    "con": 14,
-    "int": 17,
-    "wis": 12,
-    "cha": 10
+    "dex": 12,
+    "con": 10,
+    "int": 18,
+    "wis": 14,
+    "cha": 14
   },
   "skillProfs": [
+    "deception",
+    "insight",
+    "investigation",
+    "perception",
+    "persuasion",
+    "religion"
+  ],
+  "expertise": [
     "arcana",
-    "history",
-    "investigation"
+    "history"
+  ],
+  "featKeys": [
+    "keen-mind",
+    "skilled"
   ],
   "spells": [
-    "fireball",
-    "shield",
-    "misty-step",
+    "mage-hand",
+    "message",
+    "elementalism",
+    "mind-sliver",
+    "dancing-lights",
+    "comprehend-languages",
     "detect-magic",
     "mage-armor",
-    "counterspell"
+    "magic-missile",
+    "sleep",
+    "faerie-fire",
+    "invisibility",
+    "scorching-ray",
+    "darkness",
+    "locate-object",
+    "mind-spike",
+    "fireball",
+    "fly",
+    "water-breathing",
+    "tiny-hut",
+    "feign-death"
   ],
   "equipment": [
-    "Spellbook (coded journal)",
-    "Quarterstaff"
+    "Quarterstaff",
+    "Spellbook",
+    "Robe + fine clothes",
+    "Dragonchess set",
+    "Potion of Healing",
+    "Nostalgia Potion ×2",
+    "Oil ×10, parchment ×10, ink, book, tinderbox, perfume, backpack",
+    "200 gp"
   ],
-  "ac": 12,
-  "maxHp": 38,
-  "hp": 38,
-  "notes": "DRAFT — set real level/scores/spell list. Drow (Elf species stands in). Divination-flavored at the table (portent = seeing possibilities); Diviner via campaign homebrew (homebrew/classes.json) — Portent lives! Eilistraee’s mark on his hand (see notes/pc-varen)."
+  "ac": 11,
+  "maxHp": 26,
+  "speed": 30,
+  "hp": 26,
+  "notes": "Elf (Drow lineage) Wizard 6 — Diviner. Darkvision 120 ft. Fey Ancestry; Trance; immune to magical sleep. PORTENT: roll 2d20 after each Long Rest — replace any d20 Test you can see (Varen's signature; the mark on his hand is Eilistraee's handhold, see notes/pc-varen). Expert Divination: L2+ Divination spell regains a lower slot. Arcane Recovery 1/LR (3 slot levels on a short rest). Faerie Fire + Dancing Lights + Darkness 1/LR each (drow lineage). Spell DC 15, atk +7. Keen Mind + Skilled feats (Arcana/History expertise). Imported from D&D Beyond sheet 2026-07-10."
 }

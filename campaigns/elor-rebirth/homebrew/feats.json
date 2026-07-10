@@ -1,0 +1,27 @@
+[
+  {
+    "key": "war-caster",
+    "name": "War Caster",
+    "desc": "Prerequisite: Spellcasting or Pact Magic feature. Increase your Intelligence, Wisdom, or Charisma by 1. You have Advantage on Constitution saving throws to maintain Concentration. You can perform the Somatic components of spells even with weapons or a Shield in hand. When a creature provokes an Opportunity Attack from you, you can cast a one-action spell targeting only that creature instead of attacking. (Paraphrased homebrew import of the 2024 feat.)"
+  },
+  {
+    "key": "keen-mind",
+    "name": "Keen Mind",
+    "desc": "Increase your Intelligence by 1. Choose one of Arcana, History, Investigation, Nature, or Religion: you gain proficiency in it (or Expertise if already proficient). You can take the Study action as a Bonus Action. (Paraphrased homebrew import of the 2024 feat.)"
+  },
+  {
+    "key": "shadow-touched",
+    "name": "Shadow Touched",
+    "desc": "Increase your Intelligence, Wisdom, or Charisma by 1. You learn Invisibility and one level-1 Illusion or Necromancy spell of your choice. You can cast each once per Long Rest without a spell slot, and also with any slots you have. The chosen ability is your spellcasting ability for them. (Paraphrased homebrew import of the Tasha's feat.)"
+  },
+  {
+    "key": "tavern-brawler",
+    "name": "Tavern Brawler",
+    "desc": "Origin feat. Enhanced Unarmed Strike: your Unarmed Strikes deal 1d4 + Strength modifier Bludgeoning damage. Damage Rerolls: reroll 1s on Unarmed Strike damage dice (must use the new roll). Improvised Weaponry: you're proficient with improvised weapons. Push: once per turn when you hit with an Unarmed Strike, you can also push the target 5 feet away. (Paraphrased homebrew import of the 2024 feat.)"
+  },
+  {
+    "key": "tough",
+    "name": "Tough",
+    "desc": "Your Hit Point maximum increases by 2 for every level you have, and by 2 more whenever you gain a level. (Paraphrased homebrew import of the 2024 feat.)"
+  }
+]

@@ -25,5 +25,28 @@
         "desc": "From level 3, as a Bonus Action you can transform for 1 minute (once per Long Rest). Choose Heavenly Wings (Fly Speed equal to your Speed), Inner Radiance (shed light; creatures within 10 ft take Radiant damage equal to your PB at end of your turn), or Necrotic Shroud (creatures within 10 ft must save or be Frightened until end of your next turn). While transformed, once per turn add your PB as extra Radiant or Necrotic damage to one attack or spell."
       }
     ]
+  },
+  {
+    "key": "goblin",
+    "name": "Goblin",
+    "desc": "Small, quick, fey-touched survivors — Cumb's people. Small; Speed 30 ft. (Paraphrased homebrew import of the Monsters-of-the-Multiverse goblin.)",
+    "traits": [
+      {
+        "name": "Darkvision",
+        "desc": "You can see in dim light within 60 feet as if it were bright light, and in darkness as if it were dim light."
+      },
+      {
+        "name": "Fey Ancestry",
+        "desc": "You have Advantage on saving throws you make to avoid or end the Charmed condition on yourself."
+      },
+      {
+        "name": "Fury of the Small",
+        "desc": "When you damage a creature larger than you with an attack or spell, deal extra damage equal to your Proficiency Bonus. Usable a number of times equal to your Proficiency Bonus per Long Rest, once per turn."
+      },
+      {
+        "name": "Nimble Escape",
+        "desc": "You can take the Disengage or Hide action as a Bonus Action on each of your turns."
+      }
+    ]
   }
 ]

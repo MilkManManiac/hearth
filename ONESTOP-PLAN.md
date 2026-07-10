@@ -32,11 +32,14 @@ converged on the plan below.
   mutable state` (Improved Initiative's shape), per-scene encounter JSON,
   2024 XP-budget math (flat budget table — no multipliers), presenter-window
   party view with fuzzed HP. Conditions with round timers.
-- **C3 — Maps + fog** ✅ SHIPPED 2026-07-10 (+ tokens 2026-07-10: ⛂ tool — click to place, drag to move, dbl-click hides from players, right-click removes; grid snap still open): react-konva stage in DM + presenter windows;
+- **C3 — Maps + fog** ✅ SHIPPED 2026-07-10 (+ tokens: ⛂ tool — click to place, drag to move, dbl-click hides from players, right-click removes; + grid 2026-07-10: cell-size box in the toolbar, tokens snap to cell centers, players see the grid): react-konva stage in DM + presenter windows;
   `maps/*.json` = image + **vector fog shapes** (brush/polygon, add/subtract,
   undoable) + tokens[]; dungeon-revealer's "commit reveal" push model. NO
   dynamic lighting/walls/vision — that's the Foundry trap.
-- **C4 — Characters** ✅ v1 SHIPPED 2026-07-10 (guided step-by-step builder wizard + DDB import still open): party dashboard first (AC/HP/passives/slots grid —
+- **C4 — Characters** ✅ v1 SHIPPED 2026-07-10 (+ multiclass 2026-07-10: `multiclass[]`
+  on Character, per-class feature gating, 2024 combined-caster slot math; the real
+  party imported from Wes's DDB PDF exports incl. Eddy Pal4/Sor2 + retired Brolin
+  Cleric5/Bard1. Guided builder wizard + automated DDB import still open): party dashboard first (AC/HP/passives/slots grid —
   GAMEPLAN Phase 4, DDB's biggest unfilled need), fed by DDB import or manual
   JSON. Then a 2024 builder/level-up on SRD data (class→origin→abilities→
   equipment flow), storing CHOICES and deriving stats (never persisting

@@ -1,32 +1,84 @@
 {
   "id": "eddy",
-  "name": "Eddy",
+  "name": "Special Eddy",
   "player": "Jake",
   "classKey": "paladin",
-  "subclassKey": "oath-of-devotion",
+  "subclassKey": "oath-of-glory",
   "level": 6,
+  "multiclass": [
+    { "classKey": "sorcerer", "level": 2 }
+  ],
   "speciesKey": "aasimar",
-  "backgroundKey": "soldier",
+  "backgroundKey": "outlander",
   "abilities": {
     "str": 16,
     "dex": 10,
     "con": 14,
-    "int": 10,
+    "int": 8,
     "wis": 12,
     "cha": 16
   },
   "skillProfs": [
     "athletics",
+    "insight",
     "persuasion",
-    "insight"
+    "survival"
+  ],
+  "featKeys": [
+    "war-caster"
+  ],
+  "spells": [
+    "light",
+    "sorcerous-burst",
+    "shocking-grasp",
+    "sword-burst",
+    "shape-water",
+    "bless",
+    "command",
+    "compelled-duel",
+    "cure-wounds",
+    "detect-evil-and-good",
+    "detect-magic",
+    "detect-poison-and-disease",
+    "divine-favor",
+    "divine-smite",
+    "guiding-bolt",
+    "heroism",
+    "protection-from-evil-and-good",
+    "purify-food-and-drink",
+    "searing-smite",
+    "shield-of-faith",
+    "thunderous-smite",
+    "wrathful-smite",
+    "witch-bolt",
+    "absorb-elements",
+    "charm-person",
+    "shield"
   ],
   "equipment": [
-    "Velmir (shadow sword, curse lifted)",
+    "Velmire (attuned — +1d6 Necrotic, Misty Step 2/2 charges; Martial, Heavy, Two-Handed, Graze)",
     "Shield",
-    "Chain mail"
+    "Chain Mail",
+    "Longsword",
+    "Handaxe",
+    "Dagger",
+    "Sending Stones",
+    "Arrowflax",
+    "Trunks' Journal",
+    "Trunks Potion",
+    "Evil Horny Guy's Head",
+    "Evil Horny Guys' Necklace",
+    "Runed Dwarvish Collar",
+    "Furbolg Invisibility ×4",
+    "Clover Mushroom",
+    "Shiny Quipper Fish",
+    "Big Spider Fang ×2",
+    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope (hemp + silk), tinderbox, waterskin",
+    "115 gp"
   ],
-  "ac": 18,
-  "maxHp": 52,
-  "hp": 52,
-  "notes": "DRAFT (background approximated: only acolyte/criminal/sage/soldier exist in SRD 5.2) — set real level/scores/spells. Aasimar via campaign homebrew (homebrew/species.json). Secretly Lathander’s avatar body + Edrelon’s mind + Silus’s soul (see notes/pc-eddy)."
+  "ac": 16,
+  "maxHp": 48,
+  "speed": 30,
+  "hp": 48,
+  "notes": "Aasimar Paladin 4 (Oath of Glory) / Sorcerer 2. Resistances: Necrotic, Radiant. Darkvision 60 ft. Lay on Hands pool 20. Channel Divinity 1/SR (Peerless Athlete / Inspiring Smite). Divine Sense 4/LR. Healing Hands 3d4 1/LR. Celestial Revelation: Radiant Soul (fly + 3 radiant 1/turn, 1/LR). Sorcery Points 2. War Caster (adv. on concentration). Spell DC 14 (both classes CHA). Fighting style: Great Weapon Fighting. 18yo, NG, pale gray eyes. Secretly Lathander's avatar body + Edrelon's mind + Silus's soul (see notes/pc-eddy). Imported from D&D Beyond sheet 2026-07-10."
 }

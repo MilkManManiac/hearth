@@ -1,0 +1,38 @@
+[
+  {
+    "key": "noble",
+    "name": "Noble",
+    "benefits": [
+      {
+        "name": "Skill Proficiencies",
+        "desc": "History and Persuasion"
+      },
+      {
+        "name": "Tool Proficiency",
+        "desc": "One gaming set (dragonchess for the Zalennas and Darkpasses)"
+      },
+      {
+        "name": "Feature",
+        "desc": "Position of Privilege: common folk and officials assume you have the right to be wherever you are; you can secure audiences with local nobility. (Paraphrased homebrew import of the 2014 background — Varen and Brolin predate the 2024 list.)"
+      }
+    ]
+  },
+  {
+    "key": "outlander",
+    "name": "Outlander",
+    "benefits": [
+      {
+        "name": "Skill Proficiencies",
+        "desc": "Athletics and Survival"
+      },
+      {
+        "name": "Tool Proficiency",
+        "desc": "One musical instrument (Eddy: drum)"
+      },
+      {
+        "name": "Feature",
+        "desc": "Wanderer: excellent memory for maps and geography; you can always recall the general layout of the land and find food and fresh water for yourself and up to five others each day. (Paraphrased homebrew import of the 2014 background.)"
+      }
+    ]
+  }
+]

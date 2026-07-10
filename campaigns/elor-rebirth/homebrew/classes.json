@@ -1,12 +1,12 @@
 [
   {
-    "key": "way-of-shadow",
-    "name": "Way of Shadow",
+    "key": "warrior-of-shadow",
+    "name": "Warrior of Shadow",
     "subclassOf": "monk",
     "hitDice": "d8",
     "primaryAbilities": [],
     "savingThrows": [],
-    "desc": "Monks of shadow and silence — G’s teaching, Roman’s trick. (Paraphrased homebrew import; SRD 5.2 only ships Open Hand.)",
+    "desc": "Monks of shadow and silence — G’s teaching, Roman’s trick. (Paraphrased homebrew import of the 2024 subclass; SRD 5.2 only ships Open Hand.)",
     "features": [
       {
         "name": "Shadow Arts",
@@ -81,6 +81,93 @@
         "levels": [
           14
         ]
+      }
+    ]
+  },
+  {
+    "key": "oath-of-glory",
+    "name": "Oath of Glory",
+    "subclassOf": "paladin",
+    "hitDice": "d10",
+    "primaryAbilities": [],
+    "savingThrows": [],
+    "desc": "Paladins who believe they and their companions are destined for legend — Eddy's oath. (Paraphrased homebrew import; SRD 5.2 only ships Devotion.)",
+    "features": [
+      {
+        "name": "Oath of Glory Spells",
+        "desc": "Always prepared: Guiding Bolt, Heroism (3rd); Enhance Ability, Magic Weapon (5th); Haste, Protection from Energy (9th); Compulsion, Freedom of Movement (13th); Legend Lore, Yolande's Regal Presence (17th).",
+        "levels": [3]
+      },
+      {
+        "name": "Peerless Athlete",
+        "desc": "As a Bonus Action, expend a use of Channel Divinity to gain a surge of athleticism for 1 hour: Advantage on Strength (Athletics) and Dexterity (Acrobatics) checks, and your long and high jumps are 10 feet longer (extra distance costs movement as normal).",
+        "levels": [3]
+      },
+      {
+        "name": "Inspiring Smite",
+        "desc": "Immediately after you deal damage with Divine Smite, use Channel Divinity as a Bonus Action to scatter 2d8 + your Paladin level Temporary Hit Points among creatures of your choice (you included) within 30 feet.",
+        "levels": [3]
+      },
+      {
+        "name": "Aura of Alacrity",
+        "desc": "Your Speed increases by 10 feet, and allies who start their turn in your aura gain +10 feet Speed until the end of that turn.",
+        "levels": [7]
+      },
+      {
+        "name": "Glorious Defense",
+        "desc": "As a Reaction when you or a creature you can see within 10 feet is hit by an attack roll, add your Charisma modifier to the target's AC against that attack; if the attack now misses and the attacker is within your weapon's range, you can make one attack against it as part of the same Reaction. Uses = Charisma modifier (min 1) per Long Rest.",
+        "levels": [15]
+      },
+      {
+        "name": "Living Legend",
+        "desc": "As a Bonus Action (1/Long Rest, or expend a level 5 spell slot), for 10 minutes: Advantage on Charisma checks, once per turn turn a missed weapon attack into a hit, and rerolls on failed saving throws (once per turn).",
+        "levels": [20]
+      }
+    ]
+  },
+  {
+    "key": "light-domain",
+    "name": "Light Domain",
+    "subclassOf": "cleric",
+    "hitDice": "d8",
+    "primaryAbilities": [],
+    "savingThrows": [],
+    "desc": "Clerics of fire, sun, and revelation — Brolin's domain (2014 rules text paraphrased; SRD 5.2 only ships Life).",
+    "features": [
+      {
+        "name": "Bonus Cantrip",
+        "desc": "You know the Light cantrip (doesn't count against your cantrips known).",
+        "levels": [1]
+      },
+      {
+        "name": "Warding Flare",
+        "desc": "When attacked by a creature you can see within 30 feet, use your Reaction to impose Disadvantage on the attack roll. Uses = Wisdom modifier (min 1) per Long Rest.",
+        "levels": [1]
+      },
+      {
+        "name": "Domain Spells",
+        "desc": "Always prepared: Burning Hands, Faerie Fire (1st); Flaming Sphere, Scorching Ray (3rd); Daylight, Fireball (5th); Guardian of Faith, Wall of Fire (7th); Flame Strike, Scrying (9th).",
+        "levels": [1]
+      },
+      {
+        "name": "Channel Divinity: Radiance of the Dawn",
+        "desc": "As an action, present your holy symbol to dispel magical darkness within 30 feet; each hostile creature within 30 feet (without total cover) makes a Constitution save or takes 2d10 + cleric level Radiant damage (half on success).",
+        "levels": [2]
+      },
+      {
+        "name": "Improved Flare",
+        "desc": "Your Warding Flare can also protect other creatures you can see within 30 feet.",
+        "levels": [6]
+      },
+      {
+        "name": "Potent Spellcasting",
+        "desc": "Add your Wisdom modifier to the damage of your cleric cantrips.",
+        "levels": [8]
+      },
+      {
+        "name": "Corona of Light",
+        "desc": "As an action, radiate sunlight for 1 minute (60-ft bright light); enemies in the bright light have Disadvantage on saves against spells that deal Fire or Radiant damage.",
+        "levels": [17]
       }
     ]
   }

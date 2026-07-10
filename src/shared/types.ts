@@ -531,7 +531,10 @@ export interface Character {
   // --- choices (compendium keys from public/compendium/) --------------------
   classKey?: string
   subclassKey?: string
+  /** TOTAL character level (drives proficiency bonus). Primary-class level = this minus the `multiclass` levels. */
   level: number
+  /** Extra classes for multiclass PCs, each with its own class level. */
+  multiclass?: Array<{ classKey?: string; subclassKey?: string; level: number }>
   speciesKey?: string
   backgroundKey?: string
   /** Final scores (background bonuses already applied by the builder). */

@@ -3,6 +3,7 @@ import type { Character } from '../../shared/types'
 import {
   ABILITY_KEYS,
   ABILITY_LABEL,
+  classLevels,
   fmtMod,
   mod,
   passive,
@@ -54,14 +55,34 @@ export default function CharacterSheet({
   const subclasses = classes.filter((x) => x.subclassOf === c.classKey)
   const sub = classes.find((x) => x.key === c.subclassKey)
   const pb = profBonus(c.level)
-  const slots = spellSlots(c, cls)
-  const castAbility = c.classKey ? CASTING_ABILITY[c.classKey] : undefined
+  const levels = classLevels(c)
+  const slots = spellSlots(c, classes)
+  // Spell DC/attack use the primary class's casting ability, or the first caster class.
+  const castKey = levels.map((e) => e.classKey).find((k) => k && k in CASTING_ABILITY)
+  const castAbility = castKey ? CASTING_ABILITY[castKey] : undefined
   const spellDc = castAbility ? 8 + pb + mod(c.abilities[castAbility]) : null
   const spellAtk = castAbility ? pb + mod(c.abilities[castAbility]) : null
   const hpSuggest = suggestedMaxHp(c, cls?.hitDice)
-  const features = [...(cls?.features ?? []), ...(sub?.features ?? [])]
-    .filter((f) => f.levels.length === 0 || f.levels.some((l) => l <= c.level))
-    .sort((a, b) => Math.min(...(a.levels.length ? a.levels : [0])) - Math.min(...(b.levels.length ? b.levels : [0])))
+  // Each class contributes its features gated by ITS class level (not the total).
+  const features = levels
+    .flatMap(({ classKey, subclassKey, level }) => {
+      const k = classes.find((x) => x.key === classKey)
+      const s = classes.find((x) => x.key === subclassKey)
+      return [...(k?.features ?? []), ...(s?.features ?? [])].map((f) => ({ f, clsLevel: level }))
+    })
+    .filter(({ f, clsLevel }) => f.levels.length === 0 || f.levels.some((l) => l <= clsLevel))
+    .sort(
+      (a, b) =>
+        Math.min(...(a.f.levels.length ? a.f.levels : [0])) - Math.min(...(b.f.levels.length ? b.f.levels : [0]))
+    )
+  const classLabel = levels
+    .map(({ classKey, subclassKey, level }) => {
+      const k = classes.find((x) => x.key === classKey)
+      const s = classes.find((x) => x.key === subclassKey)
+      return k ? `${k.name}${s ? ` (${s.name})` : ''} ${level}` : null
+    })
+    .filter(Boolean)
+    .join(' / ')
 
   const [dmg, setDmg] = useState('')
   const applyHp = (sign: 1 | -1) => {
@@ -128,10 +149,57 @@ export default function CharacterSheet({
             max={20}
             value={c.level}
             onChange={(e) => patch({ level: Math.min(20, Math.max(1, Number(e.target.value) || 1)) })}
-            title="Level up here — features, proficiency bonus, and spell slots follow"
+            title="TOTAL level (all classes) — features, proficiency bonus, and spell slots follow"
             className="w-12 rounded border border-hearth-border bg-hearth-bg px-1 py-0.5 text-center text-hearth-text"
           />
         </label>
+        {(c.multiclass ?? []).map((mc, i) => {
+          const mcSubs = classes.filter((x) => x.subclassOf === mc.classKey)
+          const setMc = (p: Partial<{ classKey?: string; subclassKey?: string; level: number }>) =>
+            patch({ multiclass: (c.multiclass ?? []).map((x, j) => (j === i ? { ...x, ...p } : x)) })
+          return (
+            <span key={i} className="flex items-center gap-1 rounded border border-hearth-border/60 bg-hearth-panel2/50 px-1 py-0.5">
+              <span className="text-hearth-muted/60">＋</span>
+              <select value={mc.classKey ?? ''} onChange={(e) => setMc({ classKey: e.target.value || undefined, subclassKey: undefined })} className="rounded border border-hearth-border bg-hearth-panel2 px-1 py-0.5 text-hearth-text">
+                <option value="">— class —</option>
+                {classes.filter((x) => !x.subclassOf).map((x) => (
+                  <option key={x.key} value={x.key}>{x.name}</option>
+                ))}
+              </select>
+              {mcSubs.length > 0 && (
+                <select value={mc.subclassKey ?? ''} onChange={(e) => setMc({ subclassKey: e.target.value || undefined })} className="rounded border border-hearth-border bg-hearth-panel2 px-1 py-0.5 text-hearth-text">
+                  <option value="">— subclass —</option>
+                  {mcSubs.map((x) => (
+                    <option key={x.key} value={x.key}>{x.name}</option>
+                  ))}
+                </select>
+              )}
+              <input
+                type="number"
+                min={1}
+                max={19}
+                value={mc.level}
+                onChange={(e) => setMc({ level: Math.min(19, Math.max(1, Number(e.target.value) || 1)) })}
+                title="Levels in this class (the primary class gets the rest of the total)"
+                className="w-10 rounded border border-hearth-border bg-hearth-bg px-1 py-0.5 text-center text-hearth-text"
+              />
+              <button
+                onClick={() => patch({ multiclass: (c.multiclass ?? []).filter((_, j) => j !== i).length ? (c.multiclass ?? []).filter((_, j) => j !== i) : undefined })}
+                className="text-hearth-muted hover:text-red-400"
+                title="Remove this class"
+              >
+                ×
+              </button>
+            </span>
+          )
+        })}
+        <button
+          onClick={() => patch({ multiclass: [...(c.multiclass ?? []), { level: 1 }] })}
+          className="rounded border border-dashed border-hearth-border px-1.5 py-0.5 text-hearth-muted hover:text-hearth-text"
+          title="Multiclass: add levels in a second class"
+        >
+          + class
+        </button>
         <select value={c.speciesKey ?? ''} onChange={(e) => patch({ speciesKey: e.target.value || undefined })} className="rounded border border-hearth-border bg-hearth-panel2 px-1.5 py-1 text-hearth-text">
           <option value="">— species —</option>
           {species.map((x) => (
@@ -145,6 +213,11 @@ export default function CharacterSheet({
           ))}
         </select>
         <span className="text-hearth-muted">PB +{pb}</span>
+        {(c.multiclass?.length ?? 0) > 0 && (
+          <span className="text-hearth-muted/70" title="Class split (primary class gets the remainder of the total level)">
+            {classLabel}
+          </span>
+        )}
         {c.speciesKey && cb.onOpenSpecies && (
           <button onClick={() => cb.onOpenSpecies!(c.speciesKey!)} className="text-hearth-gold hover:text-hearth-ember" title="Species traits (📖)">
             📖
@@ -197,7 +270,7 @@ export default function CharacterSheet({
           ✨ Insp
         </button>
         <span className="ml-auto flex gap-1.5">
-          <button onClick={() => patch({ slotsUsed: c.classKey === 'warlock' ? {} : c.slotsUsed })} className="rounded border border-hearth-border px-2 py-0.5 text-xs text-hearth-muted hover:text-hearth-text" title="Short rest: warlock Pact slots return">
+          <button onClick={() => patch({ slotsUsed: levels.some((e) => e.classKey === 'warlock') ? {} : c.slotsUsed })} className="rounded border border-hearth-border px-2 py-0.5 text-xs text-hearth-muted hover:text-hearth-text" title="Short rest: warlock Pact slots return">
             🌙 Short rest
           </button>
           <button onClick={longRest} className="rounded border border-hearth-ember bg-hearth-ember/15 px-2 py-0.5 text-xs text-hearth-ember hover:bg-hearth-ember/30" title="Long rest: full HP, all slots, half your hit dice back">
@@ -316,15 +389,14 @@ export default function CharacterSheet({
       {features.length > 0 && (
         <details className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2" open={false}>
           <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
-            Class features ({features.length}) — {cls?.name}
-            {sub ? ` / ${sub.name}` : ''}
+            Class features ({features.length}) — {classLabel || `${cls?.name ?? ''}${sub ? ` / ${sub.name}` : ''}`}
           </summary>
           <div className="mt-1 space-y-1.5">
-            {features.map((f) => (
-              <p key={f.name} className="text-xs leading-snug text-hearth-muted">
+            {features.map(({ f, clsLevel }, i) => (
+              <p key={`${f.name}:${i}`} className="text-xs leading-snug text-hearth-muted">
                 <span className="font-semibold text-hearth-text">
                   {f.name}
-                  {f.levels.length ? ` (${f.levels.filter((l) => l <= c.level).join(', ')})` : ''}.{' '}
+                  {f.levels.length ? ` (${f.levels.filter((l) => l <= clsLevel).join(', ')})` : ''}.{' '}
                 </span>
                 {f.desc.length > 400 ? `${f.desc.slice(0, 400)}…` : f.desc}
               </p>
@@ -423,7 +495,8 @@ function SpellsBox({
     .filter((s): s is Spell => !!s)
     .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
 
-  if ((c.spells ?? []).length === 0 && !(c.classKey && c.classKey in CASTING_ABILITY)) return null
+  const isCaster = [c.classKey, ...(c.multiclass ?? []).map((e) => e.classKey)].some((k) => k && k in CASTING_ABILITY)
+  if ((c.spells ?? []).length === 0 && !isCaster) return null
 
   return (
     <div className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2">

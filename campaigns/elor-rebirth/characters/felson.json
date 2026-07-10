@@ -1,32 +1,50 @@
 {
   "id": "felson",
-  "name": "Felson",
+  "name": "Felsen Cavernborn",
   "player": "Seth",
   "classKey": "monk",
-  "subclassKey": "way-of-shadow",
+  "subclassKey": "warrior-of-shadow",
   "level": 6,
   "speciesKey": "human",
-  "backgroundKey": "criminal",
+  "backgroundKey": "acolyte",
   "abilities": {
     "str": 12,
     "dex": 16,
-    "con": 14,
-    "int": 10,
+    "con": 13,
+    "int": 12,
     "wis": 15,
     "cha": 8
   },
   "skillProfs": [
     "acrobatics",
-    "stealth",
-    "perception"
+    "athletics",
+    "history",
+    "insight",
+    "religion"
+  ],
+  "featKeys": [
+    "shadow-touched",
+    "tavern-brawler"
+  ],
+  "spells": [
+    "minor-illusion",
+    "darkness",
+    "invisibility",
+    "cause-fear"
   ],
   "equipment": [
-    "Gabriel’s Keg (combat brews)",
+    "Earthen Quarterstaff (Topple)",
+    "Quarterstaff",
+    "Dagger ×2",
+    "Gabriel's Keg (combat brews) — brewer's supplies proficiency",
     "Bottled pool-liquid (S25!)",
-    "Darts"
+    "Emblem + vestments",
+    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope 50ft, tinderbox, waterskin, common clothes",
+    "215 gp"
   ],
   "ac": 15,
-  "maxHp": 45,
-  "hp": 45,
-  "notes": "DRAFT (background approximated: only acolyte/criminal/sage/soldier exist in SRD 5.2) — set real level/scores. Cavernborn human, Way of Shadow at the table (Way of Shadow via campaign homebrew (homebrew/classes.json)). Combat brewer; parents lost to the pool (see notes/pc-felson)."
+  "maxHp": 39,
+  "speed": 45,
+  "hp": 39,
+  "notes": "Human Monk 6 — Warrior of Shadow. Focus Points 6 (Flurry, Patient Defense, Step of the Wind). Martial Arts d8; Dex-based Unarmed Strike +6 (Tavern Brawler: 1d4+3 base, reroll 1s, push 5 ft 1/turn). Deflect Attacks (reduce 1d10+9). Stunning Strike DC 13. Empowered Strikes (force damage). Uncanny Metabolism 1/LR. Shadow Arts: Darkvision 60 ft, Minor Illusion, Darkness (1 FP, see inside, movable). Shadow Step (bonus-action teleport 60 ft dim/darkness, adv. on next melee). Shadow Touched: Invisibility + Cause Fear 1/LR each (WIS). Speed 45. CG. Combat brewer; parents lost to the pool (see notes/pc-felson). Imported from D&D Beyond sheet 2026-07-10."
 }

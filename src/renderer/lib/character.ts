@@ -84,29 +84,55 @@ const PACT: [number, number][] = [
   [3, 5], [3, 5], [3, 5], [3, 5], [3, 5], [3, 5], [4, 5], [4, 5], [4, 5], [4, 5]
 ]
 
+/** One class the character has levels in (primary first; its level is derived from the total). */
+export interface ClassLevel {
+  classKey?: string
+  subclassKey?: string
+  level: number
+}
+
+/** Resolve `level` (total) + `multiclass` into per-class levels, primary first. */
+export function classLevels(c: Character): ClassLevel[] {
+  const extra = (c.multiclass ?? []).filter((e) => e.level > 0)
+  const extraLvls = extra.reduce((n, e) => n + e.level, 0)
+  return [
+    { classKey: c.classKey, subclassKey: c.subclassKey, level: Math.max(1, c.level - extraLvls) },
+    ...extra
+  ]
+}
+
 /**
- * Spell slots per level ("1".."9" → count) for a character. Warlock uses Pact
+ * Spell slots per level ("1".."9" → count). Single class: warlock uses Pact
  * Magic; HALF casters (paladin/ranger) use ceil(level/2) on the full table
- * (2024 rounds UP from level 1).
+ * (2024 rounds UP from level 1). Multiclass: combined caster level = full
+ * levels + ceil(half levels / 2); warlock pact slots are added on top.
  */
-export function spellSlots(c: Character, cls: ClassEntry | undefined): Record<string, number> {
-  if (!cls?.casterType && cls?.key !== 'warlock') return {}
-  const lvl = Math.min(20, Math.max(1, c.level))
-  if (cls.key === 'warlock') {
-    const [count, slotLvl] = PACT[lvl - 1]
-    return { [String(slotLvl)]: count }
-  }
-  const effective = cls.casterType === 'HALF' ? Math.ceil(lvl / 2) : lvl
-  const row = FULL_SLOTS[Math.min(20, Math.max(1, effective)) - 1] ?? []
+export function spellSlots(c: Character, classes: ClassEntry[]): Record<string, number> {
   const out: Record<string, number> = {}
-  row.forEach((n, i) => {
-    if (n > 0) out[String(i + 1)] = n
-  })
+  let combined = 0
+  for (const { classKey, level } of classLevels(c)) {
+    const cls = classes.find((x) => x.key === classKey)
+    if (!cls) continue
+    const lvl = Math.min(20, Math.max(1, level))
+    if (cls.key === 'warlock') {
+      const [count, slotLvl] = PACT[lvl - 1]
+      out[String(slotLvl)] = (out[String(slotLvl)] ?? 0) + count
+    } else if (cls.casterType) {
+      combined += cls.casterType === 'HALF' ? Math.ceil(lvl / 2) : lvl
+    }
+  }
+  if (combined > 0) {
+    const row = FULL_SLOTS[Math.min(20, combined) - 1] ?? []
+    row.forEach((n, i) => {
+      if (n > 0) out[String(i + 1)] = (out[String(i + 1)] ?? 0) + n
+    })
+  }
   return out
 }
 
-/** Suggested max HP: level-1 max die + (level-1) × (avg die + con). Advisory only. */
+/** Suggested max HP: level-1 max die + (level-1) × (avg die + con). Advisory only; skipped for multiclass (mixed dice). */
 export function suggestedMaxHp(c: Character, hitDice: string | undefined): number | null {
+  if (c.multiclass?.some((e) => e.level > 0)) return null
   const m = /d(\d+)/i.exec(hitDice ?? '')
   if (!m) return null
   const die = parseInt(m[1], 10)
