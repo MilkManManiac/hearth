@@ -385,6 +385,10 @@ app.whenReady().then(async () => {
       const result = await campaign.createCharacter(name)
       broadcast('campaign:changed', result.state)
       return { characterId: result.characterId }
+    },
+    getLiveMap: async () => {
+      const s = await campaign.load()
+      return s.maps.find((m) => m.id === s.liveMapId) ?? null
     }
   })
   const initial = await campaign.init()

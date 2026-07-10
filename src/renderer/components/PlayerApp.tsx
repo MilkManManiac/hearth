@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Character, RollEvent } from '../../shared/types'
+import type { CampaignMap, Character, RollEvent } from '../../shared/types'
 import { loadKind, type ClassEntry, type NamedEntry } from '../lib/compendium'
 import CharacterSheet from './CharacterSheet'
 import { RollFeed } from './GameLog'
+import { PresenterMap, playerTableView } from './MapEditor'
 import { EntryArticle, SpellCard } from './StatBlock'
 import type { Spell } from '../lib/compendium'
 import { loadSpells } from '../lib/compendium'
@@ -69,6 +70,9 @@ export default function PlayerApp() {
   const [spellCard, setSpellCard] = useState<Spell | null>(null)
   const [speciesCard, setSpeciesCard] = useState<NamedEntry | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Ember Table view (M2): live-follows the DM's live map.
+  const [view, setView] = useState<'sheet' | 'table'>('sheet')
+  const [liveMap, setLiveMap] = useState<CampaignMap | null>(null)
   const [rolls, setRolls] = useState<RollEvent[]>([])
   const [logOpen, setLogOpen] = useState(false)
   const [unseen, setUnseen] = useState(0)
@@ -91,15 +95,20 @@ export default function PlayerApp() {
     }).catch(() => undefined)
   }
 
-  const refetch = () =>
-    api<Character[]>('/api/characters')
+  const refetch = () => {
+    void api<{ map: CampaignMap | null }>('/api/table')
+      .then((t) => setLiveMap(t.map))
+      .catch(() => undefined)
+    return api<Character[]>('/api/characters')
       .then((cs) => {
         if (Date.now() - lastEdit.current > 3000) setCharacters(cs)
       })
       .catch((e) => setError((e as Error).message))
+  }
 
   useEffect(() => {
     void api<Character[]>('/api/characters').then(setCharacters).catch((e) => setError((e as Error).message))
+    void api<{ map: CampaignMap | null }>('/api/table').then((t) => setLiveMap(t.map)).catch(() => undefined)
     loadKind('class').then((r) => setClasses(r as unknown as ClassEntry[]))
     loadKind('species').then(setSpecies)
     loadKind('background').then(setBackgrounds)
@@ -138,18 +147,60 @@ export default function PlayerApp() {
           <span className="drop-shadow-[0_0_8px_rgba(224,138,60,0.6)]">🔥</span> Hearth
         </span>
         <span className="text-xs text-hearth-muted">— your character, live at the table</span>
+        <button
+          onClick={() => setView('table')}
+          title={liveMap ? `The table is live: ${liveMap.name}` : 'The table is dark — the DM has no map live'}
+          className="ml-auto flex items-center gap-1.5 rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+        >
+          {liveMap && <span className="inline-block h-1.5 w-1.5 animate-flicker rounded-full bg-red-400" />}
+          🗺 Table
+        </button>
         {selected && (
           <button
             onClick={() => {
               setSelectedId(null)
               localStorage.removeItem('hearth:myCharacter')
             }}
-            className="ml-auto rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:text-hearth-text"
+            className="rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:text-hearth-text"
           >
-            ⇄ switch character
+            ⇄ switch
           </button>
         )}
       </header>
+
+      {/* 🗺 The Table (M2): live-follows the DM's live map — fog zones clear
+          in real time, initiative on top, PC HP rings. Full-bleed for phones. */}
+      {view === 'table' && (
+        <div className="fixed inset-0 z-30 bg-black">
+          {liveMap && liveMap.image ? (
+            (() => {
+              const pv = playerTableView(liveMap, characters ?? [])
+              return (
+                <PresenterMap
+                  file={liveMap.image}
+                  strokes={liveMap.strokes}
+                  zones={liveMap.zones}
+                  tokens={liveMap.tokens}
+                  grid={liveMap.grid}
+                  overlays={liveMap.overlays}
+                  decor={pv.decor}
+                  initiative={pv.initiative}
+                />
+              )
+            })()
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-white/30">
+              The table is dark — waiting for the DM to go live…
+            </div>
+          )}
+          <button
+            onClick={() => setView('sheet')}
+            className="absolute bottom-4 left-4 z-40 rounded-full border border-white/20 bg-black/70 px-3 py-2 text-sm text-white/80 hover:border-hearth-ember"
+          >
+            ← my sheet
+          </button>
+        </div>
+      )}
 
       <main className="mx-auto max-w-3xl p-4">
         {error && (

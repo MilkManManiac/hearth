@@ -2,7 +2,7 @@ import http from 'http'
 import os from 'os'
 import * as path from 'path'
 import { promises as fs } from 'fs'
-import type { Character, RollEvent } from '../shared/types'
+import type { CampaignMap, Character, RollEvent } from '../shared/types'
 
 // ONESTOP-PLAN C5 — the player portal: Hearth hosts a small HTTP server so
 // each PLAYER opens their character in any browser (phone/laptop) — build,
@@ -43,7 +43,12 @@ export interface PortalDeps {
   createCharacter: (name: string) => Promise<{ characterId: string }>
   /** Recent public rolls for the portal's log (DM-only rolls pre-filtered). */
   getRolls: () => RollEvent[]
+  /** The live map for Ember's Table view (M2) — null = table dark. */
+  getLiveMap: () => Promise<CampaignMap | null>
 }
+
+/** Image types the /asset/ route will serve to browsers (maps + handouts). */
+const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'])
 
 function lanIp(): string {
   for (const addrs of Object.values(os.networkInterfaces())) {
@@ -179,6 +184,29 @@ export class PlayerPortal {
         res.write('data: hello\n\n')
         this.sseClients.add(res)
         req.on('close', () => this.sseClients.delete(res))
+        return
+      }
+      // Ember Table view (M2): the live map, rendered client-side.
+      if (url === '/api/table' && req.method === 'GET') {
+        return this.json(res, { map: await this.deps.getLiveMap() })
+      }
+      // Campaign images (map art, handouts) — images only, path-guarded.
+      if (url.startsWith('/asset/')) {
+        const rel = decodeURIComponent(url.slice('/asset/'.length))
+        const root = path.resolve(this.deps.campaignDir())
+        const abs = path.resolve(root, rel)
+        if (!abs.startsWith(root + path.sep)) return this.text(res, 'Forbidden', 403)
+        const ext = path.extname(abs).toLowerCase()
+        if (!IMAGE_EXTS.has(ext)) return this.text(res, 'Forbidden', 403)
+        try {
+          const data = await fs.readFile(abs)
+          const type =
+            ext === '.svg' ? 'image/svg+xml' : ext === '.png' ? 'image/png' : ext === '.webp' ? 'image/webp' : ext === '.gif' ? 'image/gif' : 'image/jpeg'
+          res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'max-age=3600' })
+          res.end(data)
+        } catch {
+          this.text(res, 'Not found', 404)
+        }
         return
       }
       // Campaign homebrew (merged into the compendium client-side).
