@@ -1,18 +1,21 @@
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
 import { NOTE_KINDS } from '../../shared/types'
-import { openNoteLink } from '../components/NoteLinkPill'
+import { useNotePeek } from '../components/NotePeek'
+import { openNoteLink } from '../lib/noteNav'
 import { useStore } from '../store'
 
 /**
  * Inline atomic [[wiki-link]] chip inside the editor. Shows the target note's
- * live title (or the authored label override). Plain click selects the node
- * like any atom (so Backspace deletes it); Ctrl/Cmd+click follows the link —
+ * live title (or the authored label override) and a hover-peek card. Plain
+ * click selects the node like any atom (so Backspace deletes it);
+ * Ctrl/Cmd+click follows the link (creating the note if it doesn't exist) —
  * the same convention as editing in Obsidian/VS Code.
  */
 export default function NoteLinkChip({ node, selected }: NodeViewProps) {
   const ref = (node.attrs.ref as string) ?? ''
   const label = (node.attrs.label as string) || ''
   const target = useStore((s) => s.campaign.notes.find((n) => n.id === ref))
+  const peek = useNotePeek(ref)
   const display = label || target?.title || ref
   const icon = target ? (NOTE_KINDS[target.kind]?.icon ?? '📝') : '∅'
 
@@ -24,13 +27,15 @@ export default function NoteLinkChip({ node, selected }: NodeViewProps) {
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault()
           e.stopPropagation()
-          openNoteLink(ref)
+          void openNoteLink(ref)
         }
       }}
+      onMouseEnter={peek.onMouseEnter}
+      onMouseLeave={peek.onMouseLeave}
       title={
         target
           ? `${NOTE_KINDS[target.kind]?.label ?? 'Note'}: ${target.title} — Ctrl+click to open`
-          : `No note "${ref}" exists yet`
+          : `No note "${ref}" yet — Ctrl+click to create it`
       }
       className={`mx-px inline-flex cursor-pointer select-none items-baseline gap-1 rounded px-0.5 align-baseline ${
         target
@@ -42,6 +47,7 @@ export default function NoteLinkChip({ node, selected }: NodeViewProps) {
         {icon}
       </span>
       {display}
+      {peek.card}
     </NodeViewWrapper>
   )
 }

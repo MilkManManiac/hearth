@@ -221,6 +221,11 @@ interface AppState {
    */
   captureToSession: (text: string) => Promise<void>
   selectNote: (id: string | null) => void
+  /** Note-navigation history (browser-style): ids you came from / went past. */
+  noteBack: string[]
+  noteForward: string[]
+  goNoteBack: () => void
+  goNoteForward: () => void
   setLeftTab: (tab: 'scenes' | 'notes') => void
   updateNote: (noteId: string, mutate: (n: CampaignNote) => CampaignNote) => Promise<void>
   createNote: (kind: NoteKind, title: string) => Promise<void>
@@ -979,7 +984,39 @@ export const useStore = create<AppState>((set, get) => ({
     get().pushToast(`Logged to ${target.title}`, 'info')
   },
 
-  selectNote: (id) => set({ currentNoteId: id }),
+  selectNote: (id) =>
+    set((s) => {
+      if (id === s.currentNoteId) return {}
+      // Only real note→note jumps build history; deselects don't.
+      const noteBack =
+        id && s.currentNoteId ? [...s.noteBack, s.currentNoteId].slice(-50) : s.noteBack
+      return { currentNoteId: id, noteBack, noteForward: id ? [] : s.noteForward }
+    }),
+
+  noteBack: [],
+  noteForward: [],
+
+  goNoteBack: () =>
+    set((s) => {
+      const prev = s.noteBack[s.noteBack.length - 1]
+      if (!prev) return {}
+      return {
+        currentNoteId: prev,
+        noteBack: s.noteBack.slice(0, -1),
+        noteForward: s.currentNoteId ? [s.currentNoteId, ...s.noteForward].slice(0, 50) : s.noteForward
+      }
+    }),
+
+  goNoteForward: () =>
+    set((s) => {
+      const next = s.noteForward[0]
+      if (!next) return {}
+      return {
+        currentNoteId: next,
+        noteForward: s.noteForward.slice(1),
+        noteBack: s.currentNoteId ? [...s.noteBack, s.currentNoteId].slice(-50) : s.noteBack
+      }
+    }),
 
   setLeftTab: (tab) => {
     localStorage.setItem('hearth:leftTab', tab)

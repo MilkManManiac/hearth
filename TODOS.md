@@ -558,6 +558,25 @@ script renders + navigates without shifting Space-cue order.
 row creates a campaign note of the mapped kind (npc/monster→NPC + tag,
 item→Item, location→Location, hook→Thread), seeds it with the row's note text
 + a provenance callout, and the row keeps a 📓 button that opens the note.
+**Link-navigation UX ✅ (2026-07-10, research-backed — Wikipedia/Obsidian/Notion patterns):**
+- **Hover peek**: rest on any [[link]] ~400ms (read-only pills AND editor chips)
+  → scrollable preview card (title, kind, full body, "Open →"), 300ms grace to
+  move into it, portal-rendered. Read a note without losing your place.
+- **Back/forward history**: browser-style stack for note navigation — ←/→
+  buttons on the note page + the run-mode 📓 panel, **Alt+←/→** keys, and the
+  **mouse back/forward buttons**. Capped at 50 entries.
+- **Unresolved links create on click** (wiki convention — never a dead end):
+  ref humanized to a title, note created, navigation follows. Editor chips via
+  Ctrl+click.
+- **Elor content**: bulk-linkified 460+ first mentions across all 88 notes
+  (alias-aware: Kena/G/Eddy…), fixed [[mr-spells]] → spells-family, cleaned
+  noisy auto-matches. Zero unresolved refs.
+- **Verify by hand:** hover a link → card appears/scrolls; click through 3
+  notes → Alt+← walks back; mouse4/5 work; type `[[new-thing]]` → click it →
+  note created.
+- ⏳ Repack pending: desktop-icon build (hearth-release) was in use at build
+  time — rerun `npm run pack` when Hearth is closed.
+
 **N4 unlinked mentions ✅ (2026-07-09):** a note page's backlinks section now
 also lists 💬 places whose prose says the note's title without a [[link]]
 (word-boundary match — "Kena" won't fire inside "Kennarea"); each has a

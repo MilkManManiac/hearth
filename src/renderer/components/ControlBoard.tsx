@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER, type Scene } from '../../shared/types'
 import { setCheckedAt } from '../../shared/scriptCompile'
+import { isTypingTarget } from '../lib/keys'
 import { useStore } from '../store'
+import { NoteNavButtons } from './NotePeek'
 import NoteBody from './NoteBody'
 import TopBar from './TopBar'
 import SceneList from './SceneList'
@@ -69,6 +71,30 @@ export default function ControlBoard() {
     localStorage.setItem('hearth:rightRail', rightOpen ? '0' : '1')
     setRightOpen(!rightOpen)
   }
+
+  // Note-history navigation: Alt+←/→ and the mouse back/forward buttons,
+  // browser-style. Typing and keyboard-owning modals win.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return
+      const st = useStore.getState()
+      if (st.switcherOpen || st.captureOpen || st.libraryOpen || st.triage || st.discordOpen) return
+      if (isTypingTarget(e.target)) return
+      e.preventDefault()
+      if (e.key === 'ArrowLeft') st.goNoteBack()
+      else st.goNoteForward()
+    }
+    const onMouse = (e: MouseEvent) => {
+      if (e.button === 3) useStore.getState().goNoteBack()
+      else if (e.button === 4) useStore.getState().goNoteForward()
+    }
+    window.addEventListener('keydown', onKey, true)
+    window.addEventListener('mouseup', onMouse)
+    return () => {
+      window.removeEventListener('keydown', onKey, true)
+      window.removeEventListener('mouseup', onMouse)
+    }
+  }, [])
 
   return (
     <div className="hearth-ambient flex h-full flex-col text-hearth-text">
@@ -243,26 +269,29 @@ function NotesPeek() {
 
   return (
     <div className="space-y-3">
-      <select
-        value={note?.id ?? ''}
-        onChange={(e) => selectNote(e.target.value || null)}
-        className="w-full rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-sm text-hearth-text"
-      >
-        <option value="">— pick a note —</option>
-        {NOTE_KIND_ORDER.map((kind) => {
-          const items = notes.filter((n) => n.kind === kind)
-          if (items.length === 0) return null
-          return (
-            <optgroup key={kind} label={NOTE_KINDS[kind].plural}>
-              {items.map((n) => (
-                <option key={n.id} value={n.id}>
-                  {n.title}
-                </option>
-              ))}
-            </optgroup>
-          )
-        })}
-      </select>
+      <div className="flex items-center gap-2">
+        <NoteNavButtons />
+        <select
+          value={note?.id ?? ''}
+          onChange={(e) => selectNote(e.target.value || null)}
+          className="w-full min-w-0 flex-1 rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-sm text-hearth-text"
+        >
+          <option value="">— pick a note —</option>
+          {NOTE_KIND_ORDER.map((kind) => {
+            const items = notes.filter((n) => n.kind === kind)
+            if (items.length === 0) return null
+            return (
+              <optgroup key={kind} label={NOTE_KINDS[kind].plural}>
+                {items.map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.title}
+                  </option>
+                ))}
+              </optgroup>
+            )
+          })}
+        </select>
+      </div>
       {note && (
         <>
           <div className="flex items-center gap-2 text-sm font-semibold text-hearth-text">

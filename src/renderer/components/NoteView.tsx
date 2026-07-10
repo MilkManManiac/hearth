@@ -3,6 +3,7 @@ import { NOTE_KINDS, NOTE_KIND_ORDER, type CampaignNote, type NoteKind } from '.
 import { docLinks, docMentions, linkifyMentions } from '../../shared/scriptCompile'
 import { useStore } from '../store'
 import NoteEditor from './NoteEditor'
+import { NoteNavButtons } from './NotePeek'
 
 /**
  * A campaign note's page in the main area: editable title, retypeable kind
@@ -68,6 +69,7 @@ export default function NoteView({ note }: { note: CampaignNote }) {
     <div className="mx-auto max-w-3xl space-y-4">
       <div>
         <div className="flex items-center gap-3">
+          <NoteNavButtons />
           <span className="text-2xl" aria-hidden title={meta.label}>
             {meta.icon}
           </span>
