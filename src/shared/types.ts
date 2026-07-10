@@ -340,6 +340,12 @@ export interface Combatant {
   name: string
   /** Compendium monster key (public/compendium/monsters.json), if any. */
   ref?: string
+  /**
+   * Linked party character (characters/*.json). When set, HP/AC live on the
+   * CHARACTER — the tracker reads and writes the sheet, so the party
+   * dashboard and the player portal stay in sync with combat.
+   */
+  characterId?: string
   side: 'foe' | 'ally' | 'pc'
   maxHp: number
   hp: number

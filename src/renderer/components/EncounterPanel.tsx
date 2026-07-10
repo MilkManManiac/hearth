@@ -23,6 +23,8 @@ const SIDE_STYLE: Record<Combatant['side'], string> = {
 export default function EncounterPanel({ scene }: { scene: Scene }) {
   const updateScene = useStore((s) => s.updateScene)
   const openCompendium = useStore((s) => s.openCompendium)
+  const partyChars = useStore((s) => s.campaign.characters)
+  const updateCharacter = useStore((s) => s.updateCharacter)
   const enc = scene.encounter ?? EMPTY
 
   const [monsters, setMonsters] = useState<Monster[] | null>(null)
@@ -74,15 +76,26 @@ export default function EncounterPanel({ scene }: { scene: Scene }) {
     })
   }
 
-  const addPc = () => {
-    const name = pcDraft.trim()
+  const addPc = (characterId?: string) => {
+    const char = characterId ? partyChars.find((x) => x.id === characterId) : undefined
+    const name = char?.name ?? pcDraft.trim()
     if (!name) return
     setPcDraft('')
     mutate((e) => ({
       ...e,
       combatants: [
         ...e.combatants,
-        { id: crypto.randomUUID(), name, side: 'pc', maxHp: 0, hp: 0, initBonus: 0, conditions: [] }
+        {
+          id: crypto.randomUUID(),
+          name,
+          characterId: char?.id,
+          side: 'pc',
+          maxHp: char?.maxHp ?? 0,
+          hp: char?.hp ?? 0,
+          ac: char?.ac,
+          initBonus: char ? Math.floor((char.abilities.dex - 10) / 2) : 0,
+          conditions: []
+        }
       ]
     }))
   }
@@ -131,6 +144,19 @@ export default function EncounterPanel({ scene }: { scene: Scene }) {
 
   const patch = (id: string, p: Partial<Combatant>) =>
     mutate((e) => ({ ...e, combatants: e.combatants.map((c) => (c.id === id ? { ...c, ...p } : c)) }))
+
+  /** Linked PCs mirror their character sheet — the tracker never forks HP. */
+  const withLiveState = (c: Combatant): Combatant => {
+    if (!c.characterId) return c
+    const char = partyChars.find((x) => x.id === c.characterId)
+    if (!char) return c
+    return { ...c, name: char.name, hp: char.hp, maxHp: char.maxHp, ac: char.ac }
+  }
+
+  const patchHp = (c: Combatant, hp: number) => {
+    if (c.characterId) void updateCharacter(c.characterId, (x) => ({ ...x, hp }))
+    else patch(c.id, { hp })
+  }
 
   const totalXp = enc.combatants.filter((c) => c.side === 'foe').reduce((s, c) => s + (c.xp ?? 0), 0)
   const rating = rateEncounter(totalXp, partySize, partyLevel)
@@ -214,10 +240,11 @@ export default function EncounterPanel({ scene }: { scene: Scene }) {
 
       {/* Roster */}
       <ul className="space-y-1">
-        {(live ? ordered : enc.combatants).map((c, i) => (
+        {(live ? ordered : enc.combatants).map(withLiveState).map((c, i) => (
           <CombatantRow
             key={c.id}
             c={c}
+            onHp={(hp) => patchHp(c, hp)}
             active={live && i === enc.turn}
             round={enc.round}
             onPatch={(p) => patch(c.id, p)}
@@ -260,15 +287,31 @@ export default function EncounterPanel({ scene }: { scene: Scene }) {
               </div>
             )}
           </div>
+          {partyChars.filter((ch) => !enc.combatants.some((c) => c.characterId === ch.id)).length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {partyChars
+                .filter((ch) => !enc.combatants.some((c) => c.characterId === ch.id))
+                .map((ch) => (
+                  <button
+                    key={ch.id}
+                    onClick={() => addPc(ch.id)}
+                    title={`Add ${ch.name} — linked to their sheet (HP syncs both ways)`}
+                    className="rounded-full border border-hearth-gold/50 bg-hearth-gold/10 px-2 py-0.5 text-xs text-hearth-gold hover:bg-hearth-gold/25"
+                  >
+                    + {ch.name}
+                  </button>
+                ))}
+            </div>
+          )}
           <div className="flex gap-1">
             <input
               value={pcDraft}
               onChange={(e) => setPcDraft(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addPc()}
-              placeholder="Add PC / ally by name…"
+              placeholder="Add unlinked ally by name…"
               className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-sm text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none"
             />
-            <button onClick={addPc} className="rounded border border-hearth-border bg-hearth-panel2 px-2 text-sm text-hearth-muted hover:text-hearth-ember">
+            <button onClick={() => addPc()} className="rounded border border-hearth-border bg-hearth-panel2 px-2 text-sm text-hearth-muted hover:text-hearth-ember">
               +
             </button>
           </div>
@@ -284,7 +327,8 @@ function CombatantRow({
   round,
   onPatch,
   onRemove,
-  onStatBlock
+  onStatBlock,
+  onHp
 }: {
   c: Combatant
   active: boolean
@@ -292,6 +336,7 @@ function CombatantRow({
   onPatch: (p: Partial<Combatant>) => void
   onRemove: () => void
   onStatBlock?: () => void
+  onHp: (hp: number) => void
 }) {
   const [dmg, setDmg] = useState('')
   const [condDraft, setCondDraft] = useState('')
@@ -301,7 +346,7 @@ function CombatantRow({
     const n = parseInt(dmg, 10)
     if (!Number.isFinite(n) || n <= 0) return
     setDmg('')
-    onPatch({ hp: Math.min(c.maxHp || 999, Math.max(0, c.hp + sign * n)) })
+    onHp(Math.min(c.maxHp || 999, Math.max(0, c.hp + sign * n)))
   }
 
   const addCond = () => {

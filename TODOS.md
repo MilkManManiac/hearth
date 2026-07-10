@@ -9,10 +9,15 @@ session (see bottom) to turn the big ones into concrete specs before building.
 
 ## 🔔 WES — review queue (updated 2026-07-10; everything Claude needs from you)
 
-**One-stop shop (2026-07-10, ONESTOP-PLAN.md — C1–C4 all shipped):**
+**One-stop shop (2026-07-10, ONESTOP-PLAN.md — C1–C5 all shipped):**
 - [ ] Try: 📖 Rules (search "goblin"), 🛡 Party (your 3 PCs are drafted —
   fix their levels/scores, marked DRAFT), ⚔ tab on a scene (stock a fight),
   🗺 on a scene image (fog editor → 📤 Send with the Presenter open).
+- [ ] 🌐 PLAYER PORTAL (C5): in 🛡 Party hit '🌐 Player portal' → copy the URL → open it on
+  your phone (same wifi). REVIEW: is no-auth-on-LAN acceptable, and pick the remote-player
+  route (cloudflared tunnel vs Tailscale vs port-forward) — Claude can wire whichever.
+- [ ] ⚔↔🛡 sync: add a party PC to an encounter via its gold chip, damage it in the tracker,
+  watch the sheet + dashboard + player browser all update.
 - [ ] Tell Claude: are the SRD subclass stand-ins OK (Varen shows Evoker not
   Diviner, Felson shows Open Hand not Shadow — SRD 5.2 ships one subclass per
   class; homebrew JSON can add the real ones anytime).

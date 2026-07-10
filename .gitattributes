@@ -1,0 +1,16 @@
+# Normalize to LF in the repo (papercut: mixed CRLF/LF broke patch scripts and
+# spammed warnings on every commit). Editors/tools get LF on checkout too.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.svg text
+*.mp3 binary
+*.ogg binary
+*.wav binary
+*.flac binary
+*.m4a binary
+*.ico binary
+*.woff2 binary

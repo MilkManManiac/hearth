@@ -1,6 +1,8 @@
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   abilityMod,
   formatCR,
+  loadKind,
   SPELL_LEVEL_LABEL,
   type ClassEntry,
   type Monster,
@@ -8,6 +10,57 @@ import {
   type NamedEntry,
   type Spell
 } from '../lib/compendium'
+
+// ---------------------------------------------------------------------------
+// Rules-term tooltips: condition names inside descriptions ("Charmed",
+// "Grappled"…) get a dotted underline + the full rule as a native tooltip —
+// DDB's everything-is-a-tooltip convention, at zero click cost.
+// ---------------------------------------------------------------------------
+
+let glossaryCache: { re: RegExp; map: Map<string, string> } | null = null
+let glossaryLoading: Promise<void> | null = null
+
+function useGlossaryTerms() {
+  const [, force] = useState(0)
+  useEffect(() => {
+    if (glossaryCache || glossaryLoading) return
+    glossaryLoading = loadKind('glossary')
+      .then((rows) => {
+        const conditions = rows.filter((r) => r.section === 'Conditions')
+        const map = new Map(conditions.map((r) => [r.name.toLowerCase(), String(r.desc ?? '')]))
+        const names = conditions.map((r) => r.name).sort((a, b) => b.length - a.length)
+        glossaryCache = { re: new RegExp(`\\b(${names.join('|')})\\b`, 'g'), map }
+        force((n) => n + 1)
+      })
+      .catch(() => undefined)
+  }, [])
+  return glossaryCache
+}
+
+/** Description text with condition-name tooltips. */
+export function RulesText({ text }: { text: string }) {
+  const terms = useGlossaryTerms()
+  const parts = useMemo<ReactNode[]>(() => {
+    if (!terms) return [text]
+    const out: ReactNode[] = []
+    let last = 0
+    terms.re.lastIndex = 0
+    let m: RegExpExecArray | null
+    while ((m = terms.re.exec(text)) !== null) {
+      if (m.index > last) out.push(text.slice(last, m.index))
+      const desc = terms.map.get(m[1].toLowerCase())
+      out.push(
+        <span key={m.index} title={desc} className="cursor-help underline decoration-hearth-gold/40 decoration-dotted underline-offset-2">
+          {m[1]}
+        </span>
+      )
+      last = m.index + m[0].length
+    }
+    if (last < text.length) out.push(text.slice(last))
+    return out
+  }, [text, terms])
+  return <>{parts}</>
+}
 
 // 2024-layout stat block + spell card + generic entry article. Fixed single
 // column, actions as rows, math visible — never accordion-hidden (the "fast
@@ -143,7 +196,7 @@ export function MonsterStatBlock({ m }: { m: Monster }) {
           {m.traits.map((t) => (
             <p key={t.name} className="my-1 text-[13px] leading-snug text-hearth-muted">
               <span className="font-semibold italic text-hearth-text">{t.name}. </span>
-              {t.desc}
+              <RulesText text={t.desc} />
             </p>
           ))}
         </>
@@ -161,7 +214,7 @@ export function MonsterStatBlock({ m }: { m: Monster }) {
                   {a.name}
                   {usesLabel(a)}.{' '}
                 </span>
-                {a.desc}
+                <RulesText text={a.desc} />
               </p>
             ))}
           </div>
@@ -198,11 +251,11 @@ export function SpellCard({ s }: { s: Spell }) {
       </Line>
       {s.classes.length > 0 && <Line label="Classes">{s.classes.map(cap).join(', ')}</Line>}
       <Divider />
-      <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-hearth-muted">{s.desc}</p>
+      <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-hearth-muted"><RulesText text={s.desc} /></p>
       {s.higherLevel && (
         <p className="mt-2 text-[13px] leading-relaxed text-hearth-muted">
           <span className="font-semibold text-hearth-text">Using a Higher-Level Spell Slot. </span>
-          {s.higherLevel}
+          <RulesText text={s.higherLevel} />
         </p>
       )}
     </article>
@@ -233,12 +286,12 @@ export function EntryArticle({ e }: { e: NamedEntry }) {
       {sub && <p className="text-xs italic text-hearth-muted">{sub}</p>}
       <Divider />
       {typeof e.desc === 'string' && e.desc && (
-        <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-hearth-muted">{e.desc}</p>
+        <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-hearth-muted"><RulesText text={e.desc} /></p>
       )}
       {lists.map((b) => (
         <p key={b.name} className="my-1.5 text-[13px] leading-snug text-hearth-muted">
           <span className="font-semibold italic text-hearth-text">{b.name}. </span>
-          {b.desc}
+          <RulesText text={b.desc} />
         </p>
       ))}
       {Array.isArray(cls.features) && cls.features.length > 0 && (

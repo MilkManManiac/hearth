@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "start": "electron .",
     "pack": "electron-vite build && electron-builder --dir -c.directories.output=\"%LOCALAPPDATA%\\hearth-release\"",
-    "dist": "electron-vite build && electron-builder --win -c.directories.output=\"%LOCALAPPDATA%\\hearth-release\""
+    "dist": "electron-vite build && electron-builder --win -c.directories.output=\"%LOCALAPPDATA%\\hearth-release\"",
+    "pack:wait": "node scripts/pack-wait.mjs"
   },
   "dependencies": {
     "@discordjs/voice": "^0.19.2",
