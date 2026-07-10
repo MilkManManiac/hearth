@@ -402,6 +402,8 @@ export interface SceneMap {
   image: string
   strokes: FogStroke[]
   tokens?: MapToken[]
+  /** Grid cell size in image pixels; 0/undefined = no grid. Tokens snap to cell centers. */
+  grid?: number
 }
 
 export interface Scene {

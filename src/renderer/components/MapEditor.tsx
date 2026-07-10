@@ -59,6 +59,34 @@ export function FogLayer({
   )
 }
 
+/** Square grid overlay (under the fog, so unrevealed cells stay dark). */
+export function GridLayer({ w, h, cell }: { w: number; h: number; cell: number }) {
+  if (cell < 8) return null
+  const lines: number[] = []
+  for (let x = cell; x < w; x += cell) lines.push(x)
+  const ys: number[] = []
+  for (let y = cell; y < h; y += cell) ys.push(y)
+  return (
+    <Group listening={false} opacity={0.25}>
+      {lines.map((x) => (
+        <Line key={`v${x}`} points={[x, 0, x, h]} stroke="black" strokeWidth={1.5} />
+      ))}
+      {ys.map((y) => (
+        <Line key={`h${y}`} points={[0, y, w, y]} stroke="black" strokeWidth={1.5} />
+      ))}
+    </Group>
+  )
+}
+
+/** Snap a point to the center of its grid cell (no-op when the grid is off). */
+function snapToGrid(x: number, y: number, cell?: number): { x: number; y: number } {
+  if (!cell || cell < 8) return { x, y }
+  return {
+    x: (Math.floor(x / cell) + 0.5) * cell,
+    y: (Math.floor(y / cell) + 0.5) * cell
+  }
+}
+
 /** Token discs: label in a colored circle; presenter hides hidden ones. */
 export function TokenLayer({
   tokens,
@@ -111,7 +139,17 @@ export function TokenLayer({
 }
 
 /** Player-side render: image + committed fog, scaled to fit the window. */
-export function PresenterMap({ file, strokes, tokens = [] }: { file: string; strokes: FogStroke[]; tokens?: MapToken[] }) {
+export function PresenterMap({
+  file,
+  strokes,
+  tokens = [],
+  grid
+}: {
+  file: string
+  strokes: FogStroke[]
+  tokens?: MapToken[]
+  grid?: number
+}) {
   const [img] = useImage(assetUrl(file))
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
   useEffect(() => {
@@ -127,6 +165,7 @@ export function PresenterMap({ file, strokes, tokens = [] }: { file: string; str
     <Stage width={size.w} height={size.h}>
       <Layer x={x} y={y} scaleX={scale} scaleY={scale}>
         <KImage image={img} />
+        {grid ? <GridLayer w={img.width} h={img.height} cell={grid} /> : null}
         <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={1} />
         <TokenLayer tokens={tokens.filter((t) => !t.hidden)} />
       </Layer>
@@ -188,6 +227,10 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   const persistTokens = (next: MapToken[]) =>
     updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), tokens: next } }))
 
+  const grid = map.grid ?? 0
+  const persistGrid = (cell: number) =>
+    updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), grid: cell || undefined } }))
+
   const imgPos = (): { x: number; y: number } | null => {
     const stage = stageRef.current
     if (!stage) return null
@@ -203,14 +246,15 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
     const p = imgPos()
     if (!p) return
     if (tool === 'token') {
+      const sp = snapToGrid(p.x, p.y, grid)
       persistTokens([
         ...tokens,
         {
           id: crypto.randomUUID(),
           label: tokenLabel.trim() || '●',
-          x: p.x,
-          y: p.y,
-          r: Math.max(14, brush / view.scale / 2),
+          x: sp.x,
+          y: sp.y,
+          r: grid >= 8 ? grid * 0.42 : Math.max(14, brush / view.scale / 2),
           color: TOKEN_COLORS[tokens.length % TOKEN_COLORS.length]
         }
       ])
@@ -247,7 +291,10 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   }
 
   const send = () => {
-    void window.hearth.presenterShow({ file: map.image, map: { strokes: map.strokes, tokens } })
+    void window.hearth.presenterShow({
+      file: map.image,
+      map: { strokes: map.strokes, tokens, grid: grid || undefined }
+    })
     pushToast('Map sent to the presenter window', 'info')
   }
 
@@ -288,6 +335,21 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
         <label className="flex items-center gap-1.5 text-xs text-hearth-muted">
           Brush
           <input type="range" min={12} max={200} value={brush} onChange={(e) => setBrush(Number(e.target.value))} className="w-24" />
+        </label>
+        <label
+          className="flex items-center gap-1.5 text-xs text-hearth-muted"
+          title="Grid cell size in map-image pixels (0 = off). Tokens snap to cell centers; players see the grid too."
+        >
+          Grid
+          <input
+            type="number"
+            min={0}
+            max={2000}
+            step={5}
+            value={grid}
+            onChange={(e) => persistGrid(Math.max(0, Number(e.target.value) || 0))}
+            className="w-16 rounded border border-hearth-border bg-hearth-bg px-1.5 py-1 text-center text-sm text-hearth-text"
+          />
         </label>
         <div className="mx-2 h-4 w-px bg-hearth-border" />
         <button
@@ -354,6 +416,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
       >
         <Layer>
           {img && <KImage image={img} />}
+          {img && grid >= 8 && <GridLayer w={img.width} h={img.height} cell={grid} />}
           {/* DM sees dim fog (players get full black in the presenter). */}
           {img && <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={0.6} />}
           {/* Tokens interact only in token mode so brushing never drags one. */}
@@ -361,7 +424,10 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
             <TokenLayer
               tokens={tokens}
               draggable={tool === 'token'}
-              onMove={(id, x, y) => persistTokens(tokens.map((tk) => (tk.id === id ? { ...tk, x, y } : tk)))}
+              onMove={(id, x, y) => {
+                const sp = snapToGrid(x, y, grid)
+                persistTokens(tokens.map((tk) => (tk.id === id ? { ...tk, x: sp.x, y: sp.y } : tk)))
+              }}
               onToggleHidden={(id) =>
                 persistTokens(tokens.map((tk) => (tk.id === id ? { ...tk, hidden: !tk.hidden } : tk)))
               }

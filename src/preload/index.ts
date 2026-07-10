@@ -22,7 +22,11 @@ export interface PresenterPayload {
   file: string | null
   caption?: string
   /** Fog-of-war map mode: `file` is the map image; strokes are the COMMITTED reveals. */
-  map?: { strokes: import('../shared/types').FogStroke[]; tokens?: import('../shared/types').MapToken[] }
+  map?: {
+    strokes: import('../shared/types').FogStroke[]
+    tokens?: import('../shared/types').MapToken[]
+    grid?: number
+  }
 }
 
 /** Result of creating/duplicating a scene: fresh state + the new scene's id. */
