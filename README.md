@@ -9,6 +9,11 @@ Local-first Electron app. No accounts, no subscriptions, no cloud — a campaign
 is a folder of JSON and audio files you can read, edit, git-sync, and hand to
 an AI to author.
 
+> **Contributing (human or AI agent)?** → **[HANDOFF.md](HANDOFF.md)** for the
+> project's goals, direction, and hard rules, then **[CLAUDE.md](CLAUDE.md)**
+> for the operational details. **[SURFACES-PLAN.md](SURFACES-PLAN.md)** is the
+> charter for where this is going (🔥 Hearth · ⚔ Table · 🛡 Party · 🪨 Ember).
+
 ## What it does
 
 **🎵 Sound, live** — scenes hold *palettes* of music/ambience/SFX the DM taps
