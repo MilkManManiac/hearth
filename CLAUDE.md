@@ -1,5 +1,10 @@
 # DM Companion — Hearth
 
+> **New contributor (human or agent)? Read HANDOFF.md first** — project goals,
+> the decision spine, hard rules (the audio core is FROZEN until Wes's next
+> session), and the doc map. Two parties now push to main: pull before work,
+> typecheck + build before push.
+
 Desktop app to help a DM run D&D over Discord: pre-build scenes (music + ambient loops + SFX + images + read-aloud scripts with inline sound-cue buttons), trigger them live; audio streams to the Discord voice channel, images push to players. **It is also the DM's campaign notebook** — a wiki-linked notes system lives beside the scenes (see below).
 
 Core workflow: the DM describes a scene in plain language and a Claude session authors the scene JSON — suggesting tracks/sounds from the tagged asset library (`campaign/library.json`), placing `{{sfx:...}}`/`{{music:...}}`/`{{image:...}}`/`{{amb:...}}` cues inside the read-aloud script. Scenes hold *palettes* (multiple music tracks / sounds the DM taps when it feels right), not auto-playlists. The app hot-reloads scene AND note files from disk. Schema + authoring conventions live in each campaign's `AUTHORING.md` — **when the DM asks you to build a scene or notes, follow that file.**
