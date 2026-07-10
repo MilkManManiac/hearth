@@ -26,6 +26,7 @@ export interface PresenterPayload {
   map?: {
     strokes: import('../shared/types').FogStroke[]
     tokens?: import('../shared/types').MapToken[]
+    overlays?: import('../shared/types').MapOverlay[]
     grid?: number
     /** Baked at send: HP rings (PCs) + condition tags per token id. */
     decor?: Record<string, import('../shared/types').TokenDecor>

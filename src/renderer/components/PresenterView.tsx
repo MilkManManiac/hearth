@@ -30,6 +30,7 @@ export default function PresenterView() {
           strokes={payload.map.strokes}
           tokens={payload.map.tokens}
           grid={payload.map.grid}
+          overlays={payload.map.overlays}
           decor={payload.map.decor}
           initiative={payload.map.initiative}
           pings={pings}

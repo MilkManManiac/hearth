@@ -403,11 +403,27 @@ export interface MapToken {
   ref?: string
 }
 
+/** AoE template (D4): a dumb shape with a damage tint — zero automation, like DDB. */
+export interface MapOverlay {
+  id: string
+  kind: 'circle' | 'cone' | 'line'
+  x: number
+  y: number
+  /** Radius / cone length / line length, in feet (grid maps ft → px). */
+  sizeFt: number
+  /** Aim direction in radians (cones/lines). */
+  angle: number
+  /** Fill tint (damage-type color). */
+  color: string
+}
+
 export interface SceneMap {
   /** Campaign-relative image path (usually art/…). */
   image: string
   strokes: FogStroke[]
   tokens?: MapToken[]
+  /** AoE templates — players see them too (sent with the map). */
+  overlays?: MapOverlay[]
   /** Grid cell size in image pixels; 0/undefined = no grid. Tokens snap to cell centers. */
   grid?: number
 }

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Arc, Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text } from 'react-konva'
+import { Arc, Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text, Wedge } from 'react-konva'
 import type Konva from 'konva'
 import useImage from 'use-image'
-import type { Combatant, FogStroke, MapToken, Scene, SceneMap, TokenDecor } from '../../shared/types'
+import type { Combatant, FogStroke, MapOverlay, MapToken, Scene, SceneMap, TokenDecor } from '../../shared/types'
 import { assetUrl } from '../lib/asset'
 import { stem } from '../../shared/paths'
 import { loadMonsters, type Monster } from '../lib/compendium'
@@ -77,6 +77,79 @@ export function GridLayer({ w, h, cell }: { w: number; h: number; cell: number }
         <Line key={`h${y}`} points={[0, y, w, y]} stroke="black" strokeWidth={1.5} />
       ))}
     </Group>
+  )
+}
+
+/** Damage-type tints for AoE templates (DDB's fill patterns, as colors). */
+export const AOE_TINTS: { name: string; color: string }[] = [
+  { name: 'fire', color: '#e0663c' },
+  { name: 'cold', color: '#5dade2' },
+  { name: 'acid/poison', color: '#58d68d' },
+  { name: 'lightning', color: '#f4d03f' },
+  { name: 'necrotic', color: '#a569bd' },
+  { name: 'radiant', color: '#f8e187' },
+  { name: 'force/other', color: '#d0d3d4' }
+]
+
+/** ft → image px via the grid (5 ft per cell; 128px cell fallback). */
+const ftToPx = (ft: number, grid: number) => (ft / 5) * (grid >= 8 ? grid : 128)
+
+/** AoE templates: dumb tinted shapes under the tokens — zero automation. */
+export function OverlayLayer({
+  overlays,
+  grid,
+  draggable,
+  onMove,
+  onRemove
+}: {
+  overlays: MapOverlay[]
+  grid: number
+  draggable?: boolean
+  onMove?: (id: string, x: number, y: number) => void
+  onRemove?: (id: string) => void
+}) {
+  return (
+    <>
+      {overlays.map((o) => {
+        const px = ftToPx(o.sizeFt, grid)
+        const deg = (o.angle * 180) / Math.PI
+        return (
+          <Group
+            key={o.id}
+            name="overlay"
+            x={o.x}
+            y={o.y}
+            draggable={draggable}
+            onDragEnd={(e) => onMove?.(o.id, e.target.x(), e.target.y())}
+            onContextMenu={(e) => {
+              e.evt.preventDefault()
+              onRemove?.(o.id)
+            }}
+          >
+            {o.kind === 'circle' && (
+              <Circle radius={px} fill={o.color} opacity={0.3} stroke={o.color} strokeWidth={2} dash={[8, 6]} />
+            )}
+            {o.kind === 'cone' && (
+              // 5e cone: end width = length → wedge angle ≈ 53°.
+              <Wedge radius={px} angle={53} rotation={deg - 26.5} fill={o.color} opacity={0.3} stroke={o.color} strokeWidth={2} dash={[8, 6]} />
+            )}
+            {o.kind === 'line' && (
+              <Rect
+                width={px}
+                height={ftToPx(5, grid)}
+                offsetY={ftToPx(5, grid) / 2}
+                rotation={deg}
+                fill={o.color}
+                opacity={0.3}
+                stroke={o.color}
+                strokeWidth={2}
+                dash={[8, 6]}
+              />
+            )}
+          </Group>
+        )
+      })}
+    </>
   )
 }
 
@@ -214,6 +287,7 @@ export function PresenterMap({
   strokes,
   tokens = [],
   grid,
+  overlays = [],
   decor,
   initiative,
   pings = []
@@ -222,6 +296,7 @@ export function PresenterMap({
   strokes: FogStroke[]
   tokens?: MapToken[]
   grid?: number
+  overlays?: MapOverlay[]
   decor?: Record<string, TokenDecor>
   initiative?: { names: string[]; turn: number }
   pings?: Ping[]
@@ -244,6 +319,7 @@ export function PresenterMap({
           <KImage image={img} />
           {grid ? <GridLayer w={img.width} h={img.height} cell={grid} /> : null}
           <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={1} />
+          <OverlayLayer overlays={overlays} grid={grid ?? 0} />
           <TokenLayer tokens={tokens.filter((t) => !t.hidden)} decor={decor} />
           <PingLayer pings={pings} scale={scale} />
         </Layer>
@@ -269,7 +345,7 @@ export function PresenterMap({
   )
 }
 
-type Tool = 'reveal' | 'hide' | 'pan' | 'token' | 'ruler'
+type Tool = 'reveal' | 'hide' | 'pan' | 'token' | 'ruler' | 'aoe'
 
 const TOKEN_COLORS = ['#d8b26a', '#e08a3c', '#c0392b', '#8e44ad', '#2980b9', '#27ae60', '#7f8c8d']
 
@@ -338,6 +414,19 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   const [inspectId, setInspectId] = useState<string | null>(null)
   const [ruler, setRuler] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
   const [pings, addPing] = usePings()
+
+  // AoE templates (D4)
+  const overlays = map.overlays ?? []
+  const [aoeKind, setAoeKind] = useState<MapOverlay['kind']>('circle')
+  const [aoeFt, setAoeFt] = useState(20)
+  const [aoeTint, setAoeTint] = useState(AOE_TINTS[0].color)
+  // Aiming is local (angle persisted once on mouse-up — no save storm).
+  const [aiming, setAiming] = useState<{ id: string; angle: number } | null>(null)
+  const persistOverlays = (next: MapOverlay[]) =>
+    updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), overlays: next.length ? next : undefined } }))
+  const liveOverlays = aiming
+    ? overlays.map((o) => (o.id === aiming.id ? { ...o, angle: aiming.angle } : o))
+    : overlays
 
   /** A token's linked combatant (by id, or by the character it mirrors). */
   const combatantOf = (tk: MapToken): Combatant | undefined =>
@@ -435,6 +524,14 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
       setRuler({ x1: p.x, y1: p.y, x2: p.x, y2: p.y })
       return
     }
+    if (tool === 'aoe') {
+      // Clicking an existing template just drags it; empty ground places one.
+      if (e && e.target !== e.target.getStage() && e.target.findAncestor('.overlay')) return
+      const id = crypto.randomUUID()
+      persistOverlays([...overlays, { id, kind: aoeKind, x: p.x, y: p.y, sizeFt: aoeFt, angle: 0, color: aoeTint }])
+      if (aoeKind !== 'circle') setAiming({ id, angle: 0 }) // drag to aim cones/lines
+      return
+    }
     if (tool === 'token') {
       const sp = snapToGrid(p.x, p.y, grid)
       persistTokens([
@@ -458,6 +555,12 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
       if (p) setRuler((r) => (r ? { ...r, x2: p.x, y2: p.y } : r))
       return
     }
+    if (aiming) {
+      const p = imgPos()
+      const o = overlays.find((x) => x.id === aiming.id)
+      if (p && o) setAiming({ id: aiming.id, angle: Math.atan2(p.y - o.y, p.x - o.x) })
+      return
+    }
     if (!drawing) return
     const p = imgPos()
     if (!p) return
@@ -466,6 +569,11 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   const onUp = () => {
     if (ruler) {
       setRuler(null)
+      return
+    }
+    if (aiming) {
+      persistOverlays(overlays.map((o) => (o.id === aiming.id ? { ...o, angle: aiming.angle } : o)))
+      setAiming(null)
       return
     }
     if (!drawing) return
@@ -526,6 +634,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
       map: {
         strokes: map.strokes,
         tokens,
+        overlays: overlays.length ? overlays : undefined,
         grid: grid || undefined,
         decor: Object.keys(baked).length ? baked : undefined,
         initiative
@@ -559,6 +668,33 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
         <ToolBtn t="pan" label="✋ Pan" title="Drag to move the map (wheel zooms anytime)" />
         <ToolBtn t="token" label="⛂ Token" title="Click empty ground to place; drag to move; click a token = inspect (stat block / HP); double-click = hide from players; right-click = remove" />
         <ToolBtn t="ruler" label="📏 Ruler" title={grid >= 8 ? 'Drag to measure (5 ft per cell)' : 'Drag to measure (set a Grid for feet)'} />
+        <ToolBtn t="aoe" label="⭘ AoE" title="Click to drop a template (drag to aim cones/lines); drag to move; right-click removes. Players see them on 📤 Send." />
+        {tool === 'aoe' && (
+          <>
+            <select value={aoeKind} onChange={(e) => setAoeKind(e.target.value as MapOverlay['kind'])} className="rounded border border-hearth-border bg-hearth-bg px-1 py-1 text-xs text-hearth-text">
+              <option value="circle">⭘ circle/sphere</option>
+              <option value="cone">◺ cone</option>
+              <option value="line">— line</option>
+            </select>
+            <input
+              type="number"
+              min={5}
+              max={300}
+              step={5}
+              value={aoeFt}
+              onChange={(e) => setAoeFt(Math.max(5, Number(e.target.value) || 5))}
+              className="w-14 rounded border border-hearth-border bg-hearth-bg px-1 py-1 text-center text-xs text-hearth-text"
+              title="Radius / length in feet"
+            />
+            <select value={aoeTint} onChange={(e) => setAoeTint(e.target.value)} className="rounded border border-hearth-border bg-hearth-bg px-1 py-1 text-xs" style={{ color: aoeTint }} title="Damage tint">
+              {AOE_TINTS.map((t) => (
+                <option key={t.color} value={t.color} style={{ color: t.color }}>
+                  ⬤ {t.name}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
         {enc && enc.combatants.length > 0 && (
           <button
             onClick={stampEncounter}
@@ -665,6 +801,16 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
           {img && grid >= 8 && <GridLayer w={img.width} h={img.height} cell={grid} />}
           {/* DM sees dim fog (players get full black in the presenter). */}
           {img && <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={0.6} />}
+          {/* AoE templates ride above fog (like DDB's) and under tokens. */}
+          <Group listening={tool === 'aoe'}>
+            <OverlayLayer
+              overlays={liveOverlays}
+              grid={grid}
+              draggable={tool === 'aoe'}
+              onMove={(id, x, y) => persistOverlays(overlays.map((o) => (o.id === id ? { ...o, x, y } : o)))}
+              onRemove={(id) => persistOverlays(overlays.filter((o) => o.id !== id))}
+            />
+          </Group>
           {/* Tokens interact only in token mode so brushing never drags one. */}
           <Group listening={tool === 'token'}>
             <TokenLayer
