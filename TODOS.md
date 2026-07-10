@@ -531,8 +531,13 @@ jump. New: `editor/LinkSuggest.tsx`, `editor/NoteLinkChip.tsx`,
 `components/NoteLinkPill.tsx`, `lib/fuzzy.ts` (extracted from QuickSwitcher).
 **Verify by hand:** type `[[` in a note → pick → chip appears + autosaves;
 Ctrl+click navigates; backlinks show on the target; a `[[link]]` in a scene
-script renders + navigates without shifting Space-cue order. **Next: N4**
-secrets carry-forward / promote-from-Cast / docx import of Elor sessions.
+script renders + navigates without shifting Space-cue order.
+**N4 partial (2026-07-09): promote-from-Cast ✅** — hover ⤴ on a Cast & Loot
+row creates a campaign note of the mapped kind (npc/monster→NPC + tag,
+item→Item, location→Location, hook→Thread), seeds it with the row's note text
++ a provenance callout, and the row keeps a 📓 button that opens the note.
+**Next (rest of N4):** secrets carry-forward / unlinked mentions / docx import
+of Elor sessions.
 
 ## 12. Mac support / packaging + distribution (parked until we're happy with everything else)
 The app is already mac-compatible (no Windows-specific code; davey has mac

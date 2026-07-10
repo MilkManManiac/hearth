@@ -1,7 +1,17 @@
 import { useState } from 'react'
-import type { EntityType, Scene, SceneEntity } from '../../shared/types'
+import type { EntityType, NoteKind, Scene, SceneEntity } from '../../shared/types'
+import { compileScriptText } from '../../shared/scriptCompile'
 import { useStore } from '../store'
 import GrowArea from './GrowArea'
+
+/** Where each cast type graduates to in the campaign notebook. */
+const PROMOTE_KIND: Record<EntityType, NoteKind> = {
+  npc: 'npc',
+  monster: 'npc',
+  item: 'item',
+  location: 'location',
+  hook: 'thread'
+}
 
 const TYPES: { type: EntityType; label: string; icon: string }[] = [
   { type: 'npc', label: 'NPCs', icon: '🧑' },
@@ -20,12 +30,37 @@ const ICON: Record<EntityType, string> = {
 
 export default function CastPanel({ scene }: { scene: Scene }) {
   const updateScene = useStore((s) => s.updateScene)
+  const createNoteInline = useStore((s) => s.createNoteInline)
+  const updateNote = useStore((s) => s.updateNote)
   const [newType, setNewType] = useState<EntityType>('npc')
   const [draft, setDraft] = useState('')
   const entities = scene.entities ?? []
 
   const mutate = (fn: (list: SceneEntity[]) => SceneEntity[]) =>
     updateScene(scene.id, (s) => ({ ...s, entities: fn(s.entities ?? []) }))
+
+  /**
+   * Graduate a scene-local entity into a real campaign note (N4): create the
+   * note seeded with the entity's text, stamp provenance, and keep a 📓 link
+   * on the row (entity.ref = "note:<id>").
+   */
+  const promote = async (entity: SceneEntity) => {
+    const noteId = await createNoteInline(PROMOTE_KIND[entity.type], entity.name)
+    if (!noteId) return
+    const md = [
+      entity.note?.trim() ?? '',
+      `> [!dm] Promoted from scene “${scene.name}” (${new Date().toISOString().slice(0, 10)}).`
+    ]
+      .filter(Boolean)
+      .join('\n\n')
+    await updateNote(noteId, (n) => ({
+      ...n,
+      body: compileScriptText(md),
+      bodyText: undefined,
+      tags: entity.type === 'monster' ? [...(n.tags ?? []), 'monster'] : n.tags
+    }))
+    await mutate((list) => list.map((e) => (e.id === entity.id ? { ...e, ref: `note:${noteId}` } : e)))
+  }
 
   const add = () => {
     const name = draft.trim()
@@ -72,6 +107,7 @@ export default function CastPanel({ scene }: { scene: Scene }) {
                     )
                   }
                   onRemove={() => mutate((list) => list.filter((e) => e.id !== entity.id))}
+                  onPromote={() => void promote(entity)}
                 />
               ))}
             </ul>
@@ -120,17 +156,26 @@ function EntityRow({
   onToggleUsed,
   onToggleStatus,
   onEdit,
-  onRemove
+  onRemove,
+  onPromote
 }: {
   entity: SceneEntity
   onToggleUsed: () => void
   onToggleStatus: () => void
   onEdit: (patch: Partial<SceneEntity>) => void
   onRemove: () => void
+  onPromote: () => void
 }) {
   const [name, setName] = useState(entity.name)
   const [note, setNote] = useState(entity.note ?? '')
   const optional = entity.status === 'optional'
+  const selectNote = useStore((s) => s.selectNote)
+  const setLeftTab = useStore((s) => s.setLeftTab)
+  const buildMode = useStore((s) => s.uiMode === 'build')
+  const linkedNoteId = entity.ref?.startsWith('note:') ? entity.ref.slice(5) : null
+  const linkedNote = useStore((s) =>
+    linkedNoteId ? s.campaign.notes.find((n) => n.id === linkedNoteId) : undefined
+  )
 
   return (
     <li className="group rounded border border-hearth-border/60 bg-hearth-panel2/40 px-2 py-1.5">
@@ -160,6 +205,26 @@ function EntityRow({
         >
           {optional ? 'maybe' : 'here'}
         </button>
+        {linkedNote ? (
+          <button
+            onClick={() => {
+              selectNote(linkedNote.id)
+              if (buildMode) setLeftTab('notes')
+            }}
+            title={`Open campaign note "${linkedNote.title}"`}
+            className="shrink-0 text-hearth-gold hover:text-hearth-ember"
+          >
+            📓
+          </button>
+        ) : (
+          <button
+            onClick={onPromote}
+            title="Promote to a campaign note — graduates this entry into the notebook, keeps a link here"
+            className="shrink-0 text-hearth-muted opacity-0 hover:text-hearth-gold group-hover:opacity-100"
+          >
+            ⤴
+          </button>
+        )}
         <button
           onClick={onRemove}
           className="shrink-0 text-hearth-muted opacity-0 hover:text-red-400 group-hover:opacity-100"

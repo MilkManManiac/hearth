@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import {
   DEFAULT_CROSSFADE_MS,
+  NOTE_KINDS,
   type AssetKind,
   type CampaignNote,
   type CampaignState,
@@ -1018,7 +1019,13 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const { state, noteId } = await window.hearth.createNote(kind, title)
       get().setCampaign(state)
-      get().pushToast(`Created note "${title}" — retype its kind on its page`, 'info')
+      const label = NOTE_KINDS[kind]?.label ?? 'note'
+      get().pushToast(
+        kind === 'note'
+          ? `Created note "${title}" — retype its kind on its page`
+          : `Created ${label} note "${title}"`,
+        'info'
+      )
       return noteId
     } catch (err) {
       get().pushToast(`New note failed: ${(err as Error).message}`, 'error')
