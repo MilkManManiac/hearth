@@ -4,7 +4,7 @@ Desktop app to help a DM run D&D over Discord: pre-build scenes (music + ambient
 
 Core workflow: the DM describes a scene in plain language and a Claude session authors the scene JSON — suggesting tracks/sounds from the tagged asset library (`campaign/library.json`), placing `{{sfx:...}}`/`{{music:...}}`/`{{image:...}}`/`{{amb:...}}` cues inside the read-aloud script. Scenes hold *palettes* (multiple music tracks / sounds the DM taps when it feels right), not auto-playlists. The app hot-reloads scene AND note files from disk. Schema + authoring conventions live in each campaign's `AUTHORING.md` — **when the DM asks you to build a scene or notes, follow that file.**
 
-**Read `GAMEPLAN.md`** for architecture/stack/data-model rationale, and **`AUDIT-2026-07-10.md`** for the current punch list (known bugs, priorities, decisions pending).
+**Read `GAMEPLAN.md`** for architecture/stack/data-model rationale, **`SURFACES-PLAN.md`** for the locked project structure (🔥 Hearth console · ⚔ Table · 🛡 Party · 🪨 Ember — one engine, many windows; milestones M1–M5), and **`AUDIT-2026-07-10.md`** for the punch list.
 
 Key decisions already made (don't relitigate without new evidence):
 - Electron + **electron-vite** + React + TypeScript + Tailwind + Zustand
