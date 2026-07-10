@@ -6,9 +6,10 @@ editing the story with Claude on any machine. It is NOT the full campaign.
 - The **real** campaign (with the ~2GB sound library, `library.json`, scenes)
   lives at `C:\Users\weshu\Campaigns\Elor Rebirth` and is intentionally NOT in
   git.
-- Only `notes/*.json` (83 notes: 25 sessions, PCs, NPCs, locations, factions,
-  threads, items, lore) travel here — they're small text and are the material
-  for the campaign review / cleanup pass.
+- Only `notes/*.json` (90+ notes: sessions 0–25, PCs, NPCs, locations,
+  factions, threads, items, lore) travel here — small text, the material for
+  campaign review/brainstorm. **`grill-queue.json` is the running brainstorm
+  ledger — start there.**
 
 ## To review in the Hearth app
 Point Hearth's 📁 campaign picker at this `campaigns/elor-rebirth/` folder.

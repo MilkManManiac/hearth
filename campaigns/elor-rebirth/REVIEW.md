@@ -5,15 +5,22 @@ is everything you need to run a campaign review/cleanup with the DM (Wes). You
 do **not** need the Hearth app running — the material is the JSON in `notes/`.
 Read all of `notes/*.json` before starting; they're the ground truth.
 
-## The campaign in three sentences
-Underground world (Elor) 50 years after a cataclysm; the surface is quietly
-becoming habitable again but nobody knows. The party (Eddy/Paladin-Aasimar,
-Varen/Drow wizard, Felson/Monk, Brolin/Cleric, + the late Trunks, + NPCs Cumb,
-Eira) has spent 24 sessions uncovering a plague, a witch (Ms. Judy), a drow
-druid (Kena) causing it as an exodus scheme, and **the Pool** — an entity older
-than the gods that has swallowed Lathander, Felson's parents, and (soul-wise)
-Eddy himself. They just killed Root Darkpass and are descending the river toward
-the Pool (Session 24, prepped, unplayed).
+## The campaign in three sentences (updated 2026-07-10)
+Underground world (Elor) 50 years after a cataclysm ("the Event"); the surface
+is quietly survivable again but nobody knows. The party (Eddy/Paladin — secretly
+Lathander's avatar body + a Shipton mind + the Eladrin soul Silus; Varen/Drow
+wizard marked by Eilistraee; Felson/Monk; + Cumb; Brolin retired, Kyle's new PC
+incoming) is descending toward **the cult-held pool** — one node of a
+many-pooled primordial consuming organism — where **Eilistraee is caged**
+(freeing her = the Chapter-1 climax; Lathander is in a DIFFERENT pool, maybe
+topside — Chapter 2). As of **Session 25 (played)** they killed a pool-courier
+umber hulk, bottled its liquid, met Eddy's mimic-bird familiar, and entered the
+fortress **Eekso**, where a multi-session dungeon crawl begins.
+
+**⚠ The brainstorm resume point is `notes/grill-queue.json`** — locked canon +
+open questions. The spine is `notes/arc-chapter-1.json`. Much of the rest of
+this file predates the 2026-07-09/10 grill sessions; where they disagree, the
+notes win.
 
 ## How the notes are organized
 Kinds: `session` (0–24, canon = the recap read aloud the following session),

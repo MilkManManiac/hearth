@@ -1,16 +1,19 @@
 # Hearth — TODOs / backlog
 
+> **See `AUDIT-2026-07-10.md` for the current prioritized punch list** (full-project
+> audit: UX, code health, docs, content). This file is the older running backlog;
+> the audit supersedes it where they overlap.
+
 Captured for later. Not being worked on yet. We'll likely run a **grill-me**
 session (see bottom) to turn the big ones into concrete specs before building.
 
 ## 🔔 Standing reminders (surface these regularly)
 
 **DM's own todo (not Claude's):**
-- [ ] **Categorize + mood-tag the sound library.** Every song / SFX / ambience
-  needs categories (comma-separated in the Library ✎ editor — multi-category
-  works now, e.g. `combat, tension, nature`) and a mood/vibe. The console's
-  dim `?` badge marks untagged assets; the Library groups the rest under
-  "Uncategorized". ~2,170 assets, mostly untagged from waves 4–7 — chip away.
+- [x] ~~Categorize + mood-tag the sound library~~ — **mostly done** (audit
+  2026-07-10: 96% categorized; only 96 of 2,311 assets uncategorized, 2
+  untagged). Remaining: cull duds by ear (waves 4–8 were filed by name, not
+  audition) and the 96 stragglers via the Library `?` badge.
 - [ ] **Grill session on the Elor campaign** (next Claude session, Opus or
   Sonnet, `/grill-me`): get grilled on the very basic concepts of the campaign
   to triage the notebook — what's useful, what gets merked, what stays.
