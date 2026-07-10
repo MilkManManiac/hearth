@@ -39,6 +39,8 @@ export interface PortalDeps {
   campaignDir: () => string
   /** A player rolled dice — feed the campaign Game Log hub. */
   onRoll: (roll: RollEvent) => void
+  /** Player-created character (D2: players build their own, like DDB). */
+  createCharacter: (name: string) => Promise<{ characterId: string }>
   /** Recent public rolls for the portal's log (DM-only rolls pre-filtered). */
   getRolls: () => RollEvent[]
 }
@@ -126,6 +128,13 @@ export class PlayerPortal {
         // The server owns identity + file location; the client owns the rest.
         await this.deps.saveCharacter({ ...incoming, id: current.id, _sourceFile: current._sourceFile })
         return this.json(res, { ok: true })
+      }
+      if (url === '/api/character-create' && req.method === 'POST') {
+        const { name } = JSON.parse(await readBody(req)) as { name?: string }
+        const clean = String(name ?? '').trim().slice(0, 60)
+        if (!clean) return this.json(res, { error: 'name required' }, 400)
+        const result = await this.deps.createCharacter(clean)
+        return this.json(res, { ok: true, characterId: result.characterId })
       }
       if (url === '/api/rolls' && req.method === 'GET') {
         return this.json(res, this.deps.getRolls())

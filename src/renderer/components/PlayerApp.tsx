@@ -18,6 +18,48 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   return r.json()
 }
 
+/** "Build a new character" (D2): create by name, then the sheet's owed-choices chips guide the build. */
+function NewCharacterRow({ onCreated, onError }: { onCreated: (id: string) => void; onError: (e: string) => void }) {
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const create = async () => {
+    const clean = name.trim()
+    if (!clean || busy) return
+    setBusy(true)
+    try {
+      const r = await api<{ characterId: string }>('/api/character-create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: clean })
+      })
+      onCreated(r.characterId)
+    } catch (e) {
+      onError((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="mt-4 flex gap-2">
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && void create()}
+        placeholder="New character name…"
+        className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1.5 text-sm text-hearth-text placeholder:text-hearth-muted/40 focus:border-hearth-ember focus:outline-none"
+      />
+      <button
+        onClick={() => void create()}
+        disabled={!name.trim() || busy}
+        className="rounded border border-hearth-ember bg-hearth-ember/15 px-3 py-1.5 text-sm text-hearth-ember hover:bg-hearth-ember/30 disabled:opacity-40"
+        title="Creates the character — then the ⚠ chips on the sheet walk you through class, species, scores, skills, and spells"
+      >
+        ＋ Build
+      </button>
+    </div>
+  )
+}
+
 export default function PlayerApp() {
   const [characters, setCharacters] = useState<Character[] | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(localStorage.getItem('hearth:myCharacter'))
@@ -139,10 +181,18 @@ export default function PlayerApp() {
               ))}
               {characters.length === 0 && (
                 <p className="text-sm text-hearth-muted">
-                  No characters yet — ask the DM to add you in 🛡 Party (or wait, they might be typing).
+                  No characters yet — build one below, or ask the DM.
                 </p>
               )}
             </div>
+            <NewCharacterRow
+              onCreated={(id) => {
+                setSelectedId(id)
+                localStorage.setItem('hearth:myCharacter', id)
+                void refetch()
+              }}
+              onError={setError}
+            />
           </>
         ) : (
           <CharacterSheet

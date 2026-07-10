@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Character, RollEvent } from '../../shared/types'
+import type { AbilityScores, Character, RollEvent } from '../../shared/types'
 import { d20Expr, groupText, rollExpr } from '../../shared/dice'
 import {
   ABILITY_KEYS,
@@ -18,6 +18,9 @@ import {
 } from '../lib/character'
 import { loadSpells, SPELL_LEVEL_LABEL, type ClassEntry, type NamedEntry, type Spell } from '../lib/compendium'
 import { fuzzyScore } from '../lib/fuzzy'
+import { pendingChoices } from '../lib/builder'
+import { expectedSpells } from '../lib/progression'
+import LevelUpModal from './LevelUp'
 
 // The one character sheet, shared by the DM's 🛡 Party panel (Electron) and
 // the browser-based player portal — everything flows through the `onPatch`
@@ -88,6 +91,29 @@ export default function CharacterSheet({
     })
     .filter(Boolean)
     .join(' / ')
+
+  // --- Builder (D2): owed-choices chips + level-up + score helper.
+  const [allSpells, setAllSpells] = useState<Spell[] | null>(null)
+  useEffect(() => {
+    loadSpells().then(setAllSpells).catch(() => setAllSpells([]))
+  }, [])
+  const chips = useMemo(() => pendingChoices(c, classes, allSpells), [c, classes, allSpells])
+  const spellCounts = useMemo(() => {
+    const exp = expectedSpells(levels)
+    if (!allSpells || (exp.cantrips === 0 && exp.prepared === 0)) return null
+    const byKey = new Map(allSpells.map((s) => [s.key, s]))
+    let cantrips = 0
+    let leveled = 0
+    for (const k of c.spells ?? []) {
+      const s = byKey.get(k)
+      if (!s) continue
+      if (s.level === 0) cantrips++
+      else leveled++
+    }
+    return { cantrips, leveled, exp }
+  }, [allSpells, c.spells, levels])
+  const [levelUpOpen, setLevelUpOpen] = useState(false)
+  const [scoresOpen, setScoresOpen] = useState(false)
 
   // --- Dice (D1): every derived number is a roll button when onRoll is wired.
   const [rollMode, setRollMode] = useState<RollMode>(null)
@@ -235,6 +261,13 @@ export default function CharacterSheet({
             <option key={x.key} value={x.key}>{x.name}</option>
           ))}
         </select>
+        <button
+          onClick={() => setLevelUpOpen(true)}
+          title="Level up — shows exactly what the next level grants, applies HP, lists your choices"
+          className="rounded border border-hearth-gold/50 bg-hearth-gold/10 px-2 py-1 text-hearth-gold hover:bg-hearth-gold/25"
+        >
+          ⬆ Level up
+        </button>
         <span className="text-hearth-muted">PB +{pb}</span>
         {(c.multiclass?.length ?? 0) > 0 && (
           <span className="text-hearth-muted/70" title="Class split (primary class gets the remainder of the total level)">
@@ -333,6 +366,21 @@ export default function CharacterSheet({
         </div>
       )}
 
+      {/* Owed-choices chips (D2): DDB's blue flags, warn-don't-block. */}
+      {chips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {chips.map((chip) => (
+            <span
+              key={chip.id}
+              title={chip.detail}
+              className="cursor-help rounded-full border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-300"
+            >
+              ⚠ {chip.label}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Dice bar (D1): visible adv/dis toggle — armed for the next roll. */}
       {canRoll && (
         <RollBar
@@ -350,6 +398,16 @@ export default function CharacterSheet({
       )}
 
       {/* Abilities + saves */}
+      <div className="flex items-center">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">Abilities</span>
+        <button
+          onClick={() => setScoresOpen(true)}
+          title="Assign scores with the standard array or point buy"
+          className="ml-2 rounded border border-hearth-border px-1.5 py-px text-[10px] text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember"
+        >
+          ⚙ scores
+        </button>
+      </div>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {ABILITY_KEYS.map((k) => (
           <div key={k} className="rounded-md border border-hearth-border bg-hearth-panel2/40 px-2 py-1.5 text-center">
@@ -480,7 +538,18 @@ export default function CharacterSheet({
         </div>
       </div>
 
-      <SpellsBox c={c} onPatch={patch} onOpenSpell={cb.onOpenSpell} />
+      <SpellsBox c={c} onPatch={patch} onOpenSpell={cb.onOpenSpell} counts={spellCounts} />
+
+      {levelUpOpen && (
+        <LevelUpModal c={c} classes={classes} onApply={patch} onClose={() => setLevelUpOpen(false)} />
+      )}
+      {scoresOpen && (
+        <ScoresDialog
+          current={c.abilities}
+          onApply={(a) => patch({ abilities: a })}
+          onClose={() => setScoresOpen(false)}
+        />
+      )}
 
       {features.length > 0 && (
         <details className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2" open={false}>
@@ -522,6 +591,140 @@ export default function CharacterSheet({
             className="mt-1 w-full rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-xs text-hearth-text focus:border-hearth-ember focus:outline-none"
           />
         </label>
+      </div>
+    </div>
+  )
+}
+
+// Point-buy costs (2024): 8 is free, 15 is the ceiling, 27 points total.
+const PB_COST: Record<number, number> = { 8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 7, 15: 9 }
+const STANDARD = [15, 14, 13, 12, 10, 8]
+
+/** Standard-array / point-buy assignment dialog (D2). */
+function ScoresDialog({
+  current,
+  onApply,
+  onClose
+}: {
+  current: AbilityScores
+  onApply: (a: AbilityScores) => void
+  onClose: () => void
+}) {
+  const [tab, setTab] = useState<'array' | 'buy'>('array')
+  // Standard array: ability → assigned value (0 = unassigned).
+  const [assign, setAssign] = useState<Record<AbilityKey, number>>({ str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 })
+  // Point buy: a draft clamped to 8–15.
+  const [draft, setDraft] = useState<AbilityScores>(() => {
+    const clamp = (v: number) => Math.min(15, Math.max(8, v))
+    return {
+      str: clamp(current.str), dex: clamp(current.dex), con: clamp(current.con),
+      int: clamp(current.int), wis: clamp(current.wis), cha: clamp(current.cha)
+    }
+  })
+  const spent = ABILITY_KEYS.reduce((n, k) => n + (PB_COST[draft[k]] ?? 0), 0)
+  const used = Object.values(assign).filter(Boolean)
+  const arrayDone = used.length === 6
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-md rounded-lg border border-hearth-border bg-hearth-panel p-4 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-2">
+          <h3 className="font-display text-lg font-semibold text-hearth-text">⚙ Ability scores</h3>
+          <div className="ml-auto flex rounded border border-hearth-border text-xs">
+            <button
+              onClick={() => setTab('array')}
+              className={`px-2 py-1 ${tab === 'array' ? 'bg-hearth-ember/20 text-hearth-ember' : 'text-hearth-muted'}`}
+            >
+              Standard array
+            </button>
+            <button
+              onClick={() => setTab('buy')}
+              className={`px-2 py-1 ${tab === 'buy' ? 'bg-hearth-ember/20 text-hearth-ember' : 'text-hearth-muted'}`}
+            >
+              Point buy
+            </button>
+          </div>
+        </div>
+
+        {tab === 'array' ? (
+          <>
+            <p className="mt-2 text-xs text-hearth-muted">Assign 15 / 14 / 13 / 12 / 10 / 8 — each value once.</p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {ABILITY_KEYS.map((k) => (
+                <label key={k} className="flex items-center gap-2 text-xs text-hearth-muted">
+                  <span className="w-20">{ABILITY_LABEL[k]}</span>
+                  <select
+                    value={assign[k] || ''}
+                    onChange={(e) => setAssign((a) => ({ ...a, [k]: Number(e.target.value) || 0 }))}
+                    className="flex-1 rounded border border-hearth-border bg-hearth-panel2 px-1.5 py-1 text-sm text-hearth-text"
+                  >
+                    <option value="">—</option>
+                    {STANDARD.map((v, i) => (
+                      <option key={`${v}:${i}`} value={v} disabled={assign[k] !== v && used.filter((u) => u === v).length >= STANDARD.filter((s) => s === v).length}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                onApply(assign as AbilityScores)
+                onClose()
+              }}
+              disabled={!arrayDone}
+              className="mt-3 w-full rounded border border-hearth-ember bg-hearth-ember/15 py-1.5 text-sm text-hearth-ember hover:bg-hearth-ember/30 disabled:opacity-40"
+            >
+              Apply ({used.length}/6 assigned)
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-xs text-hearth-muted">
+              27 points; scores 8–15. Spent:{' '}
+              <span className={spent > 27 ? 'font-bold text-red-400' : spent === 27 ? 'font-bold text-emerald-300' : 'font-bold text-hearth-text'}>
+                {spent}/27
+              </span>
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {ABILITY_KEYS.map((k) => (
+                <div key={k} className="flex items-center gap-1.5 text-xs text-hearth-muted">
+                  <span className="w-20">{ABILITY_LABEL[k]}</span>
+                  <button
+                    onClick={() => setDraft((d) => ({ ...d, [k]: Math.max(8, d[k] - 1) }))}
+                    className="rounded bg-hearth-panel2 px-1.5 text-sm hover:text-hearth-text"
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-sm text-hearth-text">{draft[k]}</span>
+                  <button
+                    onClick={() => setDraft((d) => ({ ...d, [k]: Math.min(15, d[k] + 1) }))}
+                    className="rounded bg-hearth-panel2 px-1.5 text-sm hover:text-hearth-text"
+                  >
+                    +
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                onApply(draft)
+                onClose()
+              }}
+              disabled={spent > 27}
+              className="mt-3 w-full rounded border border-hearth-ember bg-hearth-ember/15 py-1.5 text-sm text-hearth-ember hover:bg-hearth-ember/30 disabled:opacity-40"
+            >
+              Apply
+            </button>
+          </>
+        )}
+        <p className="mt-2 text-[10px] text-hearth-muted/70">
+          2024 rules: afterwards add your background's +2/+1 (or +1/+1/+1) directly in the grid.
+        </p>
       </div>
     </div>
   )
@@ -643,11 +846,14 @@ function ConditionsBox({ c, onPatch }: { c: Character; onPatch: (p: Partial<Char
 function SpellsBox({
   c,
   onPatch,
-  onOpenSpell
+  onOpenSpell,
+  counts
 }: {
   c: Character
   onPatch: (p: Partial<Character>) => void
   onOpenSpell?: (key: string) => void
+  /** DDB-style live counters vs the 2024 class tables (advisory). */
+  counts?: { cantrips: number; leveled: number; exp: { cantrips: number; prepared: number } } | null
 }) {
   const [all, setAll] = useState<Spell[] | null>(null)
   const [query, setQuery] = useState('')
@@ -675,8 +881,22 @@ function SpellsBox({
 
   return (
     <div className="rounded-md border border-hearth-border bg-hearth-panel2/30 p-2">
-      <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+      <div className="mb-1 flex items-baseline gap-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
         Spells <span className="normal-case">(search below to learn/swap; × forgets)</span>
+        {counts && (
+          <span
+            className="ml-auto normal-case"
+            title="Known/prepared vs the 2024 class table — a guide, not a limit (always-prepared domain/oath spells inflate the count)"
+          >
+            <span className={counts.cantrips < counts.exp.cantrips ? 'text-amber-300' : ''}>
+              cantrips {counts.cantrips}/{counts.exp.cantrips}
+            </span>
+            {' · '}
+            <span className={counts.leveled < counts.exp.prepared ? 'text-amber-300' : ''}>
+              spells {counts.leveled}/{counts.exp.prepared}
+            </span>
+          </span>
+        )}
       </div>
       <div className="flex flex-wrap gap-1">
         {known.map((s) => (

@@ -352,7 +352,12 @@ app.whenReady().then(async () => {
     campaignDir: () => campaign.path,
     // Portal rolls join the same hub as DM rolls (never DM-only from players).
     onRoll: (roll) => handleRoll({ ...roll, dmOnly: false }),
-    getRolls: () => rollLog.filter((r) => !r.dmOnly)
+    getRolls: () => rollLog.filter((r) => !r.dmOnly),
+    createCharacter: async (name) => {
+      const result = await campaign.createCharacter(name)
+      broadcast('campaign:changed', result.state)
+      return { characterId: result.characterId }
+    }
   })
   const initial = await campaign.init()
   console.log(
