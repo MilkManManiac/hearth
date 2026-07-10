@@ -259,10 +259,23 @@ ffmpeg properly via `winget install ffmpeg` for future waves).
   from the source.
 - Un-auditioned caveat still applies to waves 4–6 (curated by name/folder/
   license, not by ear) — cull duds via the Library browser or 📥 Triage.
-- Remaining big-pack candidates: Blacis Fantasy Music Mega Pack (CC0, music
-  breadth) wasn't in the drop; TomMusic/Leohpaz/JDSherbert (verify license at
-  download); Sonniss GDC (Tier B, personal-only). Freesound/Kenney/Pixabay
+- Remaining big-pack candidates: ~~Blacis~~ (✅ wave 8); TomMusic/Leohpaz/
+  JDSherbert **license-checked 2026-07-09 and rejected** (no-redistribution /
+  non-CC terms); Sonniss GDC (Tier B, personal-only). Freesound/Kenney/Pixabay
   finds parked in scratchpad sound-candidates.md.
+
+**Wave 8 done 2026-07-09 (library 2,172 → 2,311, all Tier A, headless):**
+139 curated atmosphere assets — Nox_Sound CC0 seamless field-recorded beds
+(caves/drips/fires/rain/wind/rivers/sea/spring + an underwater-murk edit),
+OpenGameArt CC0 (dungeon/swamp/eldritch drones, ghostly atmospheres, **cult +
+ethereal chant beds**, 21 magic spells, horror SFX, foley), Blacis CC0 (30
+dark-fantasy music keepers incl. **celestial/dawn** for the sun-returns
+climax), Kevin MacLeod CC BY (25 mood tracks — attribution in CREDITS.md).
+Filled: magic 6→28, horror +27, water +14. Un-auditioned caveat applies (by
+name/license, not by ear). Repo: ambience+sfx tracked; blacis-*/km-* music
+gitignored (256 MB — travels via campaign zip). **Still worth grabbing:**
+kmontesdev CC0 pack (manual Google-Drive download, 2 GB, genre-perfect) and
+Nakarada CC-BY for any remaining mood gaps.
 
 1. ✅ **Research better sources** — done, see `SOUND-SOURCES.md` (ranked +
    license-verified: 3 big CC0 itch.io packs first, Nakarada CC-BY for mood
