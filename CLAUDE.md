@@ -11,7 +11,7 @@ Key decisions already made (don't relitigate without new evidence):
 - Web Audio API for all mixing (crossfade, gapless loops, ducking); single mixed stream to Discord
 - discord.js v14 + @discordjs/voice for the voice bridge (Kenku FM is the reference implementation)
 - JSON files in a campaign folder for storage — no database
-- Scope guard: audio + images + notes + party dashboard only. No maps, tokens, or dice — this is not a VTT.
+- Scope (UPDATED 2026-07-10, Wes's directive): the one-stop DM shop — audio, images, notes, **rules compendium (SRD 5.2.1/2024), characters, encounters, maps-with-fog**. See ONESTOP-PLAN.md. Still not chasing Foundry-grade VTT depth (no dynamic lighting/vision).
 - Interaction rule: **read-first surfaces; authoring is gated behind build mode + ✎ Edit toggles; plain-click on a [[link]] navigates.** (The note page historically violated this — fix tracked in AUDIT P0.)
 
 ## Working title
@@ -24,6 +24,7 @@ Key decisions already made (don't relitigate without new evidence):
 - `npm run pack` — package a runnable Windows build into `%LOCALAPPDATA%\hearth-release\win-unpacked\` (output lands OUTSIDE the repo on purpose — Defender file-locks break the rename inside it; see DEPLOY.md). The DM has a desktop shortcut pointing there — **re-run pack after app changes or the shortcut launches a stale build** (fails with EBUSY while Hearth is running — close it first).
 - `npm run dist` — same but also builds the portable single .exe
 - `node scripts/gen-sample-art.mjs` — regenerate placeholder art (art only; there is no audio-gen script)
+- `node scripts/build-compendium.mjs <srd-2024 fixture dir>` — rebuild `public/compendium/*.json` from Open5e fixtures (see ONESTOP-PLAN.md; output is committed, rerun only on data updates)
 
 Which campaign opens: `%APPDATA%\Hearth\hearth-config.json` → `campaignPath` (also holds the Discord bot token — the same file, merge-write it, never overwrite wholesale). The TopBar folder picker switches campaigns in-app.
 

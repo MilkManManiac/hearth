@@ -370,7 +370,7 @@ export default function SoundConsole() {
     if (map.size === 0) return
     const onKey = (e: KeyboardEvent) => {
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen) return
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen) return
       if (isTypingTarget(e.target)) return
       const item = map.get(e.key.toLowerCase())
       if (item) {

@@ -205,6 +205,12 @@ interface AppState {
   /** Shortcut cheat-sheet (?) open? Owns the keyboard while true. */
   helpOpen: boolean
   setHelpOpen: (open: boolean) => void
+  /** 📖 SRD compendium browser open? Owns the keyboard while true. */
+  compendiumOpen: boolean
+  /** Deep-link target (from Ctrl+K): open at this kind+entry. */
+  compendiumTarget: { kind: import('./lib/compendium').CompendiumKind; key: string } | null
+  openCompendium: (target?: { kind: import('./lib/compendium').CompendiumKind; key: string }) => void
+  closeCompendium: () => void
   /**
    * Append a timestamped line to the active session note's log (the current
    * scene's session, else the newest session note, else a new one) — the
@@ -942,6 +948,11 @@ export const useStore = create<AppState>((set, get) => ({
 
   helpOpen: false,
   setHelpOpen: (open) => set({ helpOpen: open }),
+
+  compendiumOpen: false,
+  compendiumTarget: null,
+  openCompendium: (target) => set({ compendiumOpen: true, compendiumTarget: target ?? null }),
+  closeCompendium: () => set({ compendiumOpen: false, compendiumTarget: null }),
 
   captureToSession: async (text) => {
     const trimmed = text.trim()

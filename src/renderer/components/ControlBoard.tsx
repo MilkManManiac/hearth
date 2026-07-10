@@ -22,6 +22,7 @@ import NoteView from './NoteView'
 import QuickSwitcher from './QuickSwitcher'
 import QuickCapture from './QuickCapture'
 import ShortcutsHelp from './ShortcutsHelp'
+import CompendiumPanel from './CompendiumPanel'
 
 /**
  * Width-adjustable side panel: drag the inner edge to resize; drag it small
@@ -148,7 +149,7 @@ export default function ControlBoard() {
     const onKey = (e: KeyboardEvent) => {
       if (!e.altKey || e.ctrlKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return
       const st = useStore.getState()
-      if (st.switcherOpen || st.captureOpen || st.helpOpen || st.libraryOpen || st.triage || st.discordOpen) return
+      if (st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen || st.libraryOpen || st.triage || st.discordOpen) return
       if (isTypingTarget(e.target)) return
       e.preventDefault()
       if (e.key === 'ArrowLeft') st.goNoteBack()
@@ -256,6 +257,7 @@ export default function ControlBoard() {
       <LibraryPanel />
       <QuickSwitcher />
       <QuickCapture />
+      <CompendiumPanel />
       <ShortcutsHelp />
       <Toasts />
     </div>

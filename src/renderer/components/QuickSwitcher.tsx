@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NOTE_KINDS, type CampaignNote, type Scene } from '../../shared/types'
 import { docText } from '../../shared/scriptCompile'
+import { KIND_META, loadIndex, type IndexEntry } from '../lib/compendium'
 import { fuzzyScore } from '../lib/fuzzy'
 import { useStore } from '../store'
 
@@ -27,8 +28,10 @@ export default function QuickSwitcher() {
   const selectScene = useStore((s) => s.selectScene)
   const selectNote = useStore((s) => s.selectNote)
   const setLeftTab = useStore((s) => s.setLeftTab)
+  const openCompendium = useStore((s) => s.openCompendium)
   const [query, setQuery] = useState('')
   const [sel, setSel] = useState(0)
+  const [compIndex, setCompIndex] = useState<IndexEntry[] | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -37,7 +40,10 @@ export default function QuickSwitcher() {
       setSel(0)
       // Focus after mount.
       window.setTimeout(() => inputRef.current?.focus(), 0)
+      // Lazy-load the compendium name index the first time the switcher opens.
+      if (!compIndex) loadIndex().then(setCompIndex).catch(() => setCompIndex([]))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const openScene = (scene: Scene) => {
@@ -89,10 +95,32 @@ export default function QuickSwitcher() {
         })
       }
     }
+    // Compendium tier: SRD monsters/spells/rules by name — slightly
+    // down-ranked so the DM's own notes/scenes win ties.
+    if (q && compIndex) {
+      const comp = compIndex
+        .map((e) => ({ e, score: fuzzyScore(e.name, q) }))
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+      for (const { e, score } of comp) {
+        out.push({
+          key: `comp:${e.k}:${e.key}`,
+          icon: KIND_META[e.k]?.icon ?? '📖',
+          label: e.name,
+          detail: KIND_META[e.k]?.label ?? 'SRD',
+          score: score - 5,
+          open: () => {
+            setOpen(false)
+            openCompendium({ kind: e.k, key: e.key })
+          }
+        })
+      }
+    }
     out.sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
     return out.slice(0, 12)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, notes, scenes])
+  }, [query, notes, scenes, compIndex])
 
   useEffect(() => setSel(0), [query])
 

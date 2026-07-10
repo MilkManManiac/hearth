@@ -34,7 +34,7 @@ export default function SfxGrid({ scene }: { scene: Scene }) {
     const onKey = (e: KeyboardEvent) => {
       // A modal owns the keyboard — K/J in Triage must not fire scene SFX.
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen) return
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen) return
       if (isTypingTarget(e.target)) return
       const item = map.get(e.key.toLowerCase())
       if (item) {

@@ -172,6 +172,12 @@ export default function TopBar() {
           </kbd>
         </Btn>
         <Btn onClick={openLibrary} title="Browse, search & audition the asset library">📚 Library</Btn>
+        <Btn
+          onClick={() => useStore.getState().openCompendium()}
+          title="SRD 5.2.1 rules compendium — monsters, spells, species, classes, items (2024 rules, offline)"
+        >
+          📖 Rules
+        </Btn>
         {!run && <ToolsMenu />}
         <button
           onClick={() => useStore.getState().setHelpOpen(true)}

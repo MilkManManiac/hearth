@@ -92,7 +92,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== ' ' && e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
       const st = useStore.getState()
-      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen)
+      if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen)
         return // a modal owns the keyboard
       if (isTypingTarget(e.target)) return // typing is the one thing that outranks the timeline
       blurNonTypingFocus() // a clicked mute button / volume slider must not hold the keyboard
