@@ -3,6 +3,8 @@ import type { Combatant, Encounter, Scene } from '../../shared/types'
 import { formatCR, loadMonsters, type Monster } from '../lib/compendium'
 import { fuzzyScore } from '../lib/fuzzy'
 import { rateEncounter } from '../lib/encounter'
+import { rollExpr, d20Expr } from '../../shared/dice'
+import { submitRoll, useRollStore } from '../lib/rollStore'
 import { useStore } from '../store'
 
 const EMPTY: Encounter = { combatants: [], round: 0, turn: -1 }
@@ -106,16 +108,27 @@ export default function EncounterPanel({ scene }: { scene: Scene }) {
     [enc.combatants]
   )
 
-  const rollInitiative = () =>
+  const rollInitiative = () => {
+    // Roll through the dice engine so initiative lands in the Game Log
+    // (DM-visibility follows the log's "DM rolls public" toggle).
+    const dmOnly = !useRollStore.getState().dmPublic
+    const rolled = new Map<string, number>()
+    for (const c of enc.combatants) {
+      if (c.side === 'pc' && c.initiative != null) continue
+      const roll = rollExpr(d20Expr(c.initBonus ?? 0), { who: 'DM', what: `${c.name} — initiative`, dmOnly })
+      rolled.set(c.id, roll ? roll.total : d20() + (c.initBonus ?? 0))
+      if (roll) submitRoll(roll)
+    }
     mutate((e) => ({
       ...e,
       round: 1,
       turn: 0,
       combatants: e.combatants.map((c) =>
         // PCs keep hand-entered rolls; monsters/allies roll d20 + bonus.
-        c.side === 'pc' && c.initiative != null ? c : { ...c, initiative: d20() + (c.initBonus ?? 0) }
+        rolled.has(c.id) ? { ...c, initiative: rolled.get(c.id) } : c
       )
     }))
+  }
 
   const nextTurn = (dir: 1 | -1) =>
     mutate((e) => {

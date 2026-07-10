@@ -297,6 +297,8 @@ function DashboardCard({ c, active, onClick }: { c: Character; active: boolean; 
     >
       <div className="flex items-baseline gap-1.5">
         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-hearth-text">{c.name}</span>
+        {c.levelUpReady && <span title="Milestone level-up unlocked">🔔</span>}
+        {c.concentratingOn && <span title={`Concentrating: ${c.concentratingOn}`}>🧠</span>}
         <span className="flex-none text-[10px] text-hearth-muted">AC {c.ac}</span>
       </div>
       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/40">

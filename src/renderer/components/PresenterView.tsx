@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { PresenterPayload } from '../../preload'
 import { assetUrl } from '../lib/asset'
-import { PresenterMap } from './MapEditor'
+import { PresenterMap, usePings } from './MapEditor'
 
 /**
  * Player-facing window (opened separately, screen-shareable in Phase 1).
@@ -9,9 +9,14 @@ import { PresenterMap } from './MapEditor'
  */
 export default function PresenterView() {
   const [payload, setPayload] = useState<PresenterPayload | null>(null)
+  const [pings, addPing] = usePings()
 
   useEffect(() => {
     return window.hearth.onPresenterShow((p) => setPayload(p))
+  }, [])
+  useEffect(() => {
+    return window.hearth.onPresenterPing((p) => addPing(p))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const file = payload?.file ?? null
@@ -27,6 +32,7 @@ export default function PresenterView() {
           grid={payload.map.grid}
           decor={payload.map.decor}
           initiative={payload.map.initiative}
+          pings={pings}
         />
       </div>
     )

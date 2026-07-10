@@ -80,6 +80,37 @@ export function GridLayer({ w, h, cell }: { w: number; h: number; cell: number }
   )
 }
 
+/** Ephemeral ping markers (D4): a bright double ring that fades after ~2.5s. */
+export interface Ping {
+  id: string
+  x: number
+  y: number
+}
+
+export function PingLayer({ pings, scale = 1 }: { pings: Ping[]; scale?: number }) {
+  return (
+    <Group listening={false}>
+      {pings.map((p) => (
+        <Group key={p.id} x={p.x} y={p.y}>
+          <Circle radius={34 / scale} stroke="#e0a83c" strokeWidth={5 / scale} opacity={0.9} />
+          <Circle radius={16 / scale} fill="#e0a83c" opacity={0.5} />
+        </Group>
+      ))}
+    </Group>
+  )
+}
+
+/** Keep a self-expiring ping list (shared by the editor and the presenter). */
+export function usePings(): [Ping[], (p: { x: number; y: number; id?: string }) => void] {
+  const [pings, setPings] = useState<Ping[]>([])
+  const add = (p: { x: number; y: number; id?: string }) => {
+    const ping: Ping = { id: p.id ?? crypto.randomUUID(), x: p.x, y: p.y }
+    setPings((ps) => [...ps, ping])
+    setTimeout(() => setPings((ps) => ps.filter((x) => x.id !== ping.id)), 2500)
+  }
+  return [pings, add]
+}
+
 /** Snap a point to the center of its grid cell (no-op when the grid is off). */
 function snapToGrid(x: number, y: number, cell?: number): { x: number; y: number } {
   if (!cell || cell < 8) return { x, y }
@@ -184,7 +215,8 @@ export function PresenterMap({
   tokens = [],
   grid,
   decor,
-  initiative
+  initiative,
+  pings = []
 }: {
   file: string
   strokes: FogStroke[]
@@ -192,6 +224,7 @@ export function PresenterMap({
   grid?: number
   decor?: Record<string, TokenDecor>
   initiative?: { names: string[]; turn: number }
+  pings?: Ping[]
 }) {
   const [img] = useImage(assetUrl(file))
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
@@ -212,6 +245,7 @@ export function PresenterMap({
           {grid ? <GridLayer w={img.width} h={img.height} cell={grid} /> : null}
           <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={1} />
           <TokenLayer tokens={tokens.filter((t) => !t.hidden)} decor={decor} />
+          <PingLayer pings={pings} scale={scale} />
         </Layer>
       </Stage>
       {/* Initiative strip (D4): who's up, baked at 📤 Send. */}
@@ -303,6 +337,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   }, [])
   const [inspectId, setInspectId] = useState<string | null>(null)
   const [ruler, setRuler] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
+  const [pings, addPing] = usePings()
 
   /** A token's linked combatant (by id, or by the character it mirrors). */
   const combatantOf = (tk: MapToken): Combatant | undefined =>
@@ -382,6 +417,15 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   }
 
   const onDown = (e?: Konva.KonvaEventObject<MouseEvent>) => {
+    // Alt+click in any tool: ping — pulses here AND on the presenter (if open).
+    if (e?.evt.altKey) {
+      const p = imgPos()
+      if (p) {
+        addPing(p)
+        void window.hearth.presenterPing(p)
+      }
+      return
+    }
     if (tool === 'pan') return
     // Clicking an existing token (to drag it) must not also place a new one.
     if (tool === 'token' && e && e.target !== e.target.getStage() && e.target.findAncestor('.token')) return
@@ -638,6 +682,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
               onInspect={(tk) => setInspectId(tk.id)}
             />
           </Group>
+          <PingLayer pings={pings} scale={view.scale} />
           {/* Ruler (D4): DM-only measurement, never sent to players. */}
           {ruler && (
             <Group listening={false}>

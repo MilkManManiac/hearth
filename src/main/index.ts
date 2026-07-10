@@ -321,6 +321,12 @@ function registerIpc(): void {
   ipcMain.handle('presenter:open', async () => {
     ensurePresenterWindow()
   })
+  ipcMain.handle('presenter:ping', async (_e, p: { x: number; y: number }) => {
+    // Only if the presenter is already open — a ping never spawns the window.
+    if (presenterWindow && !presenterWindow.isDestroyed()) {
+      presenterWindow.webContents.send('presenter:ping', { ...p, id: `${Date.now()}-${Math.random()}` })
+    }
+  })
   ipcMain.handle('presenter:show', async (_e, payload) => {
     ensurePresenterWindow()
     // Deliver after the window is ready to receive.

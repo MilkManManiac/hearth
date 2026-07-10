@@ -134,6 +134,13 @@ const api = {
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),
+  /** Ephemeral map ping (D4) — never re-commits fog, just a pulse on the presenter. */
+  presenterPing: (p: { x: number; y: number }): Promise<void> => ipcRenderer.invoke('presenter:ping', p),
+  onPresenterPing: (cb: (p: { x: number; y: number; id: string }) => void): (() => void) => {
+    const listener = (_e: unknown, p: { x: number; y: number; id: string }) => cb(p)
+    ipcRenderer.on('presenter:ping', listener)
+    return () => ipcRenderer.removeListener('presenter:ping', listener)
+  },
 
   // --- Discord voice bridge (experimental) ---
   discordStatus: (): Promise<DiscordStatus> => ipcRenderer.invoke('discord:status'),
