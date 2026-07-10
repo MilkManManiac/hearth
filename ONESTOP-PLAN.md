@@ -91,8 +91,9 @@ Phases — **ALL FIVE SHIPPED 2026-07-10** (full detail in DDB-MECHANICS.md):
 - **D4 — Maps ↔ everything** ✅: tokens linked to sheets/combatants (HP rings +
   condition tags), click-token inspector (stat block w/ rollable dice, HP writes
   through), ⚔→map stamping (auto-sized, foes hidden), 📏 ruler (5 ft/cell),
-  📤 Send bakes PC-only HP rings + an initiative strip. Still open: AoE templates,
-  ping, portal token-moving.
+  📤 Send bakes PC-only HP rings + an initiative strip. Also shipped same day:
+  ⭘ AoE templates (circle/cone/line in feet, damage tints, players see them) and
+  Alt+click pings (pulse on DM + presenter). Still open: portal token-moving.
 - **D5 — Campaign glue** ✅: 🎁 Grant bar in the Party panel (give item/gold,
   🔔 unlock milestone level-up — badges the portal, cleared by leveling — and
   party-wide ☀️ long rest).
