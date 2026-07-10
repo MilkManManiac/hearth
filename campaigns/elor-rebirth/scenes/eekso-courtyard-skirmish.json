@@ -17,12 +17,32 @@
     "grid": 128,
     "strokes": [
       {
-        "points": [704, 1300, 832, 1280, 896, 1180, 832, 1060, 720, 1020, 640, 1140],
+        "points": [
+          704,
+          1300,
+          832,
+          1280,
+          896,
+          1180,
+          832,
+          1060,
+          720,
+          1020,
+          640,
+          1140
+        ],
         "radius": 260,
         "mode": "reveal"
       },
       {
-        "points": [880, 1020, 980, 860, 1020, 760],
+        "points": [
+          880,
+          1020,
+          980,
+          860,
+          1020,
+          760
+        ],
         "radius": 190,
         "mode": "reveal"
       }
@@ -34,7 +54,9 @@
         "x": 832,
         "y": 1216,
         "r": 54,
-        "color": "#d8b26a"
+        "color": "#d8b26a",
+        "characterId": "eddy",
+        "combatantId": "cb-eddy"
       },
       {
         "id": "tk-felsen",
@@ -42,7 +64,9 @@
         "x": 704,
         "y": 1216,
         "r": 54,
-        "color": "#27ae60"
+        "color": "#27ae60",
+        "characterId": "felson",
+        "combatantId": "cb-felsen"
       },
       {
         "id": "tk-varen",
@@ -50,7 +74,9 @@
         "x": 832,
         "y": 1088,
         "r": 54,
-        "color": "#8e44ad"
+        "color": "#8e44ad",
+        "characterId": "varen",
+        "combatantId": "cb-varen"
       },
       {
         "id": "tk-cumb",
@@ -58,7 +84,9 @@
         "x": 704,
         "y": 1088,
         "r": 54,
-        "color": "#2980b9"
+        "color": "#2980b9",
+        "characterId": "cumb",
+        "combatantId": "cb-cumb"
       },
       {
         "id": "tk-ettin",
@@ -67,7 +95,9 @@
         "y": 576,
         "r": 96,
         "color": "#c0392b",
-        "hidden": true
+        "hidden": true,
+        "combatantId": "cb-ettin",
+        "ref": "ettin"
       }
     ]
   },

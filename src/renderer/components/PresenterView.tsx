@@ -25,6 +25,8 @@ export default function PresenterView() {
           strokes={payload.map.strokes}
           tokens={payload.map.tokens}
           grid={payload.map.grid}
+          decor={payload.map.decor}
+          initiative={payload.map.initiative}
         />
       </div>
     )

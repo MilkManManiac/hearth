@@ -27,6 +27,10 @@ export interface PresenterPayload {
     strokes: import('../shared/types').FogStroke[]
     tokens?: import('../shared/types').MapToken[]
     grid?: number
+    /** Baked at send: HP rings (PCs) + condition tags per token id. */
+    decor?: Record<string, import('../shared/types').TokenDecor>
+    /** Initiative strip: names in order + whose turn (-1 = not started). */
+    initiative?: { names: string[]; turn: number }
   }
 }
 

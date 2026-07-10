@@ -395,6 +395,12 @@ export interface MapToken {
   color: string
   /** Hidden tokens render only for the DM, never on the presenter. */
   hidden?: boolean
+  /** Linked party character (HP ring + vitals from the sheet — D4). */
+  characterId?: string
+  /** Linked encounter combatant id (HP ring + conditions from the tracker). */
+  combatantId?: string
+  /** Compendium monster key (click → stat block). */
+  ref?: string
 }
 
 export interface SceneMap {
@@ -565,6 +571,14 @@ export interface Character {
   notes?: string
   /** Populated by the loader. */
   _sourceFile?: string
+}
+
+/** Per-token live dressing baked at 📤 Send time (D4): HP ring + condition tags. */
+export interface TokenDecor {
+  /** 0..1 — drawn as an arc ring (PCs only on the presenter). */
+  hpFrac?: number
+  /** Condition names shown as tags under the disc. */
+  conds?: string[]
 }
 
 // ---------------------------------------------------------------------------
