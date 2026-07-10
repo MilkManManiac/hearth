@@ -2,7 +2,7 @@
   "id": "tad-darkpass",
   "kind": "npc",
   "title": "Tad Darkpass",
-  "bodyText": "Brolin's younger brother — the favorite. Captain-of-the-football-team energy. Sent by Root into the Underdark \"to look into some things.\" **Missing**: his +1 warhammer (Darkpass crest) was found at an abandoned, struggle-marked camp with drag marks leading deeper (S13). Portrait: art/tad-darkpass.jpg\n\n# Threads\n[[thread-tad-missing]]",
+  "bodyText": "[[pc-brolin|Brolin]]'s younger brother — the favorite. Captain-of-the-football-team energy. Sent by [[root-darkpass|Root]] into [[the-underdark|the Underdark]] \"to look into some things.\" **Missing**: his +1 warhammer (Darkpass crest) was found at an abandoned, struggle-marked camp with drag marks leading deeper (S13). Portrait: art/tad-darkpass.jpg\n\n# Threads\n[[thread-tad-missing]]",
   "tags": [
     "stonemasons"
   ],

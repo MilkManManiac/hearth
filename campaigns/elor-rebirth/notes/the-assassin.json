@@ -2,7 +2,7 @@
   "id": "the-assassin",
   "kind": "npc",
   "title": "The Horned Assassin (Vaeroth?)",
-  "bodyText": "Lolth's chief hunter on Varen's trail. ~8ft, midnight-black skin, curved horns from the temples, pure white pupil-less eyes, chitinous shifting armor, shadows clinging unnaturally. Speaks in a voice that resonates through stone: *\"Betrayer, your blood is remembered. You escaped once. There will not be a second time.\"*\n\n# Current truth\n- Has appeared three times: the camp visitation (obsidian stone, S12), and twice more closing in — most recently telling Varen he is **out of time** (S13). Leaves eight-pointed-star signs. Never fights directly; hit-and-run, separate-and-wear-down.\n- Import archive names an image **Vaeroth** under \"8 Assassins\" — likely this one's name. Portrait: art/vaeroth.jpg\n\n# Threads\n[[the-eight-legs]] · [[thread-varens-mark]]",
+  "bodyText": "[[lolth]]'s chief hunter on [[pc-varen|Varen]]'s trail. ~8ft, midnight-black skin, curved horns from the temples, pure white pupil-less eyes, chitinous shifting armor, shadows clinging unnaturally. Speaks in a voice that resonates through stone: *\"Betrayer, your blood is remembered. You escaped once. There will not be a second time.\"*\n\n# Current truth\n- Has appeared three times: the camp visitation (obsidian stone, S12), and twice more closing in — most recently telling Varen he is **out of time** (S13). Leaves eight-pointed-star signs. Never fights directly; hit-and-run, separate-and-wear-down.\n- Import archive names an image **Vaeroth** under \"8 Assassins\" — likely this one's name. Portrait: art/vaeroth.jpg\n\n# Threads\n[[the-eight-legs]] · [[thread-varens-mark]]",
   "tags": [
     "underdark",
     "antagonist"

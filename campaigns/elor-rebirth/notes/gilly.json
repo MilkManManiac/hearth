@@ -3,7 +3,7 @@
   "id": "gilly",
   "kind": "npc",
   "title": "Gilly",
-  "bodyText": "Female dwarf cleric; contender for Stonemason leadership; co-led the march on Koviz that ended in words (S23). Portrait: art/gilly.jpg",
+  "bodyText": "Female dwarf cleric; contender for Stonemason leadership; co-led the march on [[koviz]] that ended in words (S23). Portrait: art/gilly.jpg",
   "tags": [
     "stonemasons"
   ]

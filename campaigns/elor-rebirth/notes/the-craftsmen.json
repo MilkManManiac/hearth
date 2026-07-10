@@ -2,7 +2,7 @@
   "id": "the-craftsmen",
   "kind": "faction",
   "title": "The Craftsmen (Dwarven Stonemasons)",
-  "bodyText": "Root Darkpass's guild — Koviz's builders and miners, always insular (\"the dwarves stick together\"), now a sealed mini-town behind a metal gate while the rest of the city dies. The reckless dig into the Underdark is theirs; so is whatever Root is really planning ([[thread-roots-plan]]). Maps: art/road-to-stonemasons-guild.jpg, art/stonemasons-guild.jpg.",
+  "bodyText": "[[root-darkpass|Root]] Darkpass's guild — [[koviz]]'s builders and miners, always insular (\"the dwarves stick together\"), now a sealed mini-town behind a metal gate while the rest of the city dies. The reckless dig into [[the-underdark|the Underdark]] is theirs; so is whatever Root is really planning ([[thread-roots-plan]]). Maps: art/road-to-stonemasons-guild.jpg, art/stonemasons-guild.jpg.",
   "createdAt": "2026-07-08T04:26:45.904Z",
   "tags": [
     "koviz"

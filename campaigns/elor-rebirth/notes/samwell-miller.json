@@ -2,7 +2,7 @@
   "id": "samwell-miller",
   "kind": "npc",
   "title": "Samwell Miller",
-  "bodyText": "Cleric of Gond doing plague rounds in a white protruding mask (\"Gooday sirs...\" — poor-British accent). Guided the party through locked-down Koviz to Soni. A good man doing grim work: candle-in-window = body to collect.",
+  "bodyText": "Cleric of [[gond]] doing plague rounds in a white protruding mask (\"Gooday sirs...\" — poor-British accent). Guided the party through locked-down [[koviz]] to [[soni|Soni]]. A good man doing grim work: candle-in-window = body to collect.",
   "tags": [
     "koviz"
   ],

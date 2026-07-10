@@ -2,6 +2,6 @@
   "id": "mushroom-loot",
   "kind": "item",
   "title": "Pod Mushrooms & the Concentrate",
-  "bodyText": "From burned spore-pods: Felson's **torch-mushroom**, Eddy's **invisibility mushroom** (bonus action, ~3 uses). Judy's **blue-mushroom concentrate** (healing + waterbreathing + disease-resist combined): pauses sickness progression ~1 week/dose — Koviz's current lifeline. A **Luckstone** (+1 checks & saves) appeared in the S11 prep's travel tables — confirm whether it was actually found.",
+  "bodyText": "From burned spore-pods: [[pc-felson|Felson]]'s **torch-mushroom**, [[pc-eddy|Eddy]]'s **invisibility mushroom** (bonus action, ~3 uses). Judy's **blue-mushroom concentrate** (healing + waterbreathing + disease-resist combined): pauses sickness progression ~1 week/dose — [[koviz]]'s current lifeline. A **Luckstone** (+1 checks & saves) appeared in the S11 prep's travel tables — confirm whether it was actually found.",
   "createdAt": "2026-07-08T04:26:45.904Z"
 }
