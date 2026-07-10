@@ -100,5 +100,29 @@ Phases — **ALL FIVE SHIPPED 2026-07-10** (full detail in DDB-MECHANICS.md):
 Non-goals stay: no dynamic lighting/vision, no midi-qol automation depth, no portal
 auth (link-is-the-table), no dual-ruleset engine.
 
+## Round 3 — The Surfaces plan (Wes grill, 2026-07-10 evening)
+Wes's directive: the one-stop shop is the PROJECT, not one app. Decisions locked
+via interactive grill:
+- **One engine, many faces — NOT separate apps.** The Electron main process
+  stays the single campaign server (JSON + portal + Discord = sync stays free;
+  separate apps would recreate the DDB/Avrae/Owlbear state-triplication disease).
+  The split is by WINDOW: Console (AV + notes), **Map window** (Wes's mid-fight
+  home base: fog/tokens + tracker + monster stat blocks + a small SFX pad),
+  Party window. **Hearth stays the umbrella brand.**
+- **Players never touch Hearth.** Their whole world is the portal: character
+  create/level/spells/inventory/dice (mostly shipped) + **the Table view**.
+- **The portal Table view REPLACES the presenter window**: each player's browser
+  shows whatever the DM pushes — images/handouts or the live map (fog, tokens,
+  initiative, party HP). Presenter window retires once this is solid.
+- **Player map = full interact, staged**: S1 view-only (fog/initiative/HP live)
+  → S2 move OWN token + ping + measure (never other tokens — DDB's most-hated
+  default) → S3 the rest. Rolling stays on the sheet page.
+- **Equipment goes full DDB depth MINUS WEIGHT** ("no one ever cares about
+  weight"): structured inventory rows (qty, equipped, attuned, charges) linked
+  to SRD/homebrew items, equip toggle drives AC/attack rows, currency pouch.
+  No encumbrance, ever.
+- **Build order**: 1) portal Table view (S1) + structured inventory/equipment,
+  2) the window split (own focused session), 3) map interactivity S2/S3.
+
 ## Papercuts
 Log every friction hit during this build in PAPERCUTS.md.
