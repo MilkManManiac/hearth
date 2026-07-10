@@ -20,7 +20,7 @@ export default function PresenterView() {
   if (file && payload?.map) {
     return (
       <div className="h-full w-full bg-black">
-        <PresenterMap file={file} strokes={payload.map.strokes} />
+        <PresenterMap file={file} strokes={payload.map.strokes} tokens={payload.map.tokens} />
       </div>
     )
   }

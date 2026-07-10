@@ -53,6 +53,7 @@ The Electron binary downloads on first install; if `node_modules/electron/dist/e
 ## Status (2026-07-10)
 - **Phase 1 (local scene player): done and heavily extended** — arm-vs-Go-live, Now Sounding strip, mini-mixers, teleprompter, playlists, loudness normalization, library browser + triage inbox, favorites/recents, 🔎 Probe.
 - **Notes system ("Phase 6", spec was NOTES-PLAN.md): N1–N4 all shipped** — see "two data kinds" above.
+- **One-stop shop (ONESTOP-PLAN.md): C1–C5 ALL SHIPPED 2026-07-10** — 📖 SRD 5.2.1 compendium (+ `homebrew/` merge with 🏠 badge), ⚔ encounter tracker (2024 XP budgets, PC rows linked to sheets), 🗺 fog-of-war maps → presenter, 🛡 native 2024 character sheets + party dashboard, 🌐 player portal (Hearth serves player.html over HTTP; players edit their own characters from any browser; SSE sync; `HEARTH_PORTAL=1` for headless testing). Characters live in `<campaign>/characters/*.json`.
 - **Phase 2 (Discord bridge): built**; status docs contradict each other on how tested it is (DISCORD-BRIDGE.md header says first live voice test passed; its checklist and DEPLOY.md say untested) — **ask the DM before relying on it**. The Chronicler (per-speaker session recorder) rides on it.
 - **Phase 3 (images to players beyond the presenter window) + Phase 4 (D&D Beyond dashboard): not started** — keep-or-kill decision pending (AUDIT).
 - **Packaging: Windows portable + unpacked builds work** (DEPLOY.md); mac not set up.

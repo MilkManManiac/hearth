@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Group, Image as KImage, Layer, Line, Rect, Stage } from 'react-konva'
+import { Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text } from 'react-konva'
 import type Konva from 'konva'
 import useImage from 'use-image'
-import type { FogStroke, Scene, SceneMap } from '../../shared/types'
+import type { FogStroke, MapToken, Scene, SceneMap } from '../../shared/types'
 import { assetUrl } from '../lib/asset'
 import { stem } from '../../shared/paths'
 import { useStore } from '../store'
@@ -59,8 +59,59 @@ export function FogLayer({
   )
 }
 
+/** Token discs: label in a colored circle; presenter hides hidden ones. */
+export function TokenLayer({
+  tokens,
+  draggable,
+  onMove,
+  onToggleHidden,
+  onRemove
+}: {
+  tokens: MapToken[]
+  draggable?: boolean
+  onMove?: (id: string, x: number, y: number) => void
+  onToggleHidden?: (id: string) => void
+  onRemove?: (id: string) => void
+}) {
+  return (
+    <>
+      {tokens.map((tk) => (
+        <Group
+          key={tk.id}
+          name="token"
+          x={tk.x}
+          y={tk.y}
+          draggable={draggable}
+          onDragEnd={(e) => onMove?.(tk.id, e.target.x(), e.target.y())}
+          onDblClick={() => onToggleHidden?.(tk.id)}
+          onContextMenu={(e) => {
+            e.evt.preventDefault()
+            onRemove?.(tk.id)
+          }}
+          opacity={tk.hidden ? 0.45 : 1}
+        >
+          <Circle radius={tk.r} fill={tk.color} stroke="black" strokeWidth={2} shadowBlur={6} shadowOpacity={0.6} />
+          <Text
+            text={tk.label.slice(0, 3)}
+            fontSize={tk.r * 0.9}
+            fontStyle="bold"
+            fill="white"
+            width={tk.r * 2}
+            height={tk.r * 2}
+            offsetX={tk.r}
+            offsetY={tk.r}
+            align="center"
+            verticalAlign="middle"
+            listening={false}
+          />
+        </Group>
+      ))}
+    </>
+  )
+}
+
 /** Player-side render: image + committed fog, scaled to fit the window. */
-export function PresenterMap({ file, strokes }: { file: string; strokes: FogStroke[] }) {
+export function PresenterMap({ file, strokes, tokens = [] }: { file: string; strokes: FogStroke[]; tokens?: MapToken[] }) {
   const [img] = useImage(assetUrl(file))
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
   useEffect(() => {
@@ -77,12 +128,15 @@ export function PresenterMap({ file, strokes }: { file: string; strokes: FogStro
       <Layer x={x} y={y} scaleX={scale} scaleY={scale}>
         <KImage image={img} />
         <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={1} />
+        <TokenLayer tokens={tokens.filter((t) => !t.hidden)} />
       </Layer>
     </Stage>
   )
 }
 
-type Tool = 'reveal' | 'hide' | 'pan'
+type Tool = 'reveal' | 'hide' | 'pan' | 'token'
+
+const TOKEN_COLORS = ['#d8b26a', '#e08a3c', '#c0392b', '#8e44ad', '#2980b9', '#27ae60', '#7f8c8d']
 
 /** Full-screen DM fog editor over the scene's map image. */
 export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: () => void }) {
@@ -125,8 +179,14 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
     [map.strokes, drawing]
   )
 
+  const [tokenLabel, setTokenLabel] = useState('PC')
+  const tokens = map.tokens ?? []
+
   const persist = (next: FogStroke[]) =>
     updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), strokes: next } }))
+
+  const persistTokens = (next: MapToken[]) =>
+    updateScene(scene.id, (s) => ({ ...s, map: { ...(s.map as SceneMap), tokens: next } }))
 
   const imgPos = (): { x: number; y: number } | null => {
     const stage = stageRef.current
@@ -136,10 +196,26 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
     return { x: (p.x - view.x) / view.scale, y: (p.y - view.y) / view.scale }
   }
 
-  const onDown = () => {
+  const onDown = (e?: Konva.KonvaEventObject<MouseEvent>) => {
     if (tool === 'pan') return
+    // Clicking an existing token (to drag it) must not also place a new one.
+    if (tool === 'token' && e && e.target !== e.target.getStage() && e.target.findAncestor('.token')) return
     const p = imgPos()
     if (!p) return
+    if (tool === 'token') {
+      persistTokens([
+        ...tokens,
+        {
+          id: crypto.randomUUID(),
+          label: tokenLabel.trim() || '●',
+          x: p.x,
+          y: p.y,
+          r: Math.max(14, brush / view.scale / 2),
+          color: TOKEN_COLORS[tokens.length % TOKEN_COLORS.length]
+        }
+      ])
+      return
+    }
     setDrawing({ points: [p.x, p.y, p.x + 0.01, p.y + 0.01], radius: brush / view.scale, mode: tool })
   }
   const onMove = () => {
@@ -171,7 +247,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
   }
 
   const send = () => {
-    void window.hearth.presenterShow({ file: map.image, map: { strokes: map.strokes } })
+    void window.hearth.presenterShow({ file: map.image, map: { strokes: map.strokes, tokens } })
     pushToast('Map sent to the presenter window', 'info')
   }
 
@@ -198,6 +274,17 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
         <ToolBtn t="reveal" label="🔦 Reveal" title="Paint away the fog (what players will see)" />
         <ToolBtn t="hide" label="🌫 Hide" title="Paint fog back over a revealed area" />
         <ToolBtn t="pan" label="✋ Pan" title="Drag to move the map (wheel zooms anytime)" />
+        <ToolBtn t="token" label="⛂ Token" title="Click to place a token; drag to move; double-click = hide from players; right-click = remove" />
+        {tool === 'token' && (
+          <input
+            value={tokenLabel}
+            onChange={(e) => setTokenLabel(e.target.value)}
+            placeholder="label"
+            maxLength={3}
+            className="w-14 rounded border border-hearth-border bg-hearth-bg px-1.5 py-1 text-center text-sm text-hearth-text"
+            title="Token label (1–3 chars)"
+          />
+        )}
         <label className="flex items-center gap-1.5 text-xs text-hearth-muted">
           Brush
           <input type="range" min={12} max={200} value={brush} onChange={(e) => setBrush(Number(e.target.value))} className="w-24" />
@@ -259,7 +346,7 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
         onDragEnd={(e) => {
           if (e.target === stageRef.current) setView((v) => ({ ...v, x: e.target.x(), y: e.target.y() }))
         }}
-        onMouseDown={onDown}
+        onMouseDown={(e) => onDown(e)}
         onMouseMove={onMove}
         onMouseUp={onUp}
         onWheel={onWheel}
@@ -269,6 +356,18 @@ export default function MapEditor({ scene, onClose }: { scene: Scene; onClose: (
           {img && <KImage image={img} />}
           {/* DM sees dim fog (players get full black in the presenter). */}
           {img && <FogLayer w={img.width} h={img.height} strokes={strokes} opacity={0.6} />}
+          {/* Tokens interact only in token mode so brushing never drags one. */}
+          <Group listening={tool === 'token'}>
+            <TokenLayer
+              tokens={tokens}
+              draggable={tool === 'token'}
+              onMove={(id, x, y) => persistTokens(tokens.map((tk) => (tk.id === id ? { ...tk, x, y } : tk)))}
+              onToggleHidden={(id) =>
+                persistTokens(tokens.map((tk) => (tk.id === id ? { ...tk, hidden: !tk.hidden } : tk)))
+              }
+              onRemove={(id) => persistTokens(tokens.filter((tk) => tk.id !== id))}
+            />
+          </Group>
         </Layer>
       </Stage>
 

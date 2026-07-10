@@ -384,10 +384,24 @@ export interface FogStroke {
   shape?: 'fill'
 }
 
+export interface MapToken {
+  id: string
+  /** Short label rendered in the disc (1–3 chars shown). */
+  label: string
+  x: number
+  y: number
+  /** Disc radius in image pixels. */
+  r: number
+  color: string
+  /** Hidden tokens render only for the DM, never on the presenter. */
+  hidden?: boolean
+}
+
 export interface SceneMap {
   /** Campaign-relative image path (usually art/…). */
   image: string
   strokes: FogStroke[]
+  tokens?: MapToken[]
 }
 
 export interface Scene {
