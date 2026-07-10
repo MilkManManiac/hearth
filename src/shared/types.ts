@@ -225,8 +225,22 @@ export interface CueInline {
   until?: 'section' | 'manual'
 }
 
-/** A run of text (with optional marks) or an atomic cue. */
-export type ScriptInline = { type: 'text'; text: string; marks?: ScriptMark[] } | CueInline
+/**
+ * An inline [[wiki-link]] to another campaign note. `ref` is the target note's
+ * id; `label` is an explicit display override (authored as `[[ref|label]]`) —
+ * absent means "render the target's live title", so renames propagate.
+ */
+export interface LinkInline {
+  type: 'link'
+  ref: string
+  label?: string
+}
+
+/** A run of text (with optional marks), an atomic cue, or a note link. */
+export type ScriptInline =
+  | { type: 'text'; text: string; marks?: ScriptMark[] }
+  | CueInline
+  | LinkInline
 
 /** Block-level structure of the read-aloud doc. Callouts nest blocks. */
 export type ScriptBlock =

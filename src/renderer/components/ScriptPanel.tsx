@@ -11,6 +11,7 @@ import {
 import { blurNonTypingFocus, isTypingTarget } from '../lib/keys'
 import { pushRecent } from '../lib/prefs'
 import { engine, resolveAmbLayer, useStore } from '../store'
+import NoteLinkPill from './NoteLinkPill'
 import ScriptEditor, { type EnsureAsset } from './ScriptEditor'
 import SectionHeader from './SectionHeader'
 
@@ -259,6 +260,11 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, i
         {node.text}
       </span>
     )
+  }
+  // [[note-link]]: jumps to the note (right panel in run mode). Not a cue —
+  // it must not consume a teleprompter slot, so it stays out of ctx.i.
+  if (node.type === 'link') {
+    return <NoteLinkPill key={key} refId={node.ref} label={node.label} />
   }
   // Teleprompter "next up" indicator: subtle ember ring + glow on the cue Space will fire.
   const idx = ctx.i++

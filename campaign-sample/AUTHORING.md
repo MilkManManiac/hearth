@@ -259,6 +259,16 @@ notes for the DM, keep entities light: a line of who/what, a `> [!dm]` for
 secrets, headings only where they help. Session notes follow a Lazy-DM prep
 shape (Recap / Strong start / Possible scenes / Secrets & clues / To-do).
 
+### [[wiki-links]]
+
+`[[note-id]]` anywhere in a body (or a scene script) becomes a live link to
+that note — click to jump; every note shows what links back to it. Use
+`[[note-id|display text]]` to override the label; a bare link renders the
+target's current title, so renames propagate. The ref is the target's `id`
+(its filename stem), not its title. Link liberally — a ref whose note doesn't
+exist yet renders dashed and is a fine "write this later" marker. In the app,
+typing `[[` opens autocomplete over all notes (with create-on-first-use).
+
 ## library.json
 
 Every asset gets an entry with a **category** + descriptive **tags** — this is

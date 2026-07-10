@@ -3,6 +3,7 @@ import { ReactNodeViewRenderer } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { scriptHighlightColor, scriptTextColor } from '../../shared/types'
 import CueChip from './CueChip'
+import NoteLinkChip from './NoteLinkChip'
 
 function numOrNull(v: string | null): number | null {
   if (v == null || v === '') return null
@@ -74,6 +75,50 @@ export const CueNode = Node.create({
 
   addNodeView() {
     return ReactNodeViewRenderer(CueChip)
+  }
+})
+
+/**
+ * Atomic inline [[wiki-link]] to another campaign note. Serializes to/from the
+ * ScriptDoc `link` inline. `label` empty = render the target's live title.
+ */
+export const NoteLinkNode = Node.create({
+  name: 'noteLink',
+  group: 'inline',
+  inline: true,
+  atom: true,
+  selectable: true,
+  draggable: true,
+
+  addAttributes() {
+    return {
+      ref: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-ref'),
+        renderHTML: (attrs) => ({ 'data-ref': attrs.ref })
+      },
+      label: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-label'),
+        renderHTML: (attrs) => (attrs.label ? { 'data-label': attrs.label } : {})
+      }
+    }
+  },
+
+  parseHTML() {
+    return [{ tag: 'span[data-note-link]' }]
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      'span',
+      mergeAttributes(HTMLAttributes, { 'data-note-link': '' }),
+      String(HTMLAttributes['data-label'] || HTMLAttributes['data-ref'] || '')
+    ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(NoteLinkChip)
   }
 })
 
@@ -169,6 +214,7 @@ export function buildExtensions(opts: { cues?: boolean } = {}) {
       dropcursor: { width: 2, color: '#e0b341' }
     }),
     CalloutNode,
+    NoteLinkNode,
     ...(opts.cues === false ? [] : [CueNode]),
     ScriptColorMark,
     ScriptHighlightMark

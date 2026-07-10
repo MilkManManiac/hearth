@@ -27,6 +27,9 @@ function markToJSON(m: ScriptMark): { type: string; attrs?: Record<string, unkno
 }
 
 function inlineToJSON(node: ScriptInline): JSONContent | null {
+  if (node.type === 'link') {
+    return { type: 'noteLink', attrs: { ref: node.ref, label: node.label ?? '' } }
+  }
   if (node.type === 'cue') {
     return {
       type: 'cue',
@@ -90,6 +93,12 @@ function markFromJSON(m: { type?: string; attrs?: Record<string, unknown> }): Sc
 }
 
 function inlineFromJSON(node: JSONContent): ScriptInline | null {
+  if (node.type === 'noteLink') {
+    const a = node.attrs ?? {}
+    const link: ScriptInline = { type: 'link', ref: String(a.ref ?? '') }
+    if (a.label) link.label = String(a.label)
+    return link
+  }
   if (node.type === 'cue') {
     const a = node.attrs ?? {}
     const num = (v: unknown): number | undefined => {

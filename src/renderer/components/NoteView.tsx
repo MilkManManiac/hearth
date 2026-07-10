@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER, type CampaignNote, type NoteKind } from '../../shared/types'
+import { docLinks } from '../../shared/scriptCompile'
 import { useStore } from '../store'
 import NoteEditor from './NoteEditor'
 
@@ -164,6 +165,75 @@ export default function NoteView({ note }: { note: CampaignNote }) {
         body={note.body ?? [{ type: 'paragraph', content: [] }]}
         onSave={(doc) => void updateNote(note.id, (n) => ({ ...n, body: doc, bodyText: undefined }))}
       />
+
+      <Backlinks noteId={note.id} />
+    </div>
+  )
+}
+
+/**
+ * Everything that [[links]] to this note — notes AND scene scripts. The
+ * organizing fan-out happens automatically: write links going forward, read
+ * them backward here.
+ */
+function Backlinks({ noteId }: { noteId: string }) {
+  const notes = useStore((s) => s.campaign.notes)
+  const scenes = useStore((s) => s.campaign.scenes)
+  const selectNote = useStore((s) => s.selectNote)
+  const selectScene = useStore((s) => s.selectScene)
+  const setLeftTab = useStore((s) => s.setLeftTab)
+
+  const sources = useMemo(() => {
+    const out: { key: string; icon: string; title: string; open: () => void }[] = []
+    for (const n of notes) {
+      if (n.id === noteId) continue
+      if (docLinks(n.body).includes(noteId)) {
+        out.push({
+          key: `note:${n.id}`,
+          icon: NOTE_KINDS[n.kind]?.icon ?? '📝',
+          title: n.title,
+          open: () => selectNote(n.id)
+        })
+      }
+    }
+    for (const sc of scenes) {
+      if (docLinks(sc.script).includes(noteId)) {
+        out.push({
+          key: `scene:${sc.id}`,
+          icon: '🎬',
+          title: sc.name,
+          open: () => {
+            setLeftTab('scenes')
+            void selectScene(sc.id)
+          }
+        })
+      }
+    }
+    return out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noteId, notes, scenes])
+
+  if (sources.length === 0) return null
+
+  return (
+    <div className="border-t border-hearth-border pt-3">
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+        ⤷ Linked from {sources.length} {sources.length === 1 ? 'place' : 'places'}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {sources.map((s) => (
+          <button
+            key={s.key}
+            onClick={s.open}
+            className="flex items-center gap-1.5 rounded-full border border-hearth-border bg-hearth-panel2/60 px-2.5 py-1 text-sm text-hearth-muted transition-colors hover:border-hearth-gold hover:text-hearth-gold"
+          >
+            <span aria-hidden className="text-xs">
+              {s.icon}
+            </span>
+            {s.title}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

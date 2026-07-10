@@ -222,6 +222,11 @@ interface AppState {
   setLeftTab: (tab: 'scenes' | 'notes') => void
   updateNote: (noteId: string, mutate: (n: CampaignNote) => CampaignNote) => Promise<void>
   createNote: (kind: NoteKind, title: string) => Promise<void>
+  /**
+   * Create a note WITHOUT navigating to it (create-on-first-use from a [[link
+   * autocomplete): returns the new note's id, or null on failure.
+   */
+  createNoteInline: (kind: NoteKind, title: string) => Promise<string | null>
   /** Move the note's JSON to the OS trash. */
   deleteNote: (noteId: string) => Promise<void>
   /** Duplicate a scene to a new file ("Copy of X") and select the copy. */
@@ -1006,6 +1011,18 @@ export const useStore = create<AppState>((set, get) => ({
       set({ currentNoteId: noteId, leftTab: 'notes' })
     } catch (err) {
       get().pushToast(`New note failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  createNoteInline: async (kind, title) => {
+    try {
+      const { state, noteId } = await window.hearth.createNote(kind, title)
+      get().setCampaign(state)
+      get().pushToast(`Created note "${title}" — retype its kind on its page`, 'info')
+      return noteId
+    } catch (err) {
+      get().pushToast(`New note failed: ${(err as Error).message}`, 'error')
+      return null
     }
   },
 

@@ -8,6 +8,7 @@ import {
   type ScriptDoc
 } from '../../shared/types'
 import { buildExtensions } from '../editor/extensions'
+import LinkSuggest from '../editor/LinkSuggest'
 import { docToTiptap, tiptapToDoc } from '../editor/mapping'
 import { ToolBtn, Swatch } from './ScriptEditor'
 
@@ -132,7 +133,13 @@ export default function NoteEditor({
         </BubbleMenu>
       )}
 
-      <EditorContent editor={editor} />
+      <LinkSuggest editor={editor}>
+        <EditorContent editor={editor} />
+      </LinkSuggest>
+      <p className="text-[11px] text-hearth-muted/60">
+        Type <kbd className="rounded border border-hearth-border px-1">[[</kbd> to link another note
+        — Ctrl+click a link to follow it.
+      </p>
     </div>
   )
 }

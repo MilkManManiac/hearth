@@ -6,11 +6,12 @@ import {
   type ScriptDoc,
   type ScriptInline
 } from '../../shared/types'
+import NoteLinkPill from './NoteLinkPill'
 
 /**
  * Compact read-only renderer for a note's ScriptDoc body — used where the full
- * TipTap editor is overkill (the run-mode right panel). Cues (shouldn't occur
- * in notes) degrade to plain labels.
+ * TipTap editor is overkill (the run-mode right panel). [[Links]] are live
+ * (click to jump); cues (shouldn't occur in notes) degrade to plain labels.
  */
 export default function NoteBody({ doc, className }: { doc: ScriptDoc; className?: string }) {
   return <div className={className}>{doc.map((b, i) => renderBlock(b, i))}</div>
@@ -42,6 +43,9 @@ function renderInline(node: ScriptInline, key: number): ReactNode {
         {node.text}
       </span>
     )
+  }
+  if (node.type === 'link') {
+    return <NoteLinkPill key={key} refId={node.ref} label={node.label} />
   }
   return (
     <span key={key} className="mx-0.5 rounded bg-hearth-panel2 px-1 text-xs text-hearth-muted">

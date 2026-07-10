@@ -70,15 +70,38 @@ function run(text: string, marks: ScriptMark[]): ScriptInline {
   return marks.length ? { type: 'text', text, marks } : { type: 'text', text }
 }
 
+const LINK_RE = /\[\[([^\[\]|]+?)(?:\|([^\[\]]+?))?\]\]/g
+
+/**
+ * Innermost inline pass: split out [[wiki-links]] (`[[note-id]]` or
+ * `[[note-id|label]]`), leaving the rest as marked text runs. Links are
+ * atomic — emphasis marks around them apply to the surrounding text only.
+ */
+function parseLinks(text: string, marks: ScriptMark[]): ScriptInline[] {
+  const out: ScriptInline[] = []
+  let last = 0
+  let m: RegExpExecArray | null
+  LINK_RE.lastIndex = 0
+  while ((m = LINK_RE.exec(text)) !== null) {
+    if (m.index > last) out.push(run(text.slice(last, m.index), marks))
+    const link: ScriptInline = { type: 'link', ref: m[1].trim() }
+    if (m[2]) link.label = m[2].trim()
+    out.push(link)
+    last = m.index + m[0].length
+  }
+  if (last < text.length) out.push(run(text.slice(last), marks))
+  return out
+}
+
 /** Split a plain string on *italic* / _italic_, carrying base marks through. */
 function parseItalic(text: string, marks: ScriptMark[]): ScriptInline[] {
   const out: ScriptInline[] = []
   for (const part of text.split(/(\*[^*]+\*|_[^_]+_)/g)) {
     if (!part) continue
     if (/^[*_].+[*_]$/.test(part)) {
-      out.push(run(part.slice(1, -1), [...marks, { type: 'italic' }]))
+      out.push(...parseLinks(part.slice(1, -1), [...marks, { type: 'italic' }]))
     } else {
-      out.push(run(part, marks))
+      out.push(...parseLinks(part, marks))
     }
   }
   return out
@@ -216,6 +239,23 @@ export function docText(doc: ScriptDoc | undefined): string {
   }
   walk(doc)
   return parts.join(' ')
+}
+
+/** All [[link]] refs in a doc, in order (descending into callouts). May repeat. */
+export function docLinks(doc: ScriptDoc | undefined): string[] {
+  if (!doc) return []
+  const refs: string[] = []
+  const walk = (blocks: ScriptBlock[]): void => {
+    for (const b of blocks) {
+      if (b.type === 'callout') {
+        walk(b.content)
+        continue
+      }
+      for (const n of b.content) if (n.type === 'link') refs.push(n.ref)
+    }
+  }
+  walk(doc)
+  return refs
 }
 
 const BLOCK_TYPES = new Set(['paragraph', 'heading', 'callout'])
