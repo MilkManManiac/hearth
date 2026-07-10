@@ -2,6 +2,7 @@ import { Mark, Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { scriptHighlightColor, scriptTextColor } from '../../shared/types'
+import CheckItem from './CheckItem'
 import CueChip from './CueChip'
 import NoteLinkChip from './NoteLinkChip'
 
@@ -122,6 +123,74 @@ export const NoteLinkNode = Node.create({
   }
 })
 
+/**
+ * Checklist line ("- [ ]" in authoring markdown): a block with inline content
+ * and a live checkbox. Enter continues the list (new unchecked item); Enter on
+ * an empty item, or Backspace at its start, drops back to a paragraph.
+ */
+export const CheckNode = Node.create({
+  name: 'check',
+  group: 'block',
+  content: 'inline*',
+  defining: true,
+
+  addAttributes() {
+    return {
+      checked: {
+        default: false,
+        parseHTML: (el) => el.getAttribute('data-checked') === 'true',
+        renderHTML: (attrs) => ({ 'data-checked': attrs.checked ? 'true' : 'false' })
+      }
+    }
+  },
+
+  parseHTML() {
+    return [{ tag: 'div[data-check]' }]
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-check': '', class: 'script-check' }), 0]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(CheckItem)
+  },
+
+  addInputRules() {
+    // Typing "- [ ] " or "- [x] " at a paragraph start turns it into a check item.
+    return [
+      {
+        find: /^[-*]\s\[([ xX])\]\s$/,
+        handler: ({ state, range, match, chain }) => {
+          const checked = match[1] !== ' '
+          const $from = state.selection.$from
+          if ($from.parent.type.name !== 'paragraph') return
+          chain().deleteRange(range).setNode('check', { checked }).run()
+        }
+      }
+    ]
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      Enter: () => {
+        const { $from } = this.editor.state.selection
+        if ($from.parent.type.name !== 'check') return false
+        // Empty item + Enter = leave the list.
+        if ($from.parent.content.size === 0) {
+          return this.editor.commands.setNode('paragraph')
+        }
+        return this.editor.chain().splitBlock().updateAttributes('check', { checked: false }).run()
+      },
+      Backspace: () => {
+        const { $from, empty } = this.editor.state.selection
+        if (!empty || $from.parent.type.name !== 'check' || $from.parentOffset !== 0) return false
+        return this.editor.commands.setNode('paragraph')
+      }
+    }
+  }
+})
+
 /** Callout / DM-note block. Nests block content. */
 export const CalloutNode = Node.create({
   name: 'callout',
@@ -214,6 +283,7 @@ export function buildExtensions(opts: { cues?: boolean } = {}) {
       dropcursor: { width: 2, color: '#e0b341' }
     }),
     CalloutNode,
+    CheckNode,
     NoteLinkNode,
     ...(opts.cues === false ? [] : [CueNode]),
     ScriptColorMark,

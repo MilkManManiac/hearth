@@ -259,6 +259,15 @@ notes for the DM, keep entities light: a line of who/what, a `> [!dm]` for
 secrets, headings only where they help. Session notes follow a Lazy-DM prep
 shape (Recap / Strong start / Possible scenes / Secrets & clues / To-do).
 
+### Checklists (secrets & clues)
+
+`- [ ] text` / `- [x] text` lines compile to live checklist items (in notes
+AND scene scripts). The DM ticks them during play; on creating a new session
+note, the previous session's **unchecked** items are appended under a
+"Carried forward" heading automatically — write secrets as checklist lines so
+unfinished business rolls forward. (Plain `- text` bullets are NOT special —
+only the checkbox form is.)
+
 ### [[wiki-links]]
 
 `[[note-id]]` anywhere in a body (or a scene script) becomes a live link to

@@ -10,6 +10,7 @@ import {
   type Scene,
   type ScriptBlock
 } from '../shared/types'
+import { docUncheckedItems } from '../shared/scriptCompile'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
 import type { DiscordStatus, LibraryAssetPatch, TriageScan } from '../preload/index'
 
@@ -1010,6 +1011,31 @@ export const useStore = create<AppState>((set, get) => ({
       const { state, noteId } = await window.hearth.createNote(kind, title)
       get().setCampaign(state)
       set({ currentNoteId: noteId, leftTab: 'notes' })
+      // Lazy-DM carry-forward: a new session inherits the previous session's
+      // unchecked secrets & clues — unfinished business rolls forward.
+      if (kind === 'session') {
+        const prev = state.notes
+          .filter((n) => n.kind === 'session' && n.id !== noteId)
+          .sort((a, b) =>
+            (b.date ?? b.createdAt ?? '').localeCompare(a.date ?? a.createdAt ?? '')
+          )[0]
+        const carried = docUncheckedItems(prev?.body)
+        if (prev && carried.length > 0) {
+          const blocks: ScriptBlock[] = [
+            {
+              type: 'heading',
+              level: 2,
+              content: [{ type: 'text', text: `Carried forward (from ${prev.title})` }]
+            },
+            ...carried.map((c) => ({ ...c, checked: undefined }) as ScriptBlock)
+          ]
+          await get().updateNote(noteId, (n) => ({ ...n, body: [...(n.body ?? []), ...blocks] }))
+          get().pushToast(
+            `Carried ${carried.length} unchecked item${carried.length === 1 ? '' : 's'} from "${prev.title}"`,
+            'info'
+          )
+        }
+      }
     } catch (err) {
       get().pushToast(`New note failed: ${(err as Error).message}`, 'error')
     }

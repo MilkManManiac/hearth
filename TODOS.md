@@ -563,7 +563,18 @@ also lists 💬 places whose prose says the note's title without a [[link]]
 (word-boundary match — "Kena" won't fire inside "Kennarea"); each has a
 🔗 button that linkifies every mention in that note/scene in place (casing
 preserved via label; `linkifyMentions`/`docMentions` in scriptCompile).
-**Next (rest of N4):** secrets carry-forward / docx import of Elor sessions.
+**N4 secrets & clues checklists + carry-forward ✅ (2026-07-09):** new `check`
+block in ScriptDoc (`- [ ]` / `- [x]` in bodyText/scriptText; plain `-`
+bullets stay prose). Editor: ☑ toolbar button in both editors, typing
+`- [ ] ` converts a paragraph, Enter continues the list, Enter-on-empty /
+Backspace-at-start exits, live checkbox in the chip. Run mode: ticks in the
+teleprompter script save to the scene; ticks in the right-panel 📓 save to the
+note. Creating a **new session note** auto-appends the previous session's
+unchecked items under "Carried forward (from <session>)" (`docUncheckedItems`
++ toast). Session starter template now seeds Secrets & clues as checkboxes.
+**Verify by hand:** new session → tick some boxes → create another session →
+carried-forward section appears with only the unticked ones.
+**Next (rest of N4):** docx import of Elor sessions.
 
 ## 12. Mac support / packaging + distribution (parked until we're happy with everything else)
 The app is already mac-compatible (no Windows-specific code; davey has mac

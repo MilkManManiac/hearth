@@ -112,7 +112,8 @@ const NOTE_STARTERS: Partial<Record<NoteKind, string>> = {
     'A few short lines — build the real ones as Hearth scenes and assign them to this session.',
     '',
     '# Secrets & clues',
-    'Around ten one-sentence revelations the players might discover — not tied to any location. Unused ones roll into next session.',
+    '- [ ] One-sentence revelation the players might discover — tick it when it lands at the table.',
+    '- [ ] Another. Unchecked items carry into the next session automatically.',
     '',
     '# To-do / ideas',
     '> [!dm] Post-session scratch: what worked, what to figure out before next time.'

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER, type Scene } from '../../shared/types'
+import { setCheckedAt } from '../../shared/scriptCompile'
 import { useStore } from '../store'
 import NoteBody from './NoteBody'
 import TopBar from './TopBar'
@@ -226,6 +227,7 @@ function NotesPeek() {
   const currentNoteId = useStore((s) => s.currentNoteId)
   const selectNote = useStore((s) => s.selectNote)
   const setLeftTab = useStore((s) => s.setLeftTab)
+  const updateNote = useStore((s) => s.updateNote)
   const buildMode = useStore((s) => s.uiMode === 'build')
   const note = notes.find((n) => n.id === currentNoteId) ?? null
 
@@ -276,7 +278,15 @@ function NotesPeek() {
               </button>
             )}
           </div>
-          <NoteBody doc={note.body ?? []} />
+          <NoteBody
+            doc={note.body ?? []}
+            onToggleCheck={(path, checked) =>
+              void updateNote(note.id, (n) => ({
+                ...n,
+                body: setCheckedAt(n.body ?? [], path, checked)
+              }))
+            }
+          />
         </>
       )}
     </div>

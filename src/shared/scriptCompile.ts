@@ -142,6 +142,7 @@ function parseInline(text: string): ScriptInline[] {
 
 const HEADING_RE = /^(#{1,3})\s+(.*)$/
 const QUOTE_RE = /^>\s?/
+const CHECK_RE = /^[-*]\s+\[([ xX])\]\s+(.*)$/
 
 /** Compile markdown-with-cues (the `scriptText` authoring format) into a doc. */
 export function compileScriptText(src: string): ScriptDoc {
@@ -164,6 +165,15 @@ export function compileScriptText(src: string): ScriptDoc {
       continue
     }
 
+    const c = CHECK_RE.exec(line)
+    if (c) {
+      const block: ScriptBlock = { type: 'check', content: parseInline(c[2]) }
+      if (c[1] !== ' ') block.checked = true
+      blocks.push(block)
+      i++
+      continue
+    }
+
     if (QUOTE_RE.test(line)) {
       const inner: string[] = []
       while (i < lines.length && QUOTE_RE.test(lines[i])) {
@@ -181,7 +191,8 @@ export function compileScriptText(src: string): ScriptDoc {
       i < lines.length &&
       lines[i].trim() !== '' &&
       !HEADING_RE.test(lines[i]) &&
-      !QUOTE_RE.test(lines[i])
+      !QUOTE_RE.test(lines[i]) &&
+      !CHECK_RE.test(lines[i])
     ) {
       para.push(lines[i])
       i++
@@ -341,7 +352,40 @@ export function linkifyMentions(doc: ScriptDoc, title: string, ref: string): { d
   return { doc: count > 0 ? next : doc, count }
 }
 
-const BLOCK_TYPES = new Set(['paragraph', 'heading', 'callout'])
+/**
+ * All unchecked checklist items in a doc (descending into callouts) — the
+ * "unfinished business" that carries forward into the next session's prep.
+ */
+export function docUncheckedItems(doc: ScriptDoc | undefined): Extract<ScriptBlock, { type: 'check' }>[] {
+  if (!doc) return []
+  const out: Extract<ScriptBlock, { type: 'check' }>[] = []
+  const walk = (blocks: ScriptBlock[]): void => {
+    for (const b of blocks) {
+      if (b.type === 'callout') walk(b.content)
+      else if (b.type === 'check' && !b.checked) out.push(b)
+    }
+  }
+  walk(doc)
+  return out
+}
+
+/**
+ * Immutably set a check block's `checked` at a block-index path (indices
+ * descend through callout content). Non-check targets return the doc unchanged
+ * — the read-only renderers use this to persist live ticks.
+ */
+export function setCheckedAt(doc: ScriptDoc, path: number[], checked: boolean): ScriptDoc {
+  if (path.length === 0) return doc
+  const walk = (blocks: ScriptBlock[], depth: number): ScriptBlock[] =>
+    blocks.map((b, i) => {
+      if (i !== path[depth]) return b
+      if (depth === path.length - 1) return b.type === 'check' ? { ...b, checked } : b
+      return b.type === 'callout' ? { ...b, content: walk(b.content, depth + 1) } : b
+    })
+  return walk(doc, 0)
+}
+
+const BLOCK_TYPES = new Set(['paragraph', 'heading', 'callout', 'check'])
 
 /** True if `raw` is already the new block tree (vs. a legacy flat array). */
 function isTreeDoc(raw: unknown): raw is ScriptDoc {

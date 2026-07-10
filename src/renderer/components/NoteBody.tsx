@@ -13,8 +13,17 @@ import NoteLinkPill from './NoteLinkPill'
  * TipTap editor is overkill (the run-mode right panel). [[Links]] are live
  * (click to jump); cues (shouldn't occur in notes) degrade to plain labels.
  */
-export default function NoteBody({ doc, className }: { doc: ScriptDoc; className?: string }) {
-  return <div className={className}>{doc.map((b, i) => renderBlock(b, i))}</div>
+export default function NoteBody({
+  doc,
+  className,
+  onToggleCheck
+}: {
+  doc: ScriptDoc
+  className?: string
+  /** Wire this to persist checklist ticks (path = block indices, callouts descend). */
+  onToggleCheck?: (path: number[], checked: boolean) => void
+}) {
+  return <div className={className}>{doc.map((b, i) => renderBlock(b, i, [i], onToggleCheck))}</div>
 }
 
 function inlineStyle(node: Extract<ScriptInline, { type: 'text' }>): {
@@ -60,18 +69,44 @@ const HEADING_CLASS: Record<number, string> = {
   3: 'mt-2 mb-0.5 text-sm font-semibold text-hearth-muted'
 }
 
-function renderBlock(block: ScriptBlock, key: number): ReactNode {
+function renderBlock(
+  block: ScriptBlock,
+  key: number,
+  path: number[],
+  onToggleCheck?: (path: number[], checked: boolean) => void
+): ReactNode {
   if (block.type === 'callout') {
     return (
       <div
         key={key}
         className="script-callout my-2 rounded-r border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-2.5 py-1.5 text-[13px] text-hearth-muted"
       >
-        {block.content.map((b, i) => renderBlock(b, i))}
+        {block.content.map((b, i) => renderBlock(b, i, [...path, i], onToggleCheck))}
       </div>
     )
   }
   const inlines = block.content.map((n, i) => renderInline(n, i))
+  if (block.type === 'check') {
+    return (
+      <div key={key} className="my-1 flex items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={!!block.checked}
+          disabled={!onToggleCheck}
+          onChange={(e) => onToggleCheck?.(path, e.target.checked)}
+          title={onToggleCheck ? 'Tick when it lands at the table' : undefined}
+          className="mt-[0.3em] h-3.5 w-3.5 shrink-0 cursor-pointer accent-hearth-ember disabled:cursor-default"
+        />
+        <span
+          className={
+            block.checked ? 'text-hearth-muted line-through decoration-hearth-muted/50' : 'text-hearth-text'
+          }
+        >
+          {inlines}
+        </span>
+      </div>
+    )
+  }
   if (block.type === 'heading') {
     const cls = HEADING_CLASS[block.level]
     if (block.level === 1) return <h3 key={key} className={cls}>{inlines}</h3>

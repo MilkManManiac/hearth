@@ -269,6 +269,17 @@ export default function ScriptEditor({
           <ToolBtn active={editor.isActive('callout')} onClick={() => editor.chain().focus().toggleWrap('callout').run()}>
             ❝ Note
           </ToolBtn>
+          <ToolBtn
+            active={editor.isActive('check')}
+            onClick={() =>
+              editor.isActive('check')
+                ? editor.chain().focus().setNode('paragraph').run()
+                : editor.chain().focus().setNode('check').run()
+            }
+            title="Checklist item — tick off during play"
+          >
+            ☑
+          </ToolBtn>
           <div className="mx-1 h-4 w-px bg-hearth-border" />
           <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
             ↶

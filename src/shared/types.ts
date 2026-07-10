@@ -247,6 +247,16 @@ export type ScriptBlock =
   | { type: 'paragraph'; content: ScriptInline[] }
   | { type: 'heading'; level: 1 | 2 | 3; content: ScriptInline[] }
   | { type: 'callout'; content: ScriptBlock[] }
+  | {
+      /**
+       * A checklist line ("- [ ] secret" in authoring markdown) — the Lazy-DM
+       * secrets & clues unit: ticked off during play, unchecked items carry
+       * forward into the next session's prep.
+       */
+      type: 'check'
+      checked?: boolean
+      content: ScriptInline[]
+    }
 
 /** The structured read-aloud document. */
 export type ScriptDoc = ScriptBlock[]

@@ -66,6 +66,11 @@ function blockToJSON(block: ScriptBlock): JSONContent {
     }
     case 'callout':
       return { type: 'callout', content: block.content.map(blockToJSON) }
+    case 'check': {
+      const content = inlinesToJSON(block.content)
+      const base = { type: 'check', attrs: { checked: !!block.checked } }
+      return content.length ? { ...base, content } : base
+    }
   }
 }
 
@@ -143,6 +148,11 @@ function blockFromJSON(node: JSONContent): ScriptBlock | null {
         type: 'callout',
         content: (node.content ?? []).map(blockFromJSON).filter((b): b is ScriptBlock => b !== null)
       }
+    case 'check': {
+      const block: ScriptBlock = { type: 'check', content: inlinesFromJSON(node.content) }
+      if (node.attrs?.checked) block.checked = true
+      return block
+    }
     default:
       return null
   }

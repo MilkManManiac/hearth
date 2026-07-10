@@ -83,6 +83,17 @@ export default function NoteEditor({
           >
             ❝ Note
           </ToolBtn>
+          <ToolBtn
+            active={editor.isActive('check')}
+            onClick={() =>
+              editor.isActive('check')
+                ? editor.chain().focus().setNode('paragraph').run()
+                : editor.chain().focus().setNode('check').run()
+            }
+            title="Checklist item — secrets & clues: tick during play; unchecked items carry into the next session"
+          >
+            ☑
+          </ToolBtn>
           <div className="mx-1 h-4 w-px bg-hearth-border" />
           <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
             ↶

@@ -8,6 +8,7 @@ import {
   type ScriptDoc,
   type ScriptInline
 } from '../../shared/types'
+import { setCheckedAt } from '../../shared/scriptCompile'
 import { blurNonTypingFocus, isTypingTarget } from '../lib/keys'
 import { pushRecent } from '../lib/prefs'
 import { engine, resolveAmbLayer, useStore } from '../store'
@@ -146,6 +147,12 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
   // Mutable document-order cue counter for this render pass; `next` gets the ring.
   const cueCtx: CueCtx = { i: 0, next: cuePos }
 
+  // Live checklist ticks persist straight onto the scene (secrets & clues
+  // consumed during play).
+  const toggleCheck = (path: number[], checked: boolean) => {
+    void updateScene(scene.id, (s) => ({ ...s, script: setCheckedAt(s.script ?? [], path, checked) }))
+  }
+
   // Clicking a cue fires it AND re-syncs the teleprompter pointer to just past
   // it — so a manual tap (or a jump back to an earlier cue) puts Space back on
   // track from that point in the story.
@@ -186,7 +193,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
         </p>
       ) : (
         <div className="rounded-md border border-hearth-border bg-hearth-panel/60 p-5 font-display text-[18px] leading-loose text-hearth-text shadow-card">
-          {script.map((block, i) => renderBlock(block, i, fireAt, cueCtx))}
+          {script.map((block, i) => renderBlock(block, i, fireAt, cueCtx, [i], toggleCheck))}
         </div>
       )}
     </section>
@@ -288,18 +295,41 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, i
   )
 }
 
-function renderBlock(block: ScriptBlock, key: number, fireCue: (n: CueInline, idx: number) => void, ctx: CueCtx): ReactNode {
+function renderBlock(
+  block: ScriptBlock,
+  key: number,
+  fireCue: (n: CueInline, idx: number) => void,
+  ctx: CueCtx,
+  path: number[],
+  onCheck: (path: number[], checked: boolean) => void
+): ReactNode {
   if (block.type === 'callout') {
     return (
       <div
         key={key}
         className="script-callout my-2 rounded border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-3 py-1.5 text-[15px] text-hearth-muted"
       >
-        {block.content.map((b, i) => renderBlock(b, i, fireCue, ctx))}
+        {block.content.map((b, i) => renderBlock(b, i, fireCue, ctx, [...path, i], onCheck))}
       </div>
     )
   }
   const inlines = block.content.map((n, i) => renderInline(n, i, fireCue, ctx))
+  if (block.type === 'check') {
+    return (
+      <div key={key} className="my-1 flex items-start gap-2.5 text-[16px]">
+        <input
+          type="checkbox"
+          checked={!!block.checked}
+          onChange={(e) => onCheck(path, e.target.checked)}
+          title="Secrets & clues — tick when it lands at the table (saves to the scene)"
+          className="mt-[0.5em] h-4 w-4 shrink-0 cursor-pointer accent-hearth-ember"
+        />
+        <span className={block.checked ? 'text-hearth-muted line-through decoration-hearth-muted/50' : ''}>
+          {inlines}
+        </span>
+      </div>
+    )
+  }
   if (block.type === 'heading') {
     const cls = HEADING_CLASS[block.level]
     if (block.level === 1) return <h1 key={key} className={cls}>{inlines}</h1>
