@@ -5,6 +5,7 @@ import GrowArea from './GrowArea'
 
 export default function IdeasPanel({ scene }: { scene: Scene }) {
   const updateScene = useStore((s) => s.updateScene)
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const [draft, setDraft] = useState('')
   const ideas = scene.ideas ?? []
 
@@ -40,21 +41,25 @@ export default function IdeasPanel({ scene }: { scene: Scene }) {
           />
         ))}
       </ul>
-      <div className="flex gap-1">
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && add()}
-          placeholder="Add an idea…"
-          className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-sm text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none"
-        />
-        <button
-          onClick={add}
-          className="rounded border border-hearth-border bg-hearth-panel2 px-2 text-sm text-hearth-muted hover:text-hearth-ember"
-        >
-          +
-        </button>
-      </div>
+      {/* Authoring is build-mode; run mode keeps the checkboxes (session
+          tracking) and Ctrl+J quick capture for new thoughts. */}
+      {buildMode && (
+        <div className="flex gap-1">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && add()}
+            placeholder="Add an idea…"
+            className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-sm text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none"
+          />
+          <button
+            onClick={add}
+            className="rounded border border-hearth-border bg-hearth-panel2 px-2 text-sm text-hearth-muted hover:text-hearth-ember"
+          >
+            +
+          </button>
+        </div>
+      )}
     </div>
   )
 }

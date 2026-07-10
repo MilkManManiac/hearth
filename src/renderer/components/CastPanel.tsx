@@ -32,6 +32,7 @@ export default function CastPanel({ scene }: { scene: Scene }) {
   const updateScene = useStore((s) => s.updateScene)
   const createNoteInline = useStore((s) => s.createNoteInline)
   const updateNote = useStore((s) => s.updateNote)
+  const buildMode = useStore((s) => s.uiMode === 'build')
   const [newType, setNewType] = useState<EntityType>('npc')
   const [draft, setDraft] = useState('')
   const entities = scene.entities ?? []
@@ -121,32 +122,35 @@ export default function CastPanel({ scene }: { scene: Scene }) {
         </p>
       )}
 
-      <div className="flex gap-1 border-t border-hearth-border pt-2">
-        <select
-          value={newType}
-          onChange={(e) => setNewType(e.target.value as EntityType)}
-          className="rounded border border-hearth-border bg-hearth-bg px-1 py-1 text-sm text-hearth-text focus:outline-none"
-        >
-          {TYPES.map((t) => (
-            <option key={t.type} value={t.type}>
-              {t.icon}
-            </option>
-          ))}
-        </select>
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && add()}
-          placeholder="Add to cast & loot…"
-          className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-sm text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none"
-        />
-        <button
-          onClick={add}
-          className="rounded border border-hearth-border bg-hearth-panel2 px-2 text-sm text-hearth-muted hover:text-hearth-ember"
-        >
-          +
-        </button>
-      </div>
+      {/* Authoring is build-mode; run mode keeps the used/status checkboxes. */}
+      {buildMode && (
+        <div className="flex gap-1 border-t border-hearth-border pt-2">
+          <select
+            value={newType}
+            onChange={(e) => setNewType(e.target.value as EntityType)}
+            className="rounded border border-hearth-border bg-hearth-bg px-1 py-1 text-sm text-hearth-text focus:outline-none"
+          >
+            {TYPES.map((t) => (
+              <option key={t.type} value={t.type}>
+                {t.icon}
+              </option>
+            ))}
+          </select>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && add()}
+            placeholder="Add to cast & loot…"
+            className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-sm text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none"
+          />
+          <button
+            onClick={add}
+            className="rounded border border-hearth-border bg-hearth-panel2 px-2 text-sm text-hearth-muted hover:text-hearth-ember"
+          >
+            +
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -9,21 +9,30 @@ import {
 import NoteLinkPill from './NoteLinkPill'
 
 /**
- * Compact read-only renderer for a note's ScriptDoc body — used where the full
- * TipTap editor is overkill (the run-mode right panel). [[Links]] are live
- * (click to jump); cues (shouldn't occur in notes) degrade to plain labels.
+ * Read-only renderer for a note's ScriptDoc body. [[Links]] are live (plain
+ * click jumps, hover peeks); checklists tick live when `onToggleCheck` is
+ * wired; cues (shouldn't occur in notes) degrade to plain labels.
+ * Two sizes: compact (right panel, peek cards — default) and `page` (the full
+ * note page's read mode).
  */
 export default function NoteBody({
   doc,
   className,
-  onToggleCheck
+  onToggleCheck,
+  page = false
 }: {
   doc: ScriptDoc
   className?: string
   /** Wire this to persist checklist ticks (path = block indices, callouts descend). */
   onToggleCheck?: (path: number[], checked: boolean) => void
+  /** Full-page reading typography instead of the compact panel size. */
+  page?: boolean
 }) {
-  return <div className={className}>{doc.map((b, i) => renderBlock(b, i, [i], onToggleCheck))}</div>
+  return (
+    <div className={className}>
+      {doc.map((b, i) => renderBlock(b, i, [i], page, onToggleCheck))}
+    </div>
+  )
 }
 
 function inlineStyle(node: Extract<ScriptInline, { type: 'text' }>): {
@@ -63,32 +72,40 @@ function renderInline(node: ScriptInline, key: number): ReactNode {
   )
 }
 
-const HEADING_CLASS: Record<number, string> = {
+const HEADING_COMPACT: Record<number, string> = {
   1: 'mt-3 mb-1 text-lg font-semibold text-hearth-text',
   2: 'mt-2.5 mb-1 text-base font-semibold text-hearth-text',
   3: 'mt-2 mb-0.5 text-sm font-semibold text-hearth-muted'
+}
+const HEADING_PAGE: Record<number, string> = {
+  1: 'mt-5 mb-1.5 font-display text-2xl font-semibold text-hearth-text',
+  2: 'mt-4 mb-1 text-lg font-semibold text-hearth-text',
+  3: 'mt-3 mb-1 text-base font-semibold text-hearth-muted'
 }
 
 function renderBlock(
   block: ScriptBlock,
   key: number,
   path: number[],
+  page: boolean,
   onToggleCheck?: (path: number[], checked: boolean) => void
 ): ReactNode {
   if (block.type === 'callout') {
     return (
       <div
         key={key}
-        className="script-callout my-2 rounded-r border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-2.5 py-1.5 text-[13px] text-hearth-muted"
+        className={`script-callout my-2 rounded-r border-l-2 border-hearth-gold/60 bg-hearth-gold/5 text-hearth-muted ${
+          page ? 'px-3.5 py-2 text-[14px] leading-relaxed' : 'px-2.5 py-1.5 text-[13px]'
+        }`}
       >
-        {block.content.map((b, i) => renderBlock(b, i, [...path, i], onToggleCheck))}
+        {block.content.map((b, i) => renderBlock(b, i, [...path, i], page, onToggleCheck))}
       </div>
     )
   }
   const inlines = block.content.map((n, i) => renderInline(n, i))
   if (block.type === 'check') {
     return (
-      <div key={key} className="my-1 flex items-start gap-2 text-sm">
+      <div key={key} className={`my-1 flex items-start gap-2 ${page ? 'text-[15px]' : 'text-sm'}`}>
         <input
           type="checkbox"
           checked={!!block.checked}
@@ -108,13 +125,13 @@ function renderBlock(
     )
   }
   if (block.type === 'heading') {
-    const cls = HEADING_CLASS[block.level]
+    const cls = (page ? HEADING_PAGE : HEADING_COMPACT)[block.level]
     if (block.level === 1) return <h3 key={key} className={cls}>{inlines}</h3>
     if (block.level === 2) return <h4 key={key} className={cls}>{inlines}</h4>
     return <h5 key={key} className={cls}>{inlines}</h5>
   }
   return (
-    <p key={key} className="my-1.5 text-sm leading-6 text-hearth-text">
+    <p key={key} className={`text-hearth-text ${page ? 'my-2 text-[15.5px] leading-7' : 'my-1.5 text-sm leading-6'}`}>
       {inlines}
     </p>
   )

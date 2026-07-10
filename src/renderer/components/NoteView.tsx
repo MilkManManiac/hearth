@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER, type CampaignNote, type NoteKind } from '../../shared/types'
-import { docLinks, docMentions, linkifyMentions } from '../../shared/scriptCompile'
+import { docLinks, docMentions, linkifyMentions, setCheckedAt } from '../../shared/scriptCompile'
 import { useStore } from '../store'
+import NoteBody from './NoteBody'
 import NoteEditor from './NoteEditor'
 import { NoteNavButtons } from './NotePeek'
 
@@ -54,6 +55,15 @@ export default function NoteView({ note }: { note: CampaignNote }) {
   const deleteNote = useStore((s) => s.deleteNote)
   const selectNote = useStore((s) => s.selectNote)
   const buildMode = useStore((s) => s.uiMode === 'build')
+  // Read-first (same rule as scene scripts): the page renders the read view —
+  // plain-click links, hover peeks, live checklists — and the TipTap editor
+  // only mounts behind ✎ Edit (build mode). Editing a note is a deliberate
+  // step, not the resting state; a stray keystroke can't rewrite canon.
+  const [editing, setEditing] = useState(false)
+  useEffect(() => setEditing(false), [note.id])
+  useEffect(() => {
+    if (!buildMode) setEditing(false)
+  }, [buildMode])
   const [title, setTitle] = useState(note.title)
   useEffect(() => setTitle(note.title), [note.id, note.title])
 
@@ -84,30 +94,33 @@ export default function NoteView({ note }: { note: CampaignNote }) {
                 ;(e.target as HTMLInputElement).blur()
               }
             }}
-            className="min-w-0 flex-1 bg-transparent font-display text-3xl font-semibold tracking-tight text-hearth-text focus:outline-none focus:ring-1 focus:ring-hearth-ember/50 rounded px-1 -ml-1"
-            title="Note title — click to rename"
+            readOnly={!buildMode}
+            className="min-w-0 flex-1 bg-transparent font-display text-3xl font-semibold tracking-tight text-hearth-text focus:outline-none focus:ring-1 focus:ring-hearth-ember/50 rounded px-1 -ml-1 read-only:ring-0"
+            title={buildMode ? 'Note title — click to rename' : undefined}
           />
         </div>
         <div className="mt-2 h-px w-full bg-gradient-to-r from-hearth-ember/50 via-hearth-border to-transparent" />
 
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-hearth-muted">
-          <label className="flex items-center gap-1.5">
-            Kind
-            <select
-              value={note.kind}
-              onChange={(e) =>
-                void updateNote(note.id, (n) => ({ ...n, kind: e.target.value as NoteKind }))
-              }
-              className="rounded border border-hearth-border bg-hearth-panel2 px-1.5 py-0.5 text-xs text-hearth-text"
-              title="Retype the note — it moves to that group instantly"
-            >
-              {NOTE_KIND_ORDER.map((k) => (
-                <option key={k} value={k}>
-                  {NOTE_KINDS[k].icon} {NOTE_KINDS[k].label}
-                </option>
-              ))}
-            </select>
-          </label>
+          {buildMode && (
+            <label className="flex items-center gap-1.5">
+              Kind
+              <select
+                value={note.kind}
+                onChange={(e) =>
+                  void updateNote(note.id, (n) => ({ ...n, kind: e.target.value as NoteKind }))
+                }
+                className="rounded border border-hearth-border bg-hearth-panel2 px-1.5 py-0.5 text-xs text-hearth-text"
+                title="Retype the note — it moves to that group instantly"
+              >
+                {NOTE_KIND_ORDER.map((k) => (
+                  <option key={k} value={k}>
+                    {NOTE_KINDS[k].icon} {NOTE_KINDS[k].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           {note.kind === 'session' && (
             <label className="flex items-center gap-1.5">
@@ -143,34 +156,68 @@ export default function NoteView({ note }: { note: CampaignNote }) {
           )}
 
           {buildMode && (
-            <button
-              onClick={() => {
-                if (window.confirm(`Delete "${note.title}"? The file moves to the recycle bin.`)) {
-                  void deleteNote(note.id)
-                  selectNote(null)
-                }
-              }}
-              className="ml-auto text-hearth-muted/60 transition-colors hover:text-red-400"
-              title="Delete this note (file → recycle bin)"
-            >
-              🗑 Delete
-            </button>
+            <span className="ml-auto flex items-center gap-3">
+              <button
+                onClick={() => setEditing((e) => !e)}
+                className={`transition-colors ${
+                  editing ? 'text-hearth-ember' : 'text-hearth-muted hover:text-hearth-ember'
+                }`}
+                title={editing ? 'Back to reading (edits are already saved)' : 'Edit this note'}
+              >
+                {editing ? '✓ Done' : '✎ Edit'}
+              </button>
+              <button
+                onClick={() => {
+                  if (window.confirm(`Delete "${note.title}"? The file moves to the recycle bin.`)) {
+                    void deleteNote(note.id)
+                    selectNote(null)
+                  }
+                }}
+                className="text-hearth-muted/60 transition-colors hover:text-red-400"
+                title="Delete this note (file → recycle bin)"
+              >
+                🗑 Delete
+              </button>
+            </span>
           )}
         </div>
       </div>
 
       {note.kind === 'session' && <SessionScenes noteId={note.id} />}
 
-      <NoteEditor
-        key={note.id}
-        noteId={note.id}
-        body={note.body ?? [{ type: 'paragraph', content: [] }]}
-        onSave={(doc) => void updateNote(note.id, (n) => ({ ...n, body: doc, bodyText: undefined }))}
-      />
+      {editing && buildMode ? (
+        <NoteEditor
+          key={note.id}
+          noteId={note.id}
+          body={note.body ?? [{ type: 'paragraph', content: [] }]}
+          onSave={(doc) => void updateNote(note.id, (n) => ({ ...n, body: doc, bodyText: undefined }))}
+        />
+      ) : isEmptyBody(note.body) ? (
+        <button
+          onClick={() => buildMode && setEditing(true)}
+          disabled={!buildMode}
+          className="w-full rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 p-4 text-left text-sm text-hearth-muted transition-colors enabled:hover:border-hearth-ember enabled:hover:text-hearth-text"
+        >
+          Nothing here yet{buildMode ? ' — click to write' : ''}.
+        </button>
+      ) : (
+        <NoteBody
+          doc={note.body ?? []}
+          page
+          onToggleCheck={(path, checked) =>
+            void updateNote(note.id, (n) => ({ ...n, body: setCheckedAt(n.body ?? [], path, checked) }))
+          }
+        />
+      )}
 
       <Backlinks noteId={note.id} title={note.title} />
     </div>
   )
+}
+
+function isEmptyBody(doc: CampaignNote['body']): boolean {
+  if (!doc || doc.length === 0) return true
+  return doc.length === 1 && doc[0].type === 'paragraph' && doc[0].content.length === 0
 }
 
 /**

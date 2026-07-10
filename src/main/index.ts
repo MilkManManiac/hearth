@@ -239,6 +239,7 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  ipcMain.handle('campaign:probe', async (_e, files: string[]) => campaign.probeFiles(files))
   ipcMain.handle('campaign:reveal', async () => {
     // openPath resolves to a non-empty string on failure (not a rejection).
     const err = await shell.openPath(campaign.path)

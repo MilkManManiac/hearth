@@ -157,6 +157,13 @@ A `campaign/AUTHORING.md` file (written in Phase 1) documents the schema + conve
 
 ## 3. Build phases (for Opus to execute in order)
 
+> **Status note (2026-07-10):** Phase 1 done + heavily extended; an unplanned
+> **"Phase 6" — the campaign notes system** (wiki-links/backlinks/checklists/
+> quick capture; spec in `docs/history/NOTES-PLAN.md`) — was fully built;
+> Phase 2 is built (verification state: see DISCORD-BRIDGE.md); **Phases 3–4
+> were never started** and need a keep/defer/kill decision. Current punch
+> list: `AUDIT-2026-07-10.md`.
+
 Each phase ends with something the DM can actually use at the table. Verify each phase by running it, not just compiling.
 
 ### Phase 1 — Local scene player (usable immediately, no Discord yet)

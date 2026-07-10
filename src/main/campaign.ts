@@ -134,8 +134,23 @@ function readConfig(): Config {
   }
 }
 
+/**
+ * Merge-write: hearth-config.json is shared with other features (the Discord
+ * bot token lives there too) — writing `cfg` wholesale would erase their keys.
+ */
 function writeConfig(cfg: Config): void {
-  fsSync.writeFileSync(CONFIG_FILE(), JSON.stringify(cfg, null, 2))
+  fsSync.writeFileSync(CONFIG_FILE(), JSON.stringify({ ...readConfig(), ...cfg }, null, 2))
+}
+
+/**
+ * Crash-safe JSON write: serialize to a temp sibling, then rename over the
+ * target. A crash mid-write can never truncate the real file — library.json
+ * (the index of every asset) is rewritten on every tag edit and must survive.
+ */
+async function writeJsonAtomic(dest: string, data: unknown): Promise<void> {
+  const tmp = `${dest}.${process.pid}.tmp`
+  await writeJsonAtomic(tmp, data)
+  await fs.rename(tmp, dest)
 }
 
 /** In dev, default to the repo's sample campaign so there is content immediately. */
@@ -204,7 +219,7 @@ export class CampaignManager {
     }
     const libPath = path.join(root, 'library.json')
     if (!fsSync.existsSync(libPath)) {
-      await fs.writeFile(libPath, JSON.stringify({ assets: [] }, null, 2))
+      await writeJsonAtomic(libPath, { assets: [] })
     }
     const authoringPath = path.join(root, 'AUTHORING.md')
     if (!fsSync.existsSync(authoringPath)) {
@@ -310,7 +325,14 @@ export class CampaignManager {
         // Our own writes already broadcast fresh state from their handlers —
         // suppress the watcher echo (chokidar stability + this debounce put the
         // event ~500ms after the write; 1500ms covers slow disks comfortably).
-        if (Date.now() - this.lastInternalWrite < 1500) return
+        // BUT an event inside the window might be an EXTERNAL edit (Claude
+        // authoring a file mid-autosave) — DEFER the reload past the window
+        // instead of dropping it, so external changes are never silently lost.
+        const since = Date.now() - this.lastInternalWrite
+        if (since < 1500) {
+          this.reloadTimer = setTimeout(trigger, 1500 - since + 100)
+          return
+        }
         this.onChange(await this.load())
       }, 200)
     }
@@ -322,6 +344,30 @@ export class CampaignManager {
       this.watcher.close()
       this.watcher = null
     }
+  }
+
+  /**
+   * Existence sweep for referenced assets (🔎 Probe): fs.access only — no
+   * reads, no decode. The old renderer-side probe fetched EVERY file through
+   * the asset:// handler (whole-file reads), ballooning memory with a large
+   * library; missing-file detection is all the check actually needs.
+   */
+  async probeFiles(files: string[]): Promise<string[]> {
+    const root = path.resolve(this.campaignPath)
+    const missing: string[] = []
+    for (const rel of files) {
+      const abs = path.resolve(root, rel)
+      if (!abs.startsWith(root + path.sep)) {
+        missing.push(rel)
+        continue
+      }
+      try {
+        await fs.access(abs)
+      } catch {
+        missing.push(rel)
+      }
+    }
+    return missing
   }
 
   async choose(): Promise<CampaignState | null> {
@@ -350,7 +396,7 @@ export class CampaignManager {
     if (!path.resolve(dest).startsWith(root + path.sep)) {
       throw new Error('refusing to write outside campaign folder')
     }
-    await fs.writeFile(dest, JSON.stringify(rest, null, 2))
+    await writeJsonAtomic(dest, rest)
     this.markWrite()
     return this.load()
   }
@@ -376,7 +422,7 @@ export class CampaignManager {
     const { _sourceFile, id: _oldId, ...rest } = scene as Scene
     void _sourceFile
     void _oldId
-    await fs.writeFile(path.join(dir, `${stem}.json`), JSON.stringify({ id: stem, ...rest }, null, 2))
+    await writeJsonAtomic(path.join(dir, `${stem}.json`), { id: stem, ...rest })
     this.markWrite()
     return { state: await this.load(), sceneId: stem }
   }
@@ -430,7 +476,7 @@ export class CampaignManager {
     if (!path.resolve(dest).startsWith(root + path.sep)) {
       throw new Error('refusing to write outside campaign folder')
     }
-    await fs.writeFile(dest, JSON.stringify(rest, null, 2))
+    await writeJsonAtomic(dest, rest)
     this.markWrite()
     return this.load()
   }
@@ -460,7 +506,7 @@ export class CampaignManager {
       bodyText: NOTE_STARTERS[kind] ?? '',
       createdAt: new Date().toISOString()
     }
-    await fs.writeFile(path.join(dir, `${stem}.json`), JSON.stringify(note, null, 2))
+    await writeJsonAtomic(path.join(dir, `${stem}.json`), note)
     this.markWrite()
     return { state: await this.load(), noteId: stem }
   }
@@ -505,10 +551,7 @@ export class CampaignManager {
         known.add(rel)
       }
     }
-    await fs.writeFile(
-      path.join(this.campaignPath, 'library.json'),
-      JSON.stringify(lib, null, 2)
-    )
+    await writeJsonAtomic(path.join(this.campaignPath, 'library.json'), lib)
     this.markWrite()
     return this.load()
   }
@@ -547,7 +590,7 @@ export class CampaignManager {
     const scenePath = path.join(this.campaignPath, scene._sourceFile)
     const raw = JSON.parse(await fs.readFile(scenePath, 'utf-8')) as Scene
     raw.images = [...(raw.images ?? []), ...images]
-    await fs.writeFile(scenePath, JSON.stringify(raw, null, 2))
+    await writeJsonAtomic(scenePath, raw)
     this.markWrite()
     return { state: await this.load(), added: images.length }
   }
@@ -591,7 +634,7 @@ export class CampaignManager {
       if (patch.trash) asset.trash = true
       else delete asset.trash
     }
-    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    await writeJsonAtomic(path.join(this.campaignPath, 'library.json'), lib)
     this.markWrite()
     return this.load()
   }
@@ -623,7 +666,7 @@ export class CampaignManager {
         have.add(e.stem)
       }
     }
-    await fs.writeFile(this.blocklistPath(), JSON.stringify(list, null, 2))
+    await writeJsonAtomic(this.blocklistPath(), list)
     this.markWrite()
   }
 
@@ -666,7 +709,7 @@ export class CampaignManager {
       blocked.push({ stem: CampaignManager.stemOf(a.file), file: a.file })
     }
     lib.assets = keep
-    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    await writeJsonAtomic(path.join(this.campaignPath, 'library.json'), lib)
     this.markWrite()
     if (blocked.length > 0) await this.appendBlocklist(blocked)
     return { state: await this.load(), purged: blocked.length, skipped }
@@ -694,7 +737,7 @@ export class CampaignManager {
     if (fsSync.existsSync(abs)) await shell.trashItem(abs)
     const lib = await this.loadLibrary([])
     lib.assets = lib.assets.filter((a) => a.file !== file)
-    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    await writeJsonAtomic(path.join(this.campaignPath, 'library.json'), lib)
     this.markWrite()
     await this.appendBlocklist([{ stem: CampaignManager.stemOf(file), file }])
     return this.load()
@@ -710,7 +753,7 @@ export class CampaignManager {
       /* fresh library */
     }
     raw.playlists = presets
-    await fs.writeFile(libPath, JSON.stringify(raw, null, 2))
+    await writeJsonAtomic(libPath, raw)
     this.markWrite()
     return this.load()
   }
@@ -791,7 +834,7 @@ export class CampaignManager {
     if (req.source) asset.source = req.source
     if (req.license) asset.license = req.license
     lib.assets.push(asset)
-    await fs.writeFile(path.join(this.campaignPath, 'library.json'), JSON.stringify(lib, null, 2))
+    await writeJsonAtomic(path.join(this.campaignPath, 'library.json'), lib)
     this.markWrite()
     return this.load()
   }

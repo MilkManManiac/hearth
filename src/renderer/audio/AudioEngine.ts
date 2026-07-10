@@ -420,6 +420,26 @@ export class AudioEngine {
       }, delayMs)
     }
 
+    // Non-looping palette track playing to its natural end: clear activeMusic
+    // so the UI stops showing it and re-tapping the same track works (the
+    // trackId early-return above would otherwise dead-button it forever).
+    // A manual switch/stop also fires this via source.stop(), but by then
+    // activeMusic points elsewhere (or null), so the guard makes it a no-op.
+    if (!loop) {
+      source.onended = () => {
+        if (this.activeMusic?.source === source) {
+          this.activeMusic = null
+          try {
+            source.disconnect()
+            gain.disconnect()
+          } catch {
+            /* ignore */
+          }
+          this.emit()
+        }
+      }
+    }
+
     this.activeMusic = {
       trackId: track.id,
       source,
@@ -868,7 +888,10 @@ export class AudioEngine {
     if (seq !== this.previewSeq) return () => undefined // superseded while decoding
     const gain = this.ctx.createGain()
     gain.gain.value = volume * norm
-    gain.connect(this.sfxBus)
+    // Straight to the speakers: previews are the DM auditioning, never part of
+    // the mix — routing through the buses would leak them into the Discord tap
+    // (which branches off master), and the Local-mute toggle must not silence them.
+    gain.connect(this.ctx.destination)
     const source = this.ctx.createBufferSource()
     source.buffer = buffer
     source.connect(gain)
@@ -881,29 +904,9 @@ export class AudioEngine {
     }
   }
 
-  /**
-   * Fetch every given asset without decoding and return the files that fail to
-   * load — a fast integrity check the DM can run before a session so broken
-   * paths surface up front instead of as silent no-ops mid-game.
-   */
-  async probe(files: string[]): Promise<string[]> {
-    const failures: string[] = []
-    await Promise.all(
-      files.map(async (file) => {
-        try {
-          const r = await fetch(assetUrl(file))
-          if (!r.ok) {
-            console.error('[audio] probe fail:', file, `HTTP ${r.status}`)
-            failures.push(file)
-          }
-        } catch (e) {
-          console.error('[audio] probe fail:', file, (e as Error).message)
-          failures.push(file)
-        }
-      })
-    )
-    return failures
-  }
+  // (Asset probing moved to the main process — window.hearth.probeFiles — an
+  // fs.access sweep. The old fetch-everything version read every file's bytes
+  // through the asset:// handler and could balloon memory with a big library.)
 
   // --- Discord bridge tap (see DISCORD-BRIDGE.md) ------------------------
 

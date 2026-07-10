@@ -95,6 +95,8 @@ const api = {
   pickTriageFolder: (): Promise<TriageScan | null> => ipcRenderer.invoke('triage:pick'),
   triageKeep: (req: TriageKeepRequest): Promise<CampaignState> =>
     ipcRenderer.invoke('triage:keep', req),
+  /** Existence sweep for referenced assets — returns the missing files. */
+  probeFiles: (files: string[]): Promise<string[]> => ipcRenderer.invoke('campaign:probe', files),
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),

@@ -646,7 +646,7 @@ export const useStore = create<AppState>((set, get) => ({
       scene.sfx?.forEach((s) => files.add(s.file))
       scene.images?.forEach((i) => files.add(i.file))
     }
-    const failures = await engine.probe([...files])
+    const failures = await window.hearth.probeFiles([...files])
     if (failures.length === 0) {
       get().pushToast(`All ${files.size} assets OK`, 'info')
     } else {
@@ -937,7 +937,10 @@ export const useStore = create<AppState>((set, get) => ({
       const fresh = await window.hearth.saveScene(updated)
       get().setCampaign(fresh)
     } catch (err) {
+      // The optimistic update already showed success — the DM must hear about
+      // a failed persist or the prep is silently gone next launch.
       console.error('saveScene failed', err)
+      get().pushToast(`Scene save failed: ${(err as Error).message}`, 'error')
     }
   },
 
