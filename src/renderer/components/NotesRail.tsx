@@ -2,10 +2,17 @@ import { useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER } from '../../shared/types'
 import { useStore } from '../store'
 
-/** Scenes ⇄ Notes toggle shared by both left-rail headers. */
+/**
+ * Scenes ⇄ Notes toggle shared by both left-rail headers. Hidden in run mode:
+ * the notes BROWSER is a prep surface — during play the left rail is scenes
+ * only, and notes arrive via Ctrl+K / [[links]] in the right panel, beside
+ * the script (the run-mode rails rule, AUDIT 2026-07-10).
+ */
 export function LeftTabSwitch() {
   const leftTab = useStore((s) => s.leftTab)
   const setLeftTab = useStore((s) => s.setLeftTab)
+  const runMode = useStore((s) => s.uiMode === 'run')
+  if (runMode) return null
   return (
     <span className="flex items-center gap-1">
       {(['scenes', 'notes'] as const).map((tab) => (
@@ -45,7 +52,7 @@ export default function NotesRail({ onCollapse }: { onCollapse?: () => void }) {
   })).filter((g) => g.items.length > 0)
 
   return (
-    <aside className="flex w-60 flex-col border-r border-hearth-border bg-hearth-panel">
+    <aside className="flex w-full flex-col border-r border-hearth-border bg-hearth-panel">
       <div className="flex items-center px-3 py-2">
         <LeftTabSwitch />
         {onCollapse && (

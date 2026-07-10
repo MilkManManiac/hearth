@@ -23,6 +23,61 @@ import QuickSwitcher from './QuickSwitcher'
 import QuickCapture from './QuickCapture'
 import ShortcutsHelp from './ShortcutsHelp'
 
+/**
+ * Width-adjustable side panel: drag the inner edge to resize; drag it small
+ * (or double-click it) to collapse to the slim strip. Width persists.
+ */
+function ResizablePanel({
+  side,
+  width,
+  onWidth,
+  onCollapse,
+  children
+}: {
+  side: 'left' | 'right'
+  width: number
+  onWidth: (w: number) => void
+  onCollapse: () => void
+  children: React.ReactNode
+}) {
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = width
+    let collapsed = false
+    const move = (ev: PointerEvent) => {
+      if (collapsed) return
+      const dx = ev.clientX - startX
+      const w = side === 'left' ? startW + dx : startW - dx
+      if (w < 130) {
+        collapsed = true
+        onCollapse()
+        return
+      }
+      onWidth(Math.min(480, Math.max(180, w)))
+    }
+    const up = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }
+  return (
+    <div className="relative flex flex-none" style={{ width }}>
+      {children}
+      <div
+        onPointerDown={onPointerDown}
+        onDoubleClick={onCollapse}
+        title="Drag to resize · drag small or double-click to hide"
+        className={`absolute bottom-0 top-0 z-10 w-1.5 cursor-col-resize transition-colors hover:bg-hearth-ember/40 ${
+          side === 'left' ? '-right-0.5' : '-left-0.5'
+        }`}
+      />
+    </div>
+  )
+}
+
 /** A collapsed side rail: a slim strip that re-expands its panel. */
 function CollapsedRail({
   side,
@@ -58,12 +113,26 @@ export default function ControlBoard() {
   const currentNoteId = useStore((s) => s.currentNoteId)
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
   const isLive = !!scene && scene.id === liveSceneId
+  // Run-mode rails rule: the left rail is SCENES ONLY during play (the notes
+  // browser is prep); notes summoned mid-session land in the right panel so
+  // the script never leaves the screen. Build mode keeps the tab switch.
+  const effLeftTab = runMode ? 'scenes' : leftTab
   // Notes tab + a selected note → the main area shows the note page.
   const note =
-    leftTab === 'notes' ? (campaign.notes.find((n) => n.id === currentNoteId) ?? null) : null
-  // Side rails collapse to slim strips (persisted) — full width for the script.
+    effLeftTab === 'notes' ? (campaign.notes.find((n) => n.id === currentNoteId) ?? null) : null
+  // Side rails collapse to slim strips and drag-resize (both persisted).
   const [leftOpen, setLeftOpen] = useState(localStorage.getItem('hearth:leftRail') !== '0')
   const [rightOpen, setRightOpen] = useState(localStorage.getItem('hearth:rightRail') !== '0')
+  const [leftW, setLeftWState] = useState(() => Number(localStorage.getItem('hearth:leftW')) || 240)
+  const [rightW, setRightWState] = useState(() => Number(localStorage.getItem('hearth:rightW')) || 320)
+  const setLeftW = (w: number) => {
+    localStorage.setItem('hearth:leftW', String(w))
+    setLeftWState(w)
+  }
+  const setRightW = (w: number) => {
+    localStorage.setItem('hearth:rightW', String(w))
+    setRightWState(w)
+  }
   const toggleLeft = () => {
     localStorage.setItem('hearth:leftRail', leftOpen ? '0' : '1')
     setLeftOpen(!leftOpen)
@@ -102,16 +171,18 @@ export default function ControlBoard() {
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
         {leftOpen ? (
-          leftTab === 'notes' ? (
-            <NotesRail onCollapse={toggleLeft} />
-          ) : (
-            <SceneList onCollapse={toggleLeft} />
-          )
+          <ResizablePanel side="left" width={leftW} onWidth={setLeftW} onCollapse={toggleLeft}>
+            {effLeftTab === 'notes' ? (
+              <NotesRail onCollapse={toggleLeft} />
+            ) : (
+              <SceneList onCollapse={toggleLeft} />
+            )}
+          </ResizablePanel>
         ) : (
           <CollapsedRail
             side="left"
-            icon={leftTab === 'notes' ? '📓' : '🎬'}
-            title={leftTab === 'notes' ? 'Show notes' : 'Show scenes'}
+            icon={effLeftTab === 'notes' ? '📓' : '🎬'}
+            title={effLeftTab === 'notes' ? 'Show notes' : 'Show scenes'}
             onClick={toggleLeft}
           />
         )}
@@ -119,7 +190,7 @@ export default function ControlBoard() {
         <main className="flex-1 space-y-6 overflow-y-auto p-6">
           {note ? (
             <NoteView key={note.id} note={note} />
-          ) : leftTab === 'notes' ? (
+          ) : effLeftTab === 'notes' ? (
             <NotesEmptyState hasNotes={campaign.notes.length > 0} />
           ) : !scene ? (
             <EmptyState hasCampaign={!!campaign.path} />
@@ -174,7 +245,9 @@ export default function ControlBoard() {
 
         {scene &&
           (rightOpen ? (
-            <RightPanel scene={scene} onCollapse={toggleRight} />
+            <ResizablePanel side="right" width={rightW} onWidth={setRightW} onCollapse={toggleRight}>
+              <RightPanel scene={scene} onCollapse={toggleRight} />
+            </ResizablePanel>
           ) : (
             <CollapsedRail side="right" icon="🗂" title="Show images / ideas / cast" onClick={toggleRight} />
           ))}
@@ -211,7 +284,7 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
   ]
 
   return (
-    <aside className="flex w-80 flex-col border-l border-hearth-border bg-hearth-panel/40">
+    <aside className="flex w-full flex-col border-l border-hearth-border bg-hearth-panel/40">
       <div className="flex border-b border-hearth-border">
         {tabs.map((t) => (
           <button

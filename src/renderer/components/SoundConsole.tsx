@@ -344,6 +344,11 @@ export default function SoundConsole() {
   const buildMode = !runMode
   const favorites = useFavorites()
   const [staplesOpen, setStaplesOpen] = useState(localStorage.getItem('hearth:staplesOpen') !== '0')
+  const [consoleOpen, setConsoleOpen] = useState(localStorage.getItem('hearth:consoleOpen') !== '0')
+  const toggleConsole = (): void => {
+    localStorage.setItem('hearth:consoleOpen', consoleOpen ? '0' : '1')
+    setConsoleOpen(!consoleOpen)
+  }
 
   const scene = scenes.find((s) => s.id === currentSceneId) ?? null
   // Staples cluster by kind (music → beds → sfx), alphabetical within — the
@@ -432,8 +437,38 @@ export default function SoundConsole() {
     setStaplesOpen(!staplesOpen)
   }
 
+  // Minimized: a slim strip — screen goes to the script; what's audible stays
+  // visible at a glance and one click brings the console back.
+  if (!consoleOpen) {
+    const audible =
+      (status.activeMusicId ? 1 : 0) + status.ambienceFiles.length + status.loopingSfxIds.length
+    return (
+      <button
+        onClick={toggleConsole}
+        title="Expand the sound console"
+        className="flex w-full items-center gap-2 border-t-2 border-hearth-ember/30 bg-hearth-panel px-4 py-1 text-left text-[11px] text-hearth-muted transition-colors hover:text-hearth-ember"
+      >
+        🎛 Sound console
+        {audible > 0 && (
+          <span className="flex items-center gap-1.5 rounded-full bg-hearth-ember/15 px-2 py-px text-hearth-ember">
+            <span className="inline-block h-1 w-1 animate-flicker rounded-full bg-hearth-ember" />
+            {audible} sounding
+          </span>
+        )}
+        <span className="ml-auto">▴</span>
+      </button>
+    )
+  }
+
   return (
-    <div className="max-h-56 space-y-1.5 overflow-y-auto border-t-2 border-hearth-ember/30 bg-hearth-panel px-4 py-2 shadow-[0_-4px_16px_rgba(0,0,0,0.35)]">
+    <div className="relative max-h-56 space-y-1.5 overflow-y-auto border-t-2 border-hearth-ember/30 bg-hearth-panel px-4 py-2 shadow-[0_-4px_16px_rgba(0,0,0,0.35)]">
+      <button
+        onClick={toggleConsole}
+        title="Minimize the sound console"
+        className="absolute right-1.5 top-1 z-10 rounded bg-hearth-panel px-1.5 text-[11px] text-hearth-muted transition-colors hover:text-hearth-ember"
+      >
+        ▾
+      </button>
       {/* NOW — everything audible */}
       {hasNow && (
         <div className="flex flex-wrap items-center gap-2">

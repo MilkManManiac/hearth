@@ -72,7 +72,7 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
   }
 
   return (
-    <aside className="flex w-60 flex-col border-r border-hearth-border bg-hearth-panel">
+    <aside className="flex w-full flex-col border-r border-hearth-border bg-hearth-panel">
       <div className="flex items-center px-3 py-2 text-xs font-semibold uppercase tracking-wider text-hearth-muted">
         <LeftTabSwitch />
         <span className="ml-1 text-hearth-muted/60">{campaign.scenes.length}</span>
