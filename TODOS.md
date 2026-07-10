@@ -28,10 +28,11 @@ session (see bottom) to turn the big ones into concrete specs before building.
   and every PC now uses their true identity.
 
 **Decisions / answers:**
-- [ ] **DDB study + Round-2 plan (2026-07-10):** read `DDB-MECHANICS.md` (what DDB does
-  well/poorly + phases D1–D5). Confirm or reorder the build order (Claude's rec:
-  D1 dice+Game Log → D2 builder wizard → D4 map↔sheet links → D3 → D5), and say if
-  rolls-to-Discord should be on by default for your table.
+- [x] ~~DDB study + Round-2 plan~~ — approved ("follow DDB, don't exceed") and **D1–D5
+  ALL BUILT 2026-07-10**. To try: click any number on a sheet (ADV/DIS toggle above the
+  abilities), 🎲 Game Log tab + the portal's 🎲 drawer, ⬆ Level up, ⚙ Scores, ⚡ cast a
+  spell, ⚔→map + 📏 ruler in the fog editor, 🎁 Grant in 🛡 Party. Rolls-to-Discord is
+  OFF until you pick a text channel in the 🎧 Discord panel ("Game Log feed").
 - [ ] **Discord bridge truth:** did a live voice test ever actually pass? DISCORD-BRIDGE.md's
   header says yes, its own checklist says no. Answer decides whether we trust it next session
   or schedule a test.

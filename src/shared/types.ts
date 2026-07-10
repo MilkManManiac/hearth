@@ -571,6 +571,8 @@ export interface Character {
   limitedUses?: Array<{ name: string; max: number; reset: 'short' | 'long' }>
   /** Spell (name) currently concentrated on — one at a time (D3). */
   concentratingOn?: string
+  /** Milestone flag set by the DM (D5) — badges the sheet/portal; cleared by leveling. */
+  levelUpReady?: boolean
   inspiration?: boolean
   notes?: string
   /** Populated by the loader. */

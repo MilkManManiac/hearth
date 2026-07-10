@@ -114,7 +114,8 @@ export default function LevelUpModal({
     const patch: Partial<Character> = {
       level: c.level + 1,
       maxHp: c.maxHp + hpGain,
-      hp: c.hp + hpGain
+      hp: c.hp + hpGain,
+      levelUpReady: undefined
     }
     if (target.startsWith('new:')) {
       patch.multiclass = [...(c.multiclass ?? []), { classKey: target.slice(4), level: 1 }]

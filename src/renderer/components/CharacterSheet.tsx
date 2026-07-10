@@ -389,6 +389,12 @@ export default function CharacterSheet({
         </div>
       )}
 
+      {c.levelUpReady && (
+        <div className="flex items-center gap-2 rounded-md border border-hearth-gold/60 bg-hearth-gold/10 px-3 py-1.5 text-sm text-hearth-gold">
+          🔔 The DM unlocked a level — hit <span className="font-semibold">⬆ Level up</span> when you're ready.
+        </div>
+      )}
+
       {/* Owed-choices chips (D2): DDB's blue flags, warn-don't-block. */}
       {chips.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">

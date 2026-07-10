@@ -69,20 +69,33 @@ Five-agent research pass on D&D Beyond's app mechanics (builder, play flow, DM t
 Maps VTT, community sentiment). Verdict: DDB's moat = guided builder/level-up +
 click-to-roll with a shared Game Log; its graveyard = tracker that can't touch PCs,
 inert conditions, homebrew ceiling, silo'd sheet (Beyond20/Avrae exist to fix it).
-Plan phases (full detail in DDB-MECHANICS.md; build order D1→D2→D4→D3→D5):
-- **D1 — Dice + Game Log**: click-to-roll everywhere, visible adv/dis, campaign roll
-  feed (DM app + portal via SSE + optional Discord embeds), roll→damage applies to
-  the tracker.
-- **D2 — Builder wizard + level-up**: guided create steps, owed-choices ⚠ engine,
-  level-up modal with "what you gained" summary; per-class progression tables added
-  to build-compendium.
-- **D3 — Play-state depth**: limited-use pips, CAST button w/ upcast, concentration
-  tracking, standard-condition picker, attunement slots.
-- **D4 — Maps ↔ everything**: tokens linked to sheets/stat blocks w/ HP rings,
-  ⚔→map stamping, presenter initiative strip, condition badges, ruler/AoE/ping;
-  portal token-moving later.
-- **D5 — Campaign glue**: DM grant flow (item/gold/XP), milestone level-up flag,
-  party rest-all.
+Scope rule from Wes: **DDB parity is the ceiling** — match their mechanics, never
+exceed them (UX improvements on the same mechanic are fine).
+Phases — **ALL FIVE SHIPPED 2026-07-10** (full detail in DDB-MECHANICS.md):
+- **D1 — Dice + Game Log** ✅: click-to-roll on every sheet number + monster stat
+  block (attacks/damage/saves/init roll as the monster), visible ADV/DIS armed
+  toggle + freeform tray, shared Game Log (🎲 right-panel tab + portal drawer with
+  unseen badge; SSE), DM rolls default 🔒 private with a public toggle, optional
+  Discord text-channel feed (picker in the Discord panel). Engine + portal API
+  smoke-tested end to end.
+- **D2 — Builder + level-up** ✅: owed-choices ⚠ chips (DDB's blue flags, warn-
+  don't-block) driven by hand-tabled 2024 progression (skills/ASI/cantrips/
+  prepared), ⬆ Level-up modal (per-class incl. new multiclass, avg HP applied,
+  features + slot diffs + choices, ends on a what-you-gained summary), ⚙ Scores
+  dialog (standard array / 27-point buy), live spell counters, portal players
+  build their own characters (+ Build on the picker).
+- **D3 — Play-state depth** ✅: limited-use pips w/ short/long-rest resets (party
+  sheets pre-seeded), ⚡ CAST with upcast picker + slot spend, 🧠 concentration
+  badge (one at a time), standard-condition quick-pick incl. exhaustion, * =
+  attuned counter (n/3).
+- **D4 — Maps ↔ everything** ✅: tokens linked to sheets/combatants (HP rings +
+  condition tags), click-token inspector (stat block w/ rollable dice, HP writes
+  through), ⚔→map stamping (auto-sized, foes hidden), 📏 ruler (5 ft/cell),
+  📤 Send bakes PC-only HP rings + an initiative strip. Still open: AoE templates,
+  ping, portal token-moving.
+- **D5 — Campaign glue** ✅: 🎁 Grant bar in the Party panel (give item/gold,
+  🔔 unlock milestone level-up — badges the portal, cleared by leveling — and
+  party-wide ☀️ long rest).
 Non-goals stay: no dynamic lighting/vision, no midi-qol automation depth, no portal
 auth (link-is-the-table), no dual-ruleset engine.
 

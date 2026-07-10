@@ -11,6 +11,84 @@ import DangerButton from './DangerButton'
 // The sheet itself lives in CharacterSheet.tsx, shared with the browser-based
 // player portal (C5) — here it saves over Electron IPC.
 
+type GrantAction = { kind: 'item'; text: string } | { kind: 'levelup' } | { kind: 'rest' }
+
+/** DM grant flow (D5): the item/level-up/rest fan-out DDB never built. */
+function GrantDialog({
+  characters,
+  onGrant,
+  onClose
+}: {
+  characters: Character[]
+  onGrant: (ids: string[], action: GrantAction) => void
+  onClose: () => void
+}) {
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(characters.map((c) => c.id)))
+  const [item, setItem] = useState('')
+  const ids = [...picked]
+  const toggle = (id: string) =>
+    setPicked((p) => {
+      const n = new Set(p)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
+  const fire = (action: GrantAction) => {
+    if (ids.length === 0) return
+    onGrant(ids, action)
+    if (action.kind === 'item') setItem('')
+  }
+  return (
+    <div className="border-b border-hearth-border bg-hearth-gold/5 px-4 py-2.5">
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <span className="font-semibold text-hearth-gold">🎁 Grant to:</span>
+        {characters.map((c) => (
+          <label key={c.id} className="flex items-center gap-1 text-hearth-muted">
+            <input type="checkbox" checked={picked.has(c.id)} onChange={() => toggle(c.id)} className="h-3 w-3 accent-hearth-gold" />
+            {c.name}
+          </label>
+        ))}
+        <button onClick={onClose} className="ml-auto px-1 text-hearth-muted hover:text-hearth-text">
+          ✕
+        </button>
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <input
+          value={item}
+          onChange={(e) => setItem(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && item.trim() && fire({ kind: 'item', text: item.trim() })}
+          placeholder="Potion of Healing ×2, 50 gp, Sunblade…"
+          className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-xs text-hearth-text placeholder:text-hearth-muted/40 focus:border-hearth-gold focus:outline-none"
+        />
+        <button
+          onClick={() => item.trim() && fire({ kind: 'item', text: item.trim() })}
+          disabled={!item.trim() || ids.length === 0}
+          className="rounded border border-hearth-gold/60 bg-hearth-gold/10 px-2 py-1 text-xs text-hearth-gold hover:bg-hearth-gold/25 disabled:opacity-40"
+          title="Appends a line to each selected character's equipment"
+        >
+          Give item/gold
+        </button>
+        <button
+          onClick={() => fire({ kind: 'levelup' })}
+          disabled={ids.length === 0}
+          className="rounded border border-hearth-gold/60 bg-hearth-gold/10 px-2 py-1 text-xs text-hearth-gold hover:bg-hearth-gold/25 disabled:opacity-40"
+          title="Milestone: badges 🔔 on their sheets and in the portal — cleared when they take the level"
+        >
+          🔔 Unlock level-up
+        </button>
+        <button
+          onClick={() => fire({ kind: 'rest' })}
+          disabled={ids.length === 0}
+          className="rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:text-hearth-text disabled:opacity-40"
+          title="Full HP, all slots and uses back, half hit dice — the after-session button"
+        >
+          ☀️ Long rest
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function PartyPanel() {
   const open = useStore((s) => s.partyOpen)
   const setOpen = useStore((s) => s.setPartyOpen)
@@ -23,6 +101,7 @@ export default function PartyPanel() {
   const togglePortal = useStore((s) => s.togglePortal)
   const pushToast = useStore((s) => s.pushToast)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [grantOpen, setGrantOpen] = useState(false)
   const [classes, setClasses] = useState<ClassEntry[]>([])
   const [species, setSpecies] = useState<NamedEntry[]>([])
   const [backgrounds, setBackgrounds] = useState<NamedEntry[]>([])
@@ -58,6 +137,13 @@ export default function PartyPanel() {
           <h2 className="font-display text-lg font-semibold text-hearth-text">🛡 The Party</h2>
           <span className="text-xs text-hearth-muted">2024 rules · SRD 5.2.1 · local files</span>
           <button
+            onClick={() => setGrantOpen(true)}
+            title="Grant items/gold, unlock a milestone level-up, or long-rest the party"
+            className="rounded border border-hearth-border bg-hearth-panel2 px-2.5 py-1 text-xs text-hearth-muted hover:border-hearth-gold hover:text-hearth-gold"
+          >
+            🎁 Grant
+          </button>
+          <button
             onClick={() => {
               void togglePortal()
             }}
@@ -91,6 +177,35 @@ export default function PartyPanel() {
             ✕
           </button>
         </div>
+
+        {grantOpen && (
+          <GrantDialog
+            characters={characters}
+            onGrant={(ids, action) => {
+              for (const id of ids) {
+                void updateCharacter(id, (x) => {
+                  if (action.kind === 'item') return { ...x, equipment: [...(x.equipment ?? []), action.text] }
+                  if (action.kind === 'levelup') return { ...x, levelUpReady: true }
+                  // long rest (mirrors the sheet's button)
+                  return {
+                    ...x,
+                    hp: x.maxHp,
+                    tempHp: 0,
+                    slotsUsed: {},
+                    usesSpent: {},
+                    concentratingOn: undefined,
+                    deathSaves: { success: 0, fail: 0 },
+                    hitDiceSpent: Math.max(0, (x.hitDiceSpent ?? 0) - Math.max(1, Math.floor(x.level / 2)))
+                  }
+                })
+              }
+              const what =
+                action.kind === 'item' ? `“${action.text}” granted` : action.kind === 'levelup' ? 'Level-up unlocked' : 'Long rest applied'
+              pushToast(`${what} — ${ids.length} character${ids.length > 1 ? 's' : ''}`, 'info')
+            }}
+            onClose={() => setGrantOpen(false)}
+          />
+        )}
 
         {/* Dashboard strip: the at-a-glance grid DDB never shipped. */}
         {characters.length > 0 && (
