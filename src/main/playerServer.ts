@@ -141,11 +141,33 @@ export class PlayerPortal {
       }
       if (url === '/api/roll' && req.method === 'POST') {
         const roll = JSON.parse(await readBody(req)) as RollEvent
-        // Basic shape check; players can never post DM-only rolls.
+        // Strict shape check + rebuild: a malformed group would crash every
+        // connected Game Log render, so never trust the client's structure.
         if (typeof roll?.total !== 'number' || typeof roll?.who !== 'string' || !Array.isArray(roll?.groups)) {
           return this.json(res, { error: 'bad roll' }, 400)
         }
-        this.deps.onRoll({ ...roll, who: roll.who.slice(0, 40), what: String(roll.what ?? '').slice(0, 80), dmOnly: false })
+        const groups = roll.groups
+          .filter((g) => g && typeof g.die === 'number' && Array.isArray(g.results))
+          .slice(0, 20)
+          .map((g) => ({
+            die: Math.max(2, Math.min(1000, Math.floor(g.die))),
+            results: g.results.filter((r) => typeof r === 'number').slice(0, 200),
+            kept: (Array.isArray(g.kept) ? g.kept : []).filter((k) => typeof k === 'number')
+          }))
+        this.deps.onRoll({
+          id: String(roll.id ?? `${Date.now()}-${Math.random()}`).slice(0, 60),
+          ts: typeof roll.ts === 'number' ? roll.ts : Date.now(),
+          who: roll.who.slice(0, 40),
+          characterId: typeof roll.characterId === 'string' ? roll.characterId.slice(0, 60) : undefined,
+          what: String(roll.what ?? '').slice(0, 80),
+          expr: String(roll.expr ?? '').slice(0, 60),
+          total: roll.total,
+          groups,
+          modifier: typeof roll.modifier === 'number' ? roll.modifier : 0,
+          mode: roll.mode === 'adv' || roll.mode === 'dis' ? roll.mode : undefined,
+          crit: roll.crit === 'crit' || roll.crit === 'fumble' ? roll.crit : undefined,
+          dmOnly: false
+        })
         return this.json(res, { ok: true })
       }
       if (url === '/api/events') {
