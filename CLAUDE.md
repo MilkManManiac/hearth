@@ -70,3 +70,5 @@ Tier A (CC0/CC-BY) sources only for anything committed/bundled — see SOUND-SOU
 
 ## Canonical location
 `C:\Users\weshu\CodeProjects\Hearth`, GitHub `MilkManManiac/hearth`. The repo is the sync point across the DM's computers: **always `git pull` at session start and commit+push at session end** — notes edits especially, since the DM hops machines.
+
+⚠️ **The repo does NOT sync audio.** Bulk audio is gitignored, so a freshly-pulled machine has only campaign-sample's ~305 committed files — the real ~2GB Elor library lives ONLY at `C:\Users\weshu\Campaigns\Elor Rebirth` on the main PC. On a machine without it you cannot build real scenes; demo/build from campaign-sample instead. Picking a sound-sync route (cloud folder / Syncthing / campaign zip) is an open decision — see TODOS.md review queue.

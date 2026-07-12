@@ -28,6 +28,14 @@ session (see bottom) to turn the big ones into concrete specs before building.
   and every PC now uses their true identity.
 
 **Decisions / answers:**
+- [ ] **Cross-machine sound sync (2026-07-11):** git only carries notes/scenes — bulk
+  audio is gitignored, so a second machine **cannot build real scenes** (hit live while
+  demoing on the repo-only PC: the elor-rebirth snapshot has ZERO audio files; the ~2GB
+  library exists only at `C:\Users\weshu\Campaigns\Elor Rebirth` on the main PC; only
+  campaign-sample's ~305 committed files travel). Pick a sync route so "pull and work"
+  actually works anywhere: cloud-synced campaign folder (OneDrive/Drive/Dropbox),
+  Syncthing, a campaign zip export/import ritual, or a portable drive copy. Until
+  decided, secondary machines demo/build from campaign-sample only.
 - [x] ~~DDB study + Round-2 plan~~ — approved ("follow DDB, don't exceed") and **D1–D5
   ALL BUILT 2026-07-10**. To try: click any number on a sheet (ADV/DIS toggle above the
   abilities), 🎲 Game Log tab + the portal's 🎲 drawer, ⬆ Level up, ⚙ Scores, ⚡ cast a
