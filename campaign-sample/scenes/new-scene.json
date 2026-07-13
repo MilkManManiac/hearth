@@ -81,15 +81,16 @@
     },
     {
       "file": "ambience/rain-storm.ogg",
-      "volume": 0.4
+      "volume": 0.69
     },
     {
       "file": "ambience/ghostly-loop.mp3",
-      "volume": 0.24
+      "volume": 0.5
     },
     {
       "file": "ambience/evil-temple.ogg",
-      "volume": 0.4
+      "volume": 0.4,
+      "autoplay": true
     },
     {
       "file": "ambience/dungeon-cave.ogg",
@@ -98,11 +99,11 @@
     {
       "file": "ambience/wind-whoosh.ogg",
       "autoplay": false,
-      "volume": 0.4
+      "volume": 0.16
     },
     {
       "file": "ambience/fap-forest-birds.ogg",
-      "volume": 0.4
+      "volume": 0.13
     },
     {
       "file": "ambience/fap-crowd.ogg",

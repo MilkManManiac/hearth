@@ -37,3 +37,6 @@ campaigns/*/art/
 campaigns/*/recordings/
 campaigns/*/library.json
 campaigns/*/blocklist.json
+
+# Agent tooling: papercuts complaint log (local, not project content)
+.papercuts.jsonl

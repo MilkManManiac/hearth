@@ -1,0 +1,72 @@
+{
+  "id": "dungeon-crawl",
+  "name": "Dungeon Crawl",
+  "image": "",
+  "strokes": [],
+  "encounter": {
+    "combatants": [
+      {
+        "id": "c41285bc-545f-46f5-a3c9-2003411d2b07",
+        "name": "Felsen Cavernborn",
+        "characterId": "felson",
+        "side": "pc",
+        "maxHp": 39,
+        "hp": 39,
+        "ac": 15,
+        "initBonus": 3,
+        "conditions": [],
+        "initiative": 22
+      },
+      {
+        "id": "9828a8e4-18b5-45c2-92c0-cac1878efe3d",
+        "name": "Varen Zalenna",
+        "characterId": "varen",
+        "side": "pc",
+        "maxHp": 26,
+        "hp": 26,
+        "ac": 11,
+        "initBonus": 1,
+        "conditions": [],
+        "initiative": 15
+      },
+      {
+        "id": "f2ee33d7-46a9-4819-956f-c65f242d560a",
+        "name": "Cumb",
+        "characterId": "cumb",
+        "side": "pc",
+        "maxHp": 31,
+        "hp": 31,
+        "ac": 16,
+        "initBonus": 5,
+        "conditions": [],
+        "initiative": 8
+      },
+      {
+        "id": "3c2bf822-a970-451e-a7f6-40f3412698f7",
+        "name": "Special Eddy",
+        "characterId": "eddy",
+        "side": "pc",
+        "maxHp": 48,
+        "hp": 48,
+        "ac": 16,
+        "initBonus": 0,
+        "conditions": [],
+        "initiative": 6
+      },
+      {
+        "id": "a06bc008-6da1-41c1-81ee-f72a692b2805",
+        "name": "Goblin Boss",
+        "ref": "goblin-boss",
+        "side": "foe",
+        "maxHp": 21,
+        "hp": 21,
+        "ac": 17,
+        "initBonus": 2,
+        "conditions": [],
+        "initiative": 19
+      }
+    ],
+    "round": 2,
+    "turn": 0
+  }
+}
