@@ -18,7 +18,11 @@ Hearth creates the empty audio subfolders + a blank `library.json` on load; the
 
 ## ⚠️ Keeping edits in sync
 If we edit notes **here** during a review, they do NOT automatically flow back
-to the real campaign folder. After a review session, copy `notes/*.json` back:
-`campaigns/elor-rebirth/notes/  →  C:\Users\weshu\Campaigns\Elor Rebirth\notes\`
+to the real campaign folder. After a review session, copy the content folders
+back (`notes/`, and now also `maps/`, `characters/`, `scenes/`, `homebrew/`,
+`art/` — the snapshot grew beyond notes with the one-stop work):
+`campaigns/elor-rebirth/<dir>/  →  C:\Users\weshu\Campaigns\Elor Rebirth\<dir>\`
+(2026-07-15: a missed sync of exactly these folders left the live campaign
+without its maps/characters — check both directions before assuming a bug.)
 (or, if reviewing on the machine that has the real campaign, Claude edits the
 real folder directly and this snapshot is refreshed from it).
