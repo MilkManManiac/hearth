@@ -16,7 +16,9 @@ import { MonsterStatBlock } from './StatBlock'
 /**
  * The fog overlay: a black sheet with the stroke history applied in order —
  * reveal strokes punch holes (destination-out), hide strokes paint fog back.
- * Rendered inside its own cached Group so composite ops stay local.
+ * Rendered as its OWN Konva Layer (own canvas): composite ops apply to the
+ * layer's canvas, so without this the destination-out "reveal" strokes would
+ * erase the map image beneath instead of just the fog sheet.
  */
 export function FogLayer({
   w,
@@ -33,7 +35,7 @@ export function FogLayer({
   opacity: number
 }) {
   return (
-    <Group opacity={opacity}>
+    <Layer listening={false} opacity={opacity}>
       <Rect x={0} y={0} width={w} height={h} fill="black" />
       {strokes.map((s, i) =>
         s.shape === 'fill' ? (
@@ -68,7 +70,7 @@ export function FogLayer({
           globalCompositeOperation={z.hidden ? 'source-over' : 'destination-out'}
         />
       ))}
-    </Group>
+    </Layer>
   )
 }
 
@@ -352,11 +354,13 @@ export function PresenterMap({
   const y = (size.h - img.height * scale) / 2
   return (
     <div className="relative h-full w-full">
-      <Stage width={size.w} height={size.h}>
-        <Layer x={x} y={y} scaleX={scale} scaleY={scale}>
+      <Stage width={size.w} height={size.h} x={x} y={y} scaleX={scale} scaleY={scale}>
+        <Layer listening={false}>
           <KImage image={img} />
           {grid ? <GridLayer w={img.width} h={img.height} cell={grid} /> : null}
-          <FogLayer w={img.width} h={img.height} strokes={strokes} zones={zones} opacity={1} />
+        </Layer>
+        <FogLayer w={img.width} h={img.height} strokes={strokes} zones={zones} opacity={1} />
+        <Layer listening={false}>
           <OverlayLayer overlays={overlays} grid={grid ?? 0} />
           <TokenLayer tokens={tokens.filter((t) => !t.hidden)} decor={decor} />
           <PingLayer pings={pings} scale={scale} />
@@ -931,8 +935,10 @@ export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose:
         <Layer>
           {img && <KImage image={img} />}
           {img && grid >= 8 && <GridLayer w={img.width} h={img.height} cell={grid} />}
-          {/* DM sees dim fog (players get full black in the presenter). */}
-          {img && <FogLayer w={img.width} h={img.height} strokes={strokes} zones={zones} opacity={0.6} />}
+        </Layer>
+        {/* DM sees dim fog (players get full black in the presenter). */}
+        {img && <FogLayer w={img.width} h={img.height} strokes={strokes} zones={zones} opacity={0.6} />}
+        <Layer>
           {/* Zone outlines + labels: DM-only orientation layer. */}
           <Group listening={false}>
             {zones.map((z) => {
