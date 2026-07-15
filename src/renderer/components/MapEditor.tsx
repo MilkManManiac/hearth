@@ -1111,7 +1111,9 @@ export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose:
 
       {!img && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-hearth-muted">
-          Loading {map.image}…
+          {map.image
+            ? `Loading ${map.image}…`
+            : 'This map has no image yet — add one from a scene’s Images section (🗺 button on any image).'}
         </div>
       )}
     </div>
