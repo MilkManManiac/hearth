@@ -72,16 +72,12 @@ next week using ONLY the sound/scene core.
 Open milestones, in order (full specs in SURFACES-PLAN.md — the research
 appendix is effectively the design doc):
 
-- **M3 — window split**: Table + Party become real Electron windows
-  (WindowManager in main, hash-routed roots in App.tsx, `backgroundThrottling:
-  false` on the map window). Well-specced, self-contained, zero audio risk.
-- **M4 — inventory/equipment overhaul**: structured rows (qty/equipped/attuned
-  /charges), SRD catalog + custom items, auto-AC from hand-tabled armor
-  formulas (the shipped equipment.json LACKS ac fields — hand-table the 13 SRD
-  armors), coin pouch with auto-make-change + ledger, party stash
-  (transfer-never-copy + activity log), migration of the 5 real sheets.
-  Research appendix has the full row anatomy + pitfalls (decouple attuned from
-  equipped!).
+- ~~M3 — window split~~ ✅ shipped 2026-07-16 (WindowManager, hash-routed
+  `#table`/`#party` roots, tracker docked in the Table window).
+- ~~M4 — inventory/equipment overhaul~~ ✅ shipped 2026-07-16: structured rows,
+  auto-AC (`src/shared/inventory.ts` — armor table + `effectiveAc()`), coin
+  pouches, party stash (`party.json`, transfer-never-copy), Grant → rows,
+  5 real sheets migrated (originals in `legacyEquipment`).
 - **M5 — Ember E2**: players move their OWN token + ping + measure. Never
   other tokens.
 - **Design pass**: the app is "functional but plain" (Wes's words, TODOS #1).

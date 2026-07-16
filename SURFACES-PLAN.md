@@ -107,7 +107,18 @@ deadline pressure ("take our time and make sure those are set").
    per-window screenshots headlessly). Deferred to post-freeze: the Table
    window's SFX pad (needs an audio relay to the console window — the frozen
    core).
-4. **M4 — Inventory/equipment overhaul** + migration (can interleave with M2/M3).
+4. **M4 — Inventory/equipment overhaul** ✅ SHIPPED 2026-07-16: structured
+   `InventoryItem` rows (qty/equipped/attuned ✦ decoupled/charge pips/notes/
+   catalog link) replace the free-text box; auto-AC derived at render from the
+   hand-tabled 13 SRD armors + shield (2024 dex caps, Barbarian/Monk unarmored
+   defense) with `acOverride` for weird cases — every AC display goes through
+   `effectiveAc()` (src/shared/inventory.ts); coin pouch with auto-make-change
+   + ledger; **party stash** (`party.json`, transfer-never-copy + activity
+   log) — 🎒 in the Party panel, drawer in the portal; catalog search-first
+   add (equip-now / pay-from-pouch); 🎁 Grant writes rows + pouch gold. The 5
+   real sheets auto-migrated (verified on scratch copies first: 4/5 ACs
+   reproduced by the formula, Eddy pinned at his imported 16; originals kept
+   in `legacyEquipment`).
 5. **M5 — Ember E2** (own token + ping + measure), then E3.
 
 ## Research appendix (4-agent pass, 2026-07-10 — details in the session log)

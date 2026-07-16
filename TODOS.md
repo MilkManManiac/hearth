@@ -9,6 +9,24 @@ session (see bottom) to turn the big ones into concrete specs before building.
 
 ## 🔔 WES — review queue (updated 2026-07-16; everything Claude needs from you)
 
+**M4 inventory overhaul (Claude, 2026-07-16 — SURFACES-PLAN M4 shipped):**
+- [ ] Open 🛡 Party → any sheet: the equipment textarea is now **structured rows**
+  (⛨ equip · ✦ attune · charge pips · ×qty; click a name for notes/charges/AC
+  bonus/→ stash). Search-add pulls the SRD catalog (+ "custom item" fallback),
+  with equip-now and pay-from-pouch options. Coin pouch below (the −/+ quick box
+  makes change automatically — spend 5 gp with only sp and it breaks coins).
+- [ ] **AC is now computed** from equipped armor/shield (2024 formulas incl.
+  Felsen's Monk unarmored defense). Your 5 sheets migrated automatically —
+  4 of 5 ACs came out identical; **Eddy is pinned at his imported 16** because
+  chain mail + shield computes 18 (the DDB export likely didn't count the
+  shield). His AC box shows a gold border = override; hit ⟲ if 18 is right.
+  Everything else (Velmire attuned, ×quantities, gold → pouches) carried over;
+  the original lines are preserved in each file under `legacyEquipment`.
+- [ ] **🎒 Party stash**: button in 🛡 Party header, and a 🎒 drawer in the player
+  portal. "→ stash" on any item row moves it (never copies); takes/deposits are
+  logged ("Cumb took the Bag of Holding"). Try moving the real S-Bag contents in.
+- [ ] 🎁 Grant now writes real rows + pouch gold instead of free-text lines.
+
 **M3 window split (Claude, 2026-07-16 — SURFACES-PLAN M3 shipped):**
 - [ ] Try it: TopBar **⚔ Table** opens the battle window (map + fog + tokens with the
   encounter tracker docked beside it); TopBar **🛡 Party** opens the sheets window.
