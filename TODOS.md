@@ -7,7 +7,21 @@
 Captured for later. Not being worked on yet. We'll likely run a **grill-me**
 session (see bottom) to turn the big ones into concrete specs before building.
 
-## 🔔 WES — review queue (updated 2026-07-10; everything Claude needs from you)
+## 🔔 WES — review queue (updated 2026-07-16; everything Claude needs from you)
+
+**Session 26 prep package (Claude, 2026-07-16 — session is TUESDAY 2026-07-21):**
+- [ ] Read **notes/session-26** (prep note: strong start, crawl shape, tiered reveals,
+  Secrets & clues). Everything ⚑-flagged is an open call from grill-queue that only
+  you can make — decide or deliberately punt before Tuesday.
+- [ ] Audition the 4 new scenes (grouped under Session 26 in the rail): *Through the
+  Gates*, *The Drowned Halls*, *The Scholar's Archive*, *Webs in the Dark*. All audio
+  is picked by tag, NOT by ear — retarget any cue that sounds wrong (⚙ on the chip).
+- [ ] Open 🗺 **Eekso — The Drowned Hall** (new generated battle map, fog + tokens +
+  ⚔ pre-stocked with SRD reskins: Spy→drow stalker, Priest→priestess, Phase Spider).
+  If you'd rather use real art, swap `image` in maps/eekso-drowned-hall.json — the
+  tokens/encounter carry over.
+- [ ] Discord bridge status is still contested (see below) — if Tuesday runs on the
+  bridge, schedule a live test BEFORE the session.
 
 **One-stop shop (2026-07-10, ONESTOP-PLAN.md — C1–C5 all shipped):**
 - [ ] Try: 📖 Rules (search "goblin"), 🛡 Party (all 5 REAL sheets imported from your

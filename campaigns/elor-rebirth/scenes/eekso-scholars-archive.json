@@ -1,0 +1,35 @@
+{
+  "id": "eekso-scholars-archive",
+  "name": "Eekso — The Scholar's Archive",
+  "session": "session-26",
+  "dmNotes": "THE LORE ROOM (Claude prep 2026-07-16). This is the delivery system for the network rules — the slave-scholar's surviving research, plus instruments that can read Felson's bottle. Reveals are TIERED in the script callouts: Tier 1 is safe (locked canon, cheap to give), Tier 2 costs a test/risk, Tier 3 (⚑) is yours to grant or hold. The ghostly bed is cued for the moment the bottle answers — don't autoplay it.",
+  "music": [
+    { "id": "study", "label": "Quiet study", "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody.mp3", "volume": 0.5, "default": true },
+    { "id": "cost", "label": "What it cost them", "file": "music/somber-what-is-left.mp3", "volume": 0.5 },
+    { "id": "wrong", "label": "Something is wrong", "file": "music/horror-atmosphere.ogg", "volume": 0.6 }
+  ],
+  "ambience": [
+    { "file": "ambience/water-dripping.mp3", "volume": 0.35 },
+    { "file": "ambience/nox-cave-dark.ogg", "volume": 0.35 },
+    { "file": "ambience/ghostly-loop.mp3", "volume": 0.3, "autoplay": false }
+  ],
+  "sfx": [
+    { "id": "book-open", "label": "Ledger opens", "file": "sfx/book-open.ogg", "hotkey": "1" },
+    { "id": "pages", "label": "Pages turn", "file": "sfx/book-flip.ogg", "hotkey": "2" },
+    { "id": "test", "label": "The test (arcana)", "file": "sfx/spell-cast.ogg", "hotkey": "3", "duckMusic": true },
+    { "id": "reacts", "label": "The liquid REACTS", "file": "sfx/dark-magic-spell.mp3", "hotkey": "4", "duckMusic": true }
+  ],
+  "images": [],
+  "scriptText": "# The Scholar's Archive\n\nThe door is dwarven, but the lock is elvish — delicate work, picked from the inside more than once. Beyond it: a long vaulted room the water never reached. Shelves. Instruments of copper and crystal, green with age. And paper — years of it, in a hand that starts patient and neat and does not end that way. {{sfx:book-open}}\n\nEvery page is headed the same way: a catalogue number, a date in a calendar you don't know — and the imprint of a **collar seal**, pressed into wax, the way an owner brands a tool.\n\n## The Research\n\n{{music:cost}} {{sfx:pages}} They were made to study the thing in the water. They kept studying it long after whoever held their collar stopped collecting the reports.\n\n> [!dm] **Tier 1 (free, locked canon):** the couriers carry harvested blueprints/minds/souls BACK to the pool · still water means a LARGE pool · the network shares what one node learns. The last pages just say **IT CONSUMES**, over and over.\n\n> [!dm] **Tier 2 (costs a test on the bottle):** see below. **Tier 3 (⚑ your call):** anything pointing at the CULT pool, Eilistraee, or what 'true escape' takes — hold it unless the table earns it.\n\n## The Bottle\n\nThe scholar's instruments still work. A crystal cradle, sized for a sample jar — sized, in fact, almost exactly for the potion bottle in Felsen's pack.\n\n{{sfx:test}} The liquid climbs the glass before the test even begins — *reaching* for the instrument. {{amb:ghostly-loop|vol=30%|in=5s}} {{sfx:reacts}}\n\n> [!dm] **Tier 2 reveals per test (pick what they earn):** the fragments are PIECES OF PEOPLE — copied, not stolen · the courier was returning to report; its cargo never arrived, and the network will notice the gap · the bottle answers when the artery is near (compass to pools/couriers — a tool AND a beacon). Kill the ghostly bed ({{amb:ghostly-loop|out=6s}}) when they stopper it.",
+  "ideas": [
+    { "id": "idea-compass", "text": "The bottle as a compass that points both ways — it finds the pool, the network can find IT", "done": false },
+    { "id": "idea-last-entry", "text": "The final ledger entry is unfinished mid-sentence — the collar outside the shed upstream finishes the story", "done": false },
+    { "id": "idea-varen", "text": "Varen's divination + the instruments: one question answered honestly (seed for the release-mechanism thread)", "done": false }
+  ],
+  "entities": [
+    { "id": "ent-ledgers", "type": "item", "name": "The scholar's ledgers", "note": "Years of pool research. Portable, heavy, priceless.", "status": "present", "used": false },
+    { "id": "ent-cradle", "type": "item", "name": "Crystal testing cradle", "note": "Reads courier fragments. Too delicate to move?", "status": "present", "used": false },
+    { "id": "ent-scholar", "type": "npc", "name": "The slave-scholar (absent)", "note": "Collared Thundrak Dûrn property. Taken — thread to the city.", "status": "optional", "used": false }
+  ],
+  "transition": { "crossfadeMs": 3000 }
+}

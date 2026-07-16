@@ -1,0 +1,36 @@
+{
+  "id": "eekso-webs-in-the-dark",
+  "name": "Eekso — Webs in the Dark",
+  "session": "session-26",
+  "dmNotes": "OPTIONAL DROW AMBUSH (Claude prep 2026-07-16). ⚑ Framing proposal: these drow are OBSERVERS who got caught, not defenders — Lolth's eyes on the road to the pool (what they do during the release is still open in grill-queue). They open with crossbows + darkness, and they'd rather WITHDRAW with information than die. Stat reskins (SRD has no drow): Spy = drow stalker, Priest = priestess of Lolth, Phase Spider as-is. ~1,750 XP vs a level-6 party of 4 = pressure, not a meat grinder — add a 4th stalker if they're fresh. Battle map: 🗺 Eekso — The Drowned Hall (fog set, tokens placed, foes hidden — double-click to unhide as they act).",
+  "music": [
+    { "id": "watched", "label": "They are watching", "file": "music/Russell Shaw - Fae Tales- They Are Watching.mp3", "volume": 0.55, "default": true },
+    { "id": "steel", "label": "Steel in the dark", "file": "music/battle-theme-a.mp3", "volume": 0.65 },
+    { "id": "priestess", "label": "The priestess steps out", "file": "music/Secession Studios, Greg Dombrowski - I Am the Shadow.mp3", "volume": 0.65 }
+  ],
+  "ambience": [
+    { "file": "ambience/nox-cave-deep.ogg", "volume": 0.35 },
+    { "file": "ambience/fap-cave-whispers.ogg", "volume": 0.25, "autoplay": false }
+  ],
+  "sfx": [
+    { "id": "bolt", "label": "Crossbow bolt", "file": "sfx/fap-crossbow.ogg", "hotkey": "1", "duckMusic": true },
+    { "id": "bolt-hit", "label": "Bolt strikes flesh", "file": "sfx/fapx-arrow-impacts-on-flesh.ogg", "hotkey": "2" },
+    { "id": "blades", "label": "Blades drawn", "file": "sfx/blade-draw.ogg", "hotkey": "3" },
+    { "id": "darkness", "label": "Darkness falls", "file": "sfx/dark-magic-spell.mp3", "hotkey": "4", "duckMusic": true },
+    { "id": "skitter", "label": "The spider phases in", "file": "sfx/creature-screech.mp3", "hotkey": "5", "duckMusic": true },
+    { "id": "scream", "label": "A stalker dies", "file": "sfx/fap-scream-male.ogg", "hotkey": "6" }
+  ],
+  "images": [],
+  "scriptText": "# Webs in the Dark\n\nThe gallery ahead is webbed floor to ceiling — old sheets of it, grey and heavy with dust. But the path through it is *swept*. Someone keeps this road open.\n\nThe drips go quiet first. Then the whisper of a bowstring taking weight. {{sfx:bolt}}\n\n## Ambush\n\n{{music:steel}} Shapes detach from the webs above you — lean, silent, skin like slate and eyes like coals. {{sfx:blades}} One of them speaks a word that eats the torchlight whole. {{sfx:darkness}}\n\n> [!dm] Round 1: crossbows from elevation + *darkness* on the party's light source. They focus whoever carries the BOTTLE — they've been told to see what the surfacers found, not to kill. ⚑ If asked why: they answer to a priestess, and she answers to the Spider Queen.\n\n## The Priestess\n\n{{music:priestess}} From the webs at the far end, a taller figure watches the fight with her arms folded — and only steps in if her stalkers start losing. {{sfx:skitter}}\n\n> [!dm] Her goal is INFORMATION. At half strength she calls the retreat — smoke, webs, gone — taking a report about the party toward the pool. Anything captured (a stalker, her regalia) is a thread to what Lolth wants when Eilistraee walks free ([[grill-queue]]).",
+  "ideas": [
+    { "id": "idea-prisoner", "text": "A captured stalker trades truth for release: 'The Queen does not want the Dancer freed. She wants to choose WHERE.'  ⚑ proposal", "done": false },
+    { "id": "idea-retreat", "text": "If the priestess escapes, the pool's defenders know EXACTLY who is coming — costs them surprise later", "done": false },
+    { "id": "idea-webs-burn", "text": "The webs burn fast and bright — light, chaos, and the whole gallery knows where they are", "done": false }
+  ],
+  "entities": [
+    { "id": "ent-stalkers", "type": "monster", "name": "Drow stalkers ×3", "note": "SRD Spy reskin. Crossbows, elevation, withdraw at half.", "status": "present", "used": false },
+    { "id": "ent-priestess", "type": "monster", "name": "Priestess of Lolth", "note": "SRD Priest reskin. Watches first. Wants a report, not bodies.", "status": "present", "used": false },
+    { "id": "ent-phase-spider", "type": "monster", "name": "Phase spider", "note": "Her pet. Phases in on round 2.", "status": "optional", "used": false }
+  ],
+  "transition": { "crossfadeMs": 2000 }
+}

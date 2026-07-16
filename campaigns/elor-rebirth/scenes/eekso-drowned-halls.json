@@ -1,0 +1,37 @@
+{
+  "id": "eekso-drowned-halls",
+  "name": "Eekso — The Drowned Halls",
+  "session": "session-26",
+  "dmNotes": "THE CRAWL BED (Claude prep 2026-07-16). This is the scene you live in between set pieces — long galleries descending along the river channel. The 'Courier Passes' beat is free dread grounded in locked lore (the river is the pool's artery; couriers pass THROUGH Eekso). The whispers bed is cued, not autoplay — save it for when the mood needs a turn. Drow breadcrumbs here set up Webs in the Dark.",
+  "music": [
+    { "id": "tomb", "label": "The long dark", "file": "music/forgotten-tomb.mp3", "volume": 0.55, "default": true },
+    { "id": "wander", "label": "Wandering deeper", "file": "music/cave-exploration.ogg", "volume": 0.5 },
+    { "id": "curious", "label": "Something curious", "file": "music/mystery-exploration.mp3", "volume": 0.55 },
+    { "id": "it-knows", "label": "It knows you're here", "file": "music/horror-atmosphere.ogg", "volume": 0.6 }
+  ],
+  "ambience": [
+    { "file": "ambience/nox-cave-drips.ogg", "volume": 0.4 },
+    { "file": "ambience/nox-stream.ogg", "volume": 0.35 },
+    { "file": "ambience/fap-cave-whispers.ogg", "volume": 0.3, "autoplay": false }
+  ],
+  "sfx": [
+    { "id": "creak", "label": "Old door", "file": "sfx/door-creak.ogg", "hotkey": "1" },
+    { "id": "lock", "label": "Lock clicks", "file": "sfx/lock-click.ogg", "hotkey": "2" },
+    { "id": "something", "label": "Something moves", "file": "sfx/fapx-monster-footsteps-2.ogg", "hotkey": "3", "duckMusic": true },
+    { "id": "screech", "label": "Screech below", "file": "sfx/creature-screech.mp3", "hotkey": "4", "duckMusic": true },
+    { "id": "roar-far", "label": "Roar (far, underwater)", "file": "sfx/monster-roar.ogg", "hotkey": "5", "duckMusic": true }
+  ],
+  "images": [],
+  "scriptText": "# The Drowned Halls\n\nThe stairs go down in long dwarven flights, each landing darker than the last. Halfway down, the river finds you again — not beside you now but *below*, glass-dark in a cut channel, moving fast and making almost no sound at all.\n\nEvery surface sweats. Pillars rise out of the water where floors have given way. Whatever Eekso was built to hold, it was built to hold it a very long time.\n\n> [!dm] Crawl texture, deal as needed: rusted sluice gates · a hall where the ceiling drips in rhythm · masonry stamped with the Thundrak Dûrn collar-and-chain mark · empty sconces with FRESH oil residue.\n\n## Signs\n\n{{amb:fap-cave-whispers|vol=25%|in=6s|until=section}} Cumb finds it first: a tripline of spider-silk, cut clean, coiled neatly beside the doorway it guarded. Someone disarmed their own trap to let something pass — or to follow it.\n\n> [!dm] Perception/Survival: soft bootprints, narrow feet, weeks of traffic in single file. (Drow — sets up *Webs in the Dark*.) The whispers bed dies when you move past this heading.\n\n## The Courier Passes\n\n{{music:it-knows}} The river changes. The pulse in the stone deepens, and the channel below you **swells** — something vast sliding through it in the dark, unhurried, going *down*. {{sfx:roar-far}} It does not slow. It does not care about you. It is carrying something home.\n\nThen the water settles, and the halls are just halls again.\n\n> [!dm] Locked lore delivered live: the river is the pool's artery — couriers pass through Eekso. No fight here unless they force one; it is a whale in a shipping lane, not a wandering monster.",
+  "ideas": [
+    { "id": "idea-fresh-oil", "text": "Fresh lamp-oil in the sconces — the drow relight these halls when they pass", "done": false },
+    { "id": "idea-bridge-out", "text": "A collapsed span forces a choice: wade the channel (the river KNOWS things) or the long way through the webbed gallery", "done": false },
+    { "id": "idea-bottle-hum", "text": "When the courier passes, Felson's bottle vibrates in his pack — the fragments answer the artery", "done": false }
+  ],
+  "entities": [
+    { "id": "ent-channel", "type": "location", "name": "The river channel", "note": "The pool's artery. Couriers pass through.", "status": "present", "used": false },
+    { "id": "ent-silk", "type": "hook", "name": "Cut spider-silk tripline", "note": "Drow sign — someone is inside, watching", "status": "present", "used": false },
+    { "id": "ent-courier2", "type": "monster", "name": "A courier (passing)", "note": "Not a fight. A whale in a shipping lane.", "status": "optional", "used": false }
+  ],
+  "transition": { "crossfadeMs": 3000 }
+}

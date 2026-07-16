@@ -1,0 +1,35 @@
+{
+  "id": "eekso-gates",
+  "name": "Eekso — Through the Gates",
+  "session": "session-26",
+  "dmNotes": "STRONG START for S26 (Claude prep 2026-07-16 — reskin freely). Open mid-sprint. The roar does NOT force the gate tonight — dread, then silence. The bar being NEW is the first clue someone maintains this place. Go live BEFORE the recap so the river bed is already under your voice.",
+  "music": [
+    { "id": "held-breath", "label": "Held breath", "file": "music/anticipation.ogg", "volume": 0.6, "default": true },
+    { "id": "pursuit", "label": "It's right behind", "file": "music/chase.ogg", "volume": 0.7 },
+    { "id": "inside", "label": "Inside — unwelcome", "file": "music/Russell Shaw - What Lies Behind- Open the Door.mp3", "volume": 0.55 }
+  ],
+  "ambience": [
+    { "file": "ambience/nox-river.ogg", "volume": 0.45 },
+    { "file": "ambience/nox-cave-deep.ogg", "volume": 0.35 }
+  ],
+  "sfx": [
+    { "id": "roar", "label": "THE ROAR", "file": "sfx/deep-monster-roar.wav", "hotkey": "1", "duckMusic": true },
+    { "id": "gate-groan", "label": "Gate groans", "file": "sfx/door-creak.ogg", "hotkey": "2" },
+    { "id": "gate-bar", "label": "Bar drops", "file": "sfx/wood-thunk.ogg", "hotkey": "3" },
+    { "id": "splash-run", "label": "Running the shallows", "file": "sfx/fapx-puddle-footsteps-and-splashes.ogg", "hotkey": "4" }
+  ],
+  "images": [
+    { "file": "art/eekso-courtyard.jpg", "caption": "Eekso — beyond the gates", "playerFacing": true }
+  ],
+  "scriptText": "# Through the Gates\n\nYou take the last bridge at a dead run — planks slick with spray, the river roaring white beneath you {{sfx:splash-run}} — and the thing behind you answers the river with a roar of its own. **Closer.** {{sfx:roar}}\n\nEekso's outer gate hangs crooked on hinges older than any kingdom you know. You shoulder through {{sfx:gate-groan}} and heave it shut, and the sound of the bar dropping into its cradle is the loudest thing in the world. {{sfx:gate-bar}}\n\nThen — nothing. The roar does not come again.\n\n## Inside\n\n{{music:inside}} Silence, except the water. The river runs *under* this place — you feel it through the soles of your boots, a slow steady pulse in the stone, like standing on something's throat. {{image:art/eekso-courtyard.jpg}}\n\nBeyond the gatehouse, a courtyard opens under broken arches — and past it, stair after stair after stair, the fortress goes **down**.\n\n> [!dm] The gate is centuries-old Thundrak Dûrn work — but the **bar is new wood**. Someone maintains this door. (First drow breadcrumb.)\n\n> [!dm] ⚑ If they linger at the gate: scraping, a huff of breath, then dragging footsteps that fade. It leaves. What it is stays parked ([[grill-queue]]).",
+  "ideas": [
+    { "id": "idea-bar", "text": "Someone notices the gate's bar is freshly cut — who barred it last?", "done": false },
+    { "id": "idea-siege", "text": "If they climb the wall to look back: the far bridge is EMPTY. Nothing followed. Worse.", "done": false },
+    { "id": "idea-camp", "text": "They'll want a rest — the gatehouse is defensible; the halls below are not.", "done": false }
+  ],
+  "entities": [
+    { "id": "ent-roarer", "type": "monster", "name": "The second roar", "note": "Never seen tonight. Identity parked in grill-queue.", "status": "optional", "used": false },
+    { "id": "ent-gate", "type": "location", "name": "The gatehouse", "note": "Dwarven iron, new bar. Defensible rest spot.", "status": "present", "used": false }
+  ],
+  "transition": { "crossfadeMs": 2500 }
+}

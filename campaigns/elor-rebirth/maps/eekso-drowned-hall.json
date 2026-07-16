@@ -1,0 +1,39 @@
+{
+  "id": "eekso-drowned-hall",
+  "name": "Eekso — The Drowned Hall",
+  "image": "art/eekso-drowned-hall.png",
+  "grid": 128,
+  "strokes": [
+    {
+      "points": [576, 1856, 592, 1760, 608, 1664, 624, 1568, 640, 1472, 656, 1440],
+      "radius": 230,
+      "mode": "reveal"
+    }
+  ],
+  "tokens": [
+    { "id": "tk-eddy", "label": "EDY", "x": 576, "y": 1664, "r": 54, "color": "#d8b26a", "characterId": "eddy", "combatantId": "cb-eddy" },
+    { "id": "tk-felsen", "label": "FEL", "x": 704, "y": 1664, "r": 54, "color": "#27ae60", "characterId": "felson", "combatantId": "cb-felsen" },
+    { "id": "tk-varen", "label": "VAR", "x": 576, "y": 1792, "r": 54, "color": "#8e44ad", "characterId": "varen", "combatantId": "cb-varen" },
+    { "id": "tk-cumb", "label": "CUM", "x": 704, "y": 1792, "r": 54, "color": "#2980b9", "characterId": "cumb", "combatantId": "cb-cumb" },
+    { "id": "tk-drow1", "label": "DR1", "x": 1600, "y": 1472, "r": 54, "color": "#5b2c6f", "hidden": true, "combatantId": "cb-drow1", "ref": "spy" },
+    { "id": "tk-drow2", "label": "DR2", "x": 1984, "y": 1600, "r": 54, "color": "#5b2c6f", "hidden": true, "combatantId": "cb-drow2", "ref": "spy" },
+    { "id": "tk-drow3", "label": "DR3", "x": 2240, "y": 1472, "r": 54, "color": "#5b2c6f", "hidden": true, "combatantId": "cb-drow3", "ref": "spy" },
+    { "id": "tk-priestess", "label": "PRS", "x": 2368, "y": 1728, "r": 54, "color": "#a93226", "hidden": true, "combatantId": "cb-priestess", "ref": "priest" },
+    { "id": "tk-spider", "label": "SPD", "x": 1344, "y": 704, "r": 96, "color": "#117864", "hidden": true, "combatantId": "cb-spider", "ref": "phase-spider" }
+  ],
+  "encounter": {
+    "round": 0,
+    "turn": -1,
+    "combatants": [
+      { "id": "cb-eddy", "name": "Special Eddy", "characterId": "eddy", "side": "pc", "maxHp": 48, "hp": 48, "ac": 16, "initBonus": 0 },
+      { "id": "cb-varen", "name": "Varen Zalenna", "characterId": "varen", "side": "pc", "maxHp": 26, "hp": 26, "ac": 11, "initBonus": 1 },
+      { "id": "cb-felsen", "name": "Felsen Cavernborn", "characterId": "felson", "side": "pc", "maxHp": 39, "hp": 39, "ac": 15, "initBonus": 3 },
+      { "id": "cb-cumb", "name": "Cumb", "characterId": "cumb", "side": "pc", "maxHp": 31, "hp": 31, "ac": 16, "initBonus": 5 },
+      { "id": "cb-drow1", "name": "Drow stalker 1", "ref": "spy", "side": "foe", "maxHp": 27, "hp": 27, "ac": 12, "initBonus": 2, "xp": 200, "note": "Spy reskin. Crossbow from the webs; withdraws at half HP." },
+      { "id": "cb-drow2", "name": "Drow stalker 2", "ref": "spy", "side": "foe", "maxHp": 27, "hp": 27, "ac": 12, "initBonus": 2, "xp": 200, "note": "Spy reskin. Focuses whoever carries the bottle." },
+      { "id": "cb-drow3", "name": "Drow stalker 3", "ref": "spy", "side": "foe", "maxHp": 27, "hp": 27, "ac": 12, "initBonus": 2, "xp": 200, "note": "Spy reskin. Casts 'darkness' (1/day) on the party's light." },
+      { "id": "cb-priestess", "name": "Priestess of Lolth", "ref": "priest", "side": "foe", "maxHp": 38, "hp": 38, "ac": 13, "initBonus": 0, "xp": 450, "note": "Priest reskin. Watches first; joins if stalkers falter; calls retreat at half strength. Wants a REPORT, not bodies." },
+      { "id": "cb-spider", "name": "Phase spider", "ref": "phase-spider", "side": "foe", "maxHp": 45, "hp": 45, "ac": 14, "initBonus": 2, "xp": 700, "note": "Her pet. Phases in round 2 behind the back line. OPTIONAL — drop if the fight runs hot." }
+    ]
+  }
+}
