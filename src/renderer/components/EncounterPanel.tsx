@@ -4,6 +4,7 @@ import { formatCR, loadMonsters, type Monster } from '../lib/compendium'
 import { fuzzyScore } from '../lib/fuzzy'
 import { rateEncounter } from '../lib/encounter'
 import { rollExpr, d20Expr } from '../../shared/dice'
+import { effectiveAc } from '../../shared/inventory'
 import { submitRoll, useRollStore } from '../lib/rollStore'
 import { useStore } from '../store'
 
@@ -95,7 +96,7 @@ export default function EncounterPanel({ map }: { map: CampaignMap }) {
           side: 'pc',
           maxHp: char?.maxHp ?? 0,
           hp: char?.hp ?? 0,
-          ac: char?.ac,
+          ac: char ? effectiveAc(char).value : undefined,
           initBonus: char ? Math.floor((char.abilities.dex - 10) / 2) : 0,
           conditions: []
         }
@@ -164,7 +165,7 @@ export default function EncounterPanel({ map }: { map: CampaignMap }) {
     if (!c.characterId) return c
     const char = partyChars.find((x) => x.id === c.characterId)
     if (!char) return c
-    return { ...c, name: char.name, hp: char.hp, maxHp: char.maxHp, ac: char.ac }
+    return { ...c, name: char.name, hp: char.hp, maxHp: char.maxHp, ac: effectiveAc(char).value }
   }
 
   const patchHp = (c: Combatant, hp: number) => {

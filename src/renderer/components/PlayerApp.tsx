@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CampaignMap, Character, RollEvent } from '../../shared/types'
+import type { CampaignMap, Character, PartyStash, RollEvent } from '../../shared/types'
 import { loadKind, type ClassEntry, type NamedEntry } from '../lib/compendium'
 import CharacterSheet from './CharacterSheet'
+import StashBox from './StashBox'
 import { RollFeed } from './GameLog'
 import { PresenterMap, playerTableView } from './MapEditor'
 import { EntryArticle, SpellCard } from './StatBlock'
@@ -76,6 +77,9 @@ export default function PlayerApp() {
   const [rolls, setRolls] = useState<RollEvent[]>([])
   const [logOpen, setLogOpen] = useState(false)
   const [unseen, setUnseen] = useState(0)
+  // Party stash (M4): shared items + coins, live via the same SSE refetch.
+  const [party, setParty] = useState<PartyStash | null>(null)
+  const [stashOpen, setStashOpen] = useState(false)
   // Don't let an SSE refetch clobber the keystrokes you just typed.
   const lastEdit = useRef(0)
   const logOpenRef = useRef(false)
@@ -99,6 +103,7 @@ export default function PlayerApp() {
     void api<{ map: CampaignMap | null }>('/api/table')
       .then((t) => setLiveMap(t.map))
       .catch(() => undefined)
+    void api<PartyStash>('/api/party').then(setParty).catch(() => undefined)
     return api<Character[]>('/api/characters')
       .then((cs) => {
         if (Date.now() - lastEdit.current > 3000) setCharacters(cs)
@@ -109,6 +114,7 @@ export default function PlayerApp() {
   useEffect(() => {
     void api<Character[]>('/api/characters').then(setCharacters).catch((e) => setError((e as Error).message))
     void api<{ map: CampaignMap | null }>('/api/table').then((t) => setLiveMap(t.map)).catch(() => undefined)
+    void api<PartyStash>('/api/party').then(setParty).catch(() => undefined)
     loadKind('class').then((r) => setClasses(r as unknown as ClassEntry[]))
     loadKind('species').then(setSpecies)
     loadKind('background').then(setBackgrounds)
@@ -256,18 +262,74 @@ export default function PlayerApp() {
               onPatch: patch,
               onOpenSpell: (key) => void loadSpells().then((all) => setSpellCard(all.find((s) => s.key === key) ?? null)),
               onOpenSpecies: (key) => setSpeciesCard(species.find((s) => s.key === key) ?? null),
-              onRoll: sendRoll
+              onRoll: sendRoll,
+              onStashItem: (itemId) =>
+                void fetch('/api/party/transfer-item', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ itemId, from: selected.id, to: 'stash', who: selected.name })
+                }).then(() => refetch())
             }}
           />
         )}
       </main>
 
-      {/* Game Log drawer (D1): the table's shared rolls, phone-friendly. */}
+      {/* Game Log + Party stash drawers, phone-friendly. */}
       {selected && (
         <>
           <button
             onClick={() => {
+              setStashOpen((v) => !v)
+              setLogOpen(false)
+            }}
+            className="fixed bottom-4 right-16 z-40 flex items-center gap-1 rounded-full border border-hearth-border bg-hearth-panel px-3 py-2 text-sm shadow-2xl hover:border-hearth-gold"
+            title="Party stash — shared loot and coins; taking is logged for the table"
+          >
+            🎒
+            {(party?.items.length ?? 0) > 0 && (
+              <span className="rounded-full bg-hearth-gold px-1.5 text-[10px] font-bold text-black">{party!.items.length}</span>
+            )}
+          </button>
+          {stashOpen && party && (
+            <div className="fixed inset-x-0 bottom-0 z-30 mx-auto flex max-h-[60vh] max-w-3xl flex-col gap-2 overflow-y-auto rounded-t-lg border border-hearth-border bg-hearth-panel p-3 shadow-2xl">
+              <div className="flex items-center">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+                  🎒 Party stash — takes go to {selected.name}
+                </span>
+                <button onClick={() => setStashOpen(false)} className="ml-auto px-1 text-xs text-hearth-muted hover:text-hearth-text">
+                  ✕
+                </button>
+              </div>
+              <StashBox
+                stash={party}
+                takeToName={selected.name}
+                actions={{
+                  onTake: (item, qty) =>
+                    void fetch('/api/party/transfer-item', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ itemId: item.id, from: 'stash', to: selected.id, qty, who: selected.name })
+                    }).then(() => refetch()),
+                  onCoins: (direction, coin, amount) =>
+                    void fetch('/api/party/transfer-coins', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        from: direction === 'take' ? 'stash' : selected.id,
+                        to: direction === 'take' ? selected.id : 'stash',
+                        coin,
+                        amount,
+                        who: selected.name
+                      })
+                    }).then(() => refetch())
+                }}
+              />
+            </div>
+          )}
+          <button
+            onClick={() => {
               setLogOpen((v) => !v)
+              setStashOpen(false)
               setUnseen(0)
             }}
             className="fixed bottom-4 right-4 z-40 flex items-center gap-1 rounded-full border border-hearth-border bg-hearth-panel px-3 py-2 text-sm shadow-2xl hover:border-hearth-ember"

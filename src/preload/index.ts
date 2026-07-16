@@ -7,10 +7,12 @@ import type {
   Character,
   LibraryAsset,
   NoteKind,
+  PartyStash,
   PlaylistPreset,
   RollEvent,
   Scene
 } from '../shared/types'
+import type { CoinKey } from '../shared/inventory'
 import type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus } from '../main/discord'
 
 export type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus }
@@ -110,6 +112,22 @@ const api = {
     ipcRenderer.invoke('character:create', name),
   deleteCharacter: (characterId: string): Promise<CampaignState> =>
     ipcRenderer.invoke('character:delete', characterId),
+  /** Party stash (M4): full save (DM edits) + transfer-never-copy moves. */
+  saveParty: (p: PartyStash): Promise<CampaignState> => ipcRenderer.invoke('party:save', p),
+  transferItem: (req: {
+    itemId: string
+    from: string
+    to: string
+    qty?: number
+    who: string
+  }): Promise<CampaignState> => ipcRenderer.invoke('party:transfer-item', req),
+  transferCoins: (req: {
+    from: string
+    to: string
+    coin: CoinKey
+    amount: number
+    who: string
+  }): Promise<CampaignState> => ipcRenderer.invoke('party:transfer-coins', req),
   updateLibraryAsset: (file: string, patch: LibraryAssetPatch): Promise<CampaignState> =>
     ipcRenderer.invoke('library:update', file, patch),
   deleteLibraryAsset: (file: string): Promise<CampaignState> =>

@@ -2,7 +2,8 @@ import http from 'http'
 import os from 'os'
 import * as path from 'path'
 import { promises as fs } from 'fs'
-import type { CampaignMap, Character, RollEvent } from '../shared/types'
+import type { CampaignMap, Character, PartyStash, RollEvent } from '../shared/types'
+import type { CoinKey } from '../shared/inventory'
 
 // ONESTOP-PLAN C5 — the player portal: Hearth hosts a small HTTP server so
 // each PLAYER opens their character in any browser (phone/laptop) — build,
@@ -45,6 +46,10 @@ export interface PortalDeps {
   getRolls: () => RollEvent[]
   /** The live map for Ember's Table view (M2) — null = table dark. */
   getLiveMap: () => Promise<CampaignMap | null>
+  /** Party stash (M4): players can view it and move items/coins. */
+  getParty: () => Promise<PartyStash>
+  transferItem: (req: { itemId: string; from: string; to: string; qty?: number; who: string }) => Promise<void>
+  transferCoins: (req: { from: string; to: string; coin: CoinKey; amount: number; who: string }) => Promise<void>
 }
 
 /** Image types the /asset/ route will serve to browsers (maps + handouts). */
@@ -189,6 +194,56 @@ export class PlayerPortal {
       // Ember Table view (M2): the live map, rendered client-side.
       if (url === '/api/table' && req.method === 'GET') {
         return this.json(res, { map: await this.deps.getLiveMap() })
+      }
+      // Party stash (M4): shared items + coins + activity log.
+      if (url === '/api/party' && req.method === 'GET') {
+        return this.json(res, await this.deps.getParty())
+      }
+      if (url === '/api/party/transfer-item' && req.method === 'POST') {
+        const r = JSON.parse(await readBody(req)) as {
+          itemId?: string
+          from?: string
+          to?: string
+          qty?: number
+          who?: string
+        }
+        if (typeof r.itemId !== 'string' || typeof r.from !== 'string' || typeof r.to !== 'string') {
+          return this.json(res, { error: 'bad transfer' }, 400)
+        }
+        await this.deps.transferItem({
+          itemId: r.itemId.slice(0, 60),
+          from: r.from.slice(0, 60),
+          to: r.to.slice(0, 60),
+          qty: typeof r.qty === 'number' ? Math.max(1, Math.floor(r.qty)) : undefined,
+          who: String(r.who ?? 'someone').slice(0, 40)
+        })
+        return this.json(res, { ok: true })
+      }
+      if (url === '/api/party/transfer-coins' && req.method === 'POST') {
+        const r = JSON.parse(await readBody(req)) as {
+          from?: string
+          to?: string
+          coin?: string
+          amount?: number
+          who?: string
+        }
+        const coins = ['cp', 'sp', 'ep', 'gp', 'pp']
+        if (
+          typeof r.from !== 'string' ||
+          typeof r.to !== 'string' ||
+          !coins.includes(String(r.coin)) ||
+          typeof r.amount !== 'number'
+        ) {
+          return this.json(res, { error: 'bad transfer' }, 400)
+        }
+        await this.deps.transferCoins({
+          from: r.from.slice(0, 60),
+          to: r.to.slice(0, 60),
+          coin: r.coin as CoinKey,
+          amount: Math.max(1, Math.floor(r.amount)),
+          who: String(r.who ?? 'someone').slice(0, 40)
+        })
+        return this.json(res, { ok: true })
       }
       // Campaign images (map art, handouts) — images only, path-guarded.
       if (url.startsWith('/asset/')) {

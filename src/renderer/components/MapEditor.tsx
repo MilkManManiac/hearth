@@ -4,6 +4,7 @@ import type Konva from 'konva'
 import useImage from 'use-image'
 import type { CampaignMap, Combatant, FogStroke, FogZone, MapOverlay, MapToken, TokenDecor } from '../../shared/types'
 import { assetUrl } from '../lib/asset'
+import { effectiveAc } from '../../shared/inventory'
 import { loadMonsters, type Monster } from '../lib/compendium'
 import { useStore } from '../store'
 import { MonsterStatBlock } from './StatBlock'
@@ -1062,7 +1063,7 @@ export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose:
         <TokenInspect
           token={tokens.find((t) => t.id === inspectId)}
           combatant={tokens.find((t) => t.id === inspectId) ? combatantOf(tokens.find((t) => t.id === inspectId)!) : undefined}
-          characters={characters}
+          characters={characters.map((c) => ({ id: c.id, name: c.name, hp: c.hp, maxHp: c.maxHp, ac: effectiveAc(c).value }))}
           monsters={monsters}
           onPatchCharacterHp={(id, hp) => void updateCharacter(id, (x) => ({ ...x, hp }))}
           onPatchCombatantHp={(id, hp) =>

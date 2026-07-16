@@ -1,19 +1,26 @@
 import { useEffect, useState } from 'react'
-import type { Character } from '../../shared/types'
+import type { Character, InventoryItem } from '../../shared/types'
 import { passive } from '../lib/character'
+import { addCoins, COIN_CP, COIN_KEYS, effectiveAc, newItemId, type CoinKey } from '../../shared/inventory'
 import { loadKind, type ClassEntry, type NamedEntry } from '../lib/compendium'
 import { submitRoll, wireRollFeed } from '../lib/rollStore'
 import { useStore } from '../store'
 import CharacterSheet from './CharacterSheet'
 import DangerButton from './DangerButton'
+import { CatalogSearch } from './InventoryBox'
+import StashBox from './StashBox'
 
 // ONESTOP-PLAN C4 — the DM-side character home: dashboard strip + sheets.
 // The sheet itself lives in CharacterSheet.tsx, shared with the browser-based
 // player portal (C5) — here it saves over Electron IPC.
 
-type GrantAction = { kind: 'item'; text: string } | { kind: 'levelup' } | { kind: 'rest' }
+type GrantAction =
+  | { kind: 'item'; name: string; qty: number; catalogKind?: 'equipment' | 'magic-item'; catalogKey?: string }
+  | { kind: 'coins'; coin: CoinKey; amount: number }
+  | { kind: 'levelup' }
+  | { kind: 'rest' }
 
-/** DM grant flow (D5): the item/level-up/rest fan-out DDB never built. */
+/** DM grant flow (D5, M4): structured item rows + pouch gold + level-up/rest fan-out. */
 function GrantDialog({
   characters,
   onGrant,
@@ -24,7 +31,9 @@ function GrantDialog({
   onClose: () => void
 }) {
   const [picked, setPicked] = useState<Set<string>>(() => new Set(characters.map((c) => c.id)))
-  const [item, setItem] = useState('')
+  const [qty, setQty] = useState(1)
+  const [amount, setAmount] = useState('')
+  const [denom, setDenom] = useState<CoinKey>('gp')
   const ids = [...picked]
   const toggle = (id: string) =>
     setPicked((p) => {
@@ -36,7 +45,12 @@ function GrantDialog({
   const fire = (action: GrantAction) => {
     if (ids.length === 0) return
     onGrant(ids, action)
-    if (action.kind === 'item') setItem('')
+  }
+  const giveCoins = () => {
+    const n = Math.floor(Number(amount))
+    if (!Number.isFinite(n) || n <= 0) return
+    setAmount('')
+    fire({ kind: 'coins', coin: denom, amount: n })
   }
   return (
     <div className="border-b border-hearth-border bg-hearth-gold/5 px-4 py-2.5">
@@ -53,21 +67,61 @@ function GrantDialog({
         </button>
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        <input
-          value={item}
-          onChange={(e) => setItem(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && item.trim() && fire({ kind: 'item', text: item.trim() })}
-          placeholder="Potion of Healing ×2, 50 gp, Sunblade…"
-          className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-xs text-hearth-text placeholder:text-hearth-muted/40 focus:border-hearth-gold focus:outline-none"
-        />
-        <button
-          onClick={() => item.trim() && fire({ kind: 'item', text: item.trim() })}
-          disabled={!item.trim() || ids.length === 0}
-          className="rounded border border-hearth-gold/60 bg-hearth-gold/10 px-2 py-1 text-xs text-hearth-gold hover:bg-hearth-gold/25 disabled:opacity-40"
-          title="Appends a line to each selected character's equipment"
-        >
-          Give item/gold
-        </button>
+        <div className="min-w-48 flex-1">
+          <CatalogSearch
+            placeholder="Give an item (SRD search, or type a custom name)…"
+            onPick={(pick) =>
+              fire({
+                kind: 'item',
+                name: pick.name,
+                qty: Math.max(1, qty),
+                catalogKind: pick.entry?.kind,
+                catalogKey: pick.entry?.key
+              })
+            }
+            extra={
+              <label className="flex flex-none items-center gap-1 text-[10px] text-hearth-muted">
+                ×
+                <input
+                  type="number"
+                  min={1}
+                  value={qty}
+                  onChange={(e) => setQty(Math.max(1, Number(e.target.value) || 1))}
+                  className="w-10 rounded border border-hearth-border bg-hearth-bg px-1 py-px text-center text-hearth-text"
+                  title="Quantity per character"
+                />
+              </label>
+            }
+          />
+        </div>
+        <span className="flex items-center gap-1">
+          <input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && giveCoins()}
+            placeholder="50"
+            className="w-12 rounded border border-hearth-border bg-hearth-bg px-1 py-1 text-center text-xs text-hearth-text placeholder:text-hearth-muted/30 focus:border-hearth-gold focus:outline-none"
+          />
+          <select
+            value={denom}
+            onChange={(e) => setDenom(e.target.value as CoinKey)}
+            className="rounded border border-hearth-border bg-hearth-bg px-0.5 py-1 text-xs text-hearth-muted"
+          >
+            {COIN_KEYS.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={giveCoins}
+            disabled={!amount.trim() || ids.length === 0}
+            className="rounded border border-hearth-gold/60 bg-hearth-gold/10 px-2 py-1 text-xs text-hearth-gold hover:bg-hearth-gold/25 disabled:opacity-40"
+            title="Drop coins straight into each selected pouch"
+          >
+            Give gold
+          </button>
+        </span>
         <button
           onClick={() => fire({ kind: 'levelup' })}
           disabled={ids.length === 0}
@@ -97,6 +151,10 @@ export default function PartyPanel({ windowed = false }: { windowed?: boolean })
   const open = windowed || modalOpen
   const close = () => (windowed ? window.close() : setOpen(false))
   const characters = useStore((s) => s.campaign.characters)
+  const party = useStore((s) => s.campaign.party)
+  const saveParty = useStore((s) => s.saveParty)
+  const transferItem = useStore((s) => s.transferItem)
+  const transferCoins = useStore((s) => s.transferCoins)
   const createCharacter = useStore((s) => s.createCharacter)
   const updateCharacter = useStore((s) => s.updateCharacter)
   const deleteCharacter = useStore((s) => s.deleteCharacter)
@@ -106,6 +164,7 @@ export default function PartyPanel({ windowed = false }: { windowed?: boolean })
   const pushToast = useStore((s) => s.pushToast)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [grantOpen, setGrantOpen] = useState(false)
+  const [stashOpen, setStashOpen] = useState(false)
   const [classes, setClasses] = useState<ClassEntry[]>([])
   const [species, setSpecies] = useState<NamedEntry[]>([])
   const [backgrounds, setBackgrounds] = useState<NamedEntry[]>([])
@@ -157,6 +216,17 @@ export default function PartyPanel({ windowed = false }: { windowed?: boolean })
             🎁 Grant
           </button>
           <button
+            onClick={() => setStashOpen((v) => !v)}
+            title="The shared party stash: items + coins any player can take from (their browser has it too)"
+            className={`rounded border px-2.5 py-1 text-xs ${
+              stashOpen
+                ? 'border-hearth-gold bg-hearth-gold/15 text-hearth-gold'
+                : 'border-hearth-border bg-hearth-panel2 text-hearth-muted hover:border-hearth-gold hover:text-hearth-gold'
+            }`}
+          >
+            🎒 Stash{party.items.length > 0 ? ` (${party.items.length})` : ''}
+          </button>
+          <button
             onClick={() => {
               void togglePortal()
             }}
@@ -201,9 +271,25 @@ export default function PartyPanel({ windowed = false }: { windowed?: boolean })
             onGrant={(ids, action) => {
               for (const id of ids) {
                 void updateCharacter(id, (x) => {
-                  if (action.kind === 'item') return { ...x, equipment: [...(x.equipment ?? []), action.text] }
+                  if (action.kind === 'item') {
+                    const row: InventoryItem = { id: newItemId(), name: action.name }
+                    if (action.qty > 1) row.qty = action.qty
+                    if (action.catalogKey) {
+                      row.catalogKind = action.catalogKind
+                      row.catalogKey = action.catalogKey
+                    }
+                    return { ...x, inventory: [...(x.inventory ?? []), row] }
+                  }
+                  if (action.kind === 'coins') {
+                    const coins = addCoins(x.coins, action.coin, action.amount)!
+                    const coinLog = [
+                      ...(x.coinLog ?? []),
+                      { ts: Date.now(), deltaCp: action.amount * COIN_CP[action.coin], note: `+${action.amount} ${action.coin} (DM)` }
+                    ].slice(-50)
+                    return { ...x, coins, coinLog }
+                  }
                   if (action.kind === 'levelup') return { ...x, levelUpReady: true }
-                  // long rest (mirrors the sheet's button)
+                  // long rest (mirrors the sheet's button, item charges included)
                   return {
                     ...x,
                     hp: x.maxHp,
@@ -212,16 +298,59 @@ export default function PartyPanel({ windowed = false }: { windowed?: boolean })
                     usesSpent: {},
                     concentratingOn: undefined,
                     deathSaves: { success: 0, fail: 0 },
-                    hitDiceSpent: Math.max(0, (x.hitDiceSpent ?? 0) - Math.max(1, Math.floor(x.level / 2)))
+                    hitDiceSpent: Math.max(0, (x.hitDiceSpent ?? 0) - Math.max(1, Math.floor(x.level / 2))),
+                    inventory: x.inventory?.map((i) =>
+                      i.charges && (i.charges.reset ?? 'long') !== 'none' ? { ...i, charges: { ...i.charges, used: 0 } } : i
+                    )
                   }
                 })
               }
               const what =
-                action.kind === 'item' ? `“${action.text}” granted` : action.kind === 'levelup' ? 'Level-up unlocked' : 'Long rest applied'
+                action.kind === 'item'
+                  ? `“${action.name}${action.qty > 1 ? ` ×${action.qty}` : ''}” granted`
+                  : action.kind === 'coins'
+                    ? `${action.amount} ${action.coin} granted`
+                    : action.kind === 'levelup'
+                      ? 'Level-up unlocked'
+                      : 'Long rest applied'
               pushToast(`${what} — ${ids.length} character${ids.length > 1 ? 's' : ''}`, 'info')
             }}
             onClose={() => setGrantOpen(false)}
           />
+        )}
+
+        {/* Party stash (M4): transfer-never-copy, every move logged. */}
+        {stashOpen && (
+          <div className="border-b border-hearth-border bg-hearth-panel2/40 px-4 py-2.5">
+            <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+              🎒 Party stash {selected ? <span className="normal-case">— takes go to {selected.name}</span> : null}
+            </div>
+            <StashBox
+              stash={party}
+              takeToName={selected?.name ?? null}
+              actions={{
+                onTake: (item, qty) =>
+                  selected && void transferItem({ itemId: item.id, from: 'stash', to: selected.id, qty, who: selected.name }),
+                onCoins: (direction, coin, amount) =>
+                  selected &&
+                  void transferCoins({
+                    from: direction === 'take' ? 'stash' : selected.id,
+                    to: direction === 'take' ? selected.id : 'stash',
+                    coin,
+                    amount,
+                    who: selected.name
+                  }),
+                onAdd: (name) =>
+                  void saveParty({
+                    ...party,
+                    items: [...party.items, { id: newItemId(), name }],
+                    log: [{ ts: Date.now(), who: 'DM', text: `dropped ${name} in` }, ...party.log].slice(0, 200)
+                  }),
+                onRemove: (itemId) =>
+                  void saveParty({ ...party, items: party.items.filter((i) => i.id !== itemId) })
+              }}
+            />
+          </div>
         )}
 
         {/* Dashboard strip: the at-a-glance grid DDB never shipped. */}
@@ -276,7 +405,9 @@ export default function PartyPanel({ windowed = false }: { windowed?: boolean })
                   onPatch: (p) => void updateCharacter(selected.id, (x) => ({ ...x, ...p })),
                   onOpenSpell: (key) => openCompendium({ kind: 'spell', key }),
                   onOpenSpecies: (key) => openCompendium({ kind: 'species', key }),
-                  onRoll: submitRoll
+                  onRoll: submitRoll,
+                  onStashItem: (itemId) =>
+                    void transferItem({ itemId, from: selected.id, to: 'stash', who: selected.name })
                 }}
                 headerExtra={
                   <DangerButton
@@ -316,7 +447,7 @@ function DashboardCard({ c, active, onClick }: { c: Character; active: boolean; 
         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-hearth-text">{c.name}</span>
         {c.levelUpReady && <span title="Milestone level-up unlocked">🔔</span>}
         {c.concentratingOn && <span title={`Concentrating: ${c.concentratingOn}`}>🧠</span>}
-        <span className="flex-none text-[10px] text-hearth-muted">AC {c.ac}</span>
+        <span className="flex-none text-[10px] text-hearth-muted">AC {effectiveAc(c).value}</span>
       </div>
       <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/40">
         <div

@@ -8,16 +8,28 @@ import type {
   CampaignNote,
   Character,
   CampaignState,
+  Coins,
+  InventoryItem,
   Library,
   LibraryAsset,
   NoteKind,
   CampaignMap,
+  PartyStash,
   PlaylistPreset,
   Scene,
   SceneImage
 } from '../shared/types'
 import type { TriageKeepRequest, TriageScan } from '../preload/index'
 import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
+import {
+  addCoins,
+  autoAc,
+  cpToCoins,
+  emptyCoins,
+  migrateEquipmentLines,
+  newItemId,
+  type CoinKey
+} from '../shared/inventory'
 import { AUTHORING_MD } from './authoring'
 
 const CONFIG_FILE = () => path.join(app.getPath('userData'), 'hearth-config.json')
@@ -235,13 +247,15 @@ export class CampaignManager {
   async load(): Promise<CampaignState> {
     const errors: string[] = []
     await this.migrateSceneMaps(errors)
+    await this.migrateCharacterInventories(errors)
     const scenes = await this.loadScenes(errors)
     const notes = await this.loadNotes(errors)
     const characters = await this.loadCharacters(errors)
     const maps = await this.loadMaps(errors)
     const library = await this.loadLibrary(errors)
     const liveMapId = await this.readLiveMap(maps)
-    return { path: this.campaignPath, scenes, notes, characters, maps, liveMapId, library, errors }
+    const party = await this.loadParty()
+    return { path: this.campaignPath, scenes, notes, characters, maps, liveMapId, party, library, errors }
   }
 
   // --- Battle maps (SURFACES-PLAN M1): maps/*.json + table.json live pointer ---
@@ -378,6 +392,207 @@ export class CampaignManager {
 
   async setLiveMap(mapId: string | null): Promise<CampaignState> {
     await writeJsonAtomic(this.tablePath(), { liveMapId: mapId })
+    this.markWrite()
+    return this.load()
+  }
+
+  private migratingInventory = false
+
+  /**
+   * One-time migration (SURFACES-PLAN M4): characters that still carry
+   * free-text `equipment` lines get them parsed into structured `inventory`
+   * rows + a coin pouch. The original lines are preserved verbatim in
+   * `legacyEquipment`; if the derived auto-AC disagrees with the sheet's
+   * imported AC, the old number is pinned as `acOverride` (the imported value
+   * is truth — never silently change a number the DM has seen). Idempotent:
+   * presence of `inventory` means migrated.
+   */
+  private async migrateCharacterInventories(errors: string[]): Promise<void> {
+    if (this.migratingInventory) return
+    this.migratingInventory = true
+    try {
+      const dir = path.join(this.campaignPath, 'characters')
+      let files: string[] = []
+      try {
+        files = (await fs.readdir(dir)).filter((f) => f.toLowerCase().endsWith('.json'))
+      } catch {
+        return
+      }
+      for (const file of files) {
+        try {
+          const abs = path.join(dir, file)
+          const raw = JSON.parse(await fs.readFile(abs, 'utf-8')) as Character & Record<string, unknown>
+          if (raw.inventory !== undefined) continue
+          if (!Array.isArray(raw.equipment) || raw.equipment.length === 0) continue
+          const { items, coinsCp } = migrateEquipmentLines(raw.equipment)
+          raw.inventory = items
+          if (coinsCp > 0 && raw.coins == null) raw.coins = cpToCoins(coinsCp)
+          raw.legacyEquipment = raw.equipment
+          delete raw.equipment
+          if (raw.abilities && typeof raw.ac === 'number') {
+            const auto = autoAc(raw as Character)
+            if (auto && auto.value !== raw.ac) raw.acOverride = raw.ac
+          }
+          delete raw._sourceFile
+          await writeJsonAtomic(abs, raw)
+          this.markWrite()
+          console.log(
+            `[hearth] migrated characters/${file}: ${items.length} inventory rows` +
+              (coinsCp > 0 ? `, ${Math.floor(coinsCp / 100)} gp` : '') +
+              (raw.acOverride != null ? `, AC pinned at ${raw.acOverride}` : '')
+          )
+        } catch (err) {
+          errors.push(`migrate characters/${file}: ${(err as Error).message}`)
+        }
+      }
+    } finally {
+      this.migratingInventory = false
+    }
+  }
+
+  // --- Party stash (M4): party.json — shared items + coins + activity log ---
+
+  private partyPath(): string {
+    return path.join(this.campaignPath, 'party.json')
+  }
+
+  async loadParty(): Promise<PartyStash> {
+    try {
+      const raw = JSON.parse(await fs.readFile(this.partyPath(), 'utf-8')) as Partial<PartyStash>
+      return {
+        items: Array.isArray(raw.items) ? raw.items : [],
+        coins: { ...emptyCoins(), ...(raw.coins ?? {}) },
+        log: Array.isArray(raw.log) ? raw.log : []
+      }
+    } catch {
+      return { items: [], coins: emptyCoins(), log: [] }
+    }
+  }
+
+  async saveParty(p: PartyStash): Promise<CampaignState> {
+    await writeJsonAtomic(this.partyPath(), {
+      items: p.items ?? [],
+      coins: { ...emptyCoins(), ...(p.coins ?? {}) },
+      log: (p.log ?? []).slice(0, 200)
+    })
+    this.markWrite()
+    return this.load()
+  }
+
+  /** Prepend a stash-log line (newest first, capped). */
+  private logParty(p: PartyStash, who: string, text: string): void {
+    p.log = [{ ts: Date.now(), who, text }, ...(p.log ?? [])].slice(0, 200)
+  }
+
+  /**
+   * Transfer-never-copy: move an inventory row (or a quantity split of it)
+   * between a character and the stash (or character↔character). Equipped and
+   * attuned flags always clear on the way out — the new owner re-equips.
+   */
+  async transferItem(req: {
+    itemId: string
+    from: string // 'stash' | characterId
+    to: string
+    qty?: number
+    who: string
+  }): Promise<CampaignState> {
+    if (req.from === req.to) return this.load()
+    const party = await this.loadParty()
+    const characters = await this.loadCharacters([])
+    const container = (
+      id: string
+    ): { items: InventoryItem[]; save: (items: InventoryItem[]) => Promise<void>; label: string } => {
+      if (id === 'stash') {
+        return {
+          items: party.items,
+          save: async (items) => {
+            party.items = items
+          },
+          label: 'the party stash'
+        }
+      }
+      const c = characters.find((x) => x.id === id)
+      if (!c?._sourceFile) throw new Error(`character "${id}" not found`)
+      return {
+        items: c.inventory ?? [],
+        save: async (items) => {
+          c.inventory = items
+          const { _sourceFile, ...rest } = c
+          void _sourceFile
+          await writeJsonAtomic(path.join(this.campaignPath, c._sourceFile!), rest)
+        },
+        label: c.name
+      }
+    }
+    const src = container(req.from)
+    const dst = container(req.to)
+    const item = src.items.find((i) => i.id === req.itemId)
+    if (!item) throw new Error('item not found (someone may have moved it first)')
+    const total = item.qty ?? 1
+    const moveQty = Math.max(1, Math.min(total, req.qty ?? total))
+    const moved: InventoryItem = { ...item, id: newItemId(), qty: moveQty === 1 ? undefined : moveQty }
+    delete moved.equipped
+    delete moved.attuned
+    const remaining =
+      moveQty < total
+        ? src.items.map((i) => (i.id === item.id ? { ...i, qty: total - moveQty } : i))
+        : src.items.filter((i) => i.id !== item.id)
+    await src.save(remaining)
+    await dst.save([...dst.items, moved])
+    const qtyLabel = moveQty > 1 ? ` ×${moveQty}` : ''
+    this.logParty(
+      party,
+      req.who,
+      req.to === 'stash'
+        ? `stashed ${item.name}${qtyLabel}`
+        : req.from === 'stash'
+          ? `took ${item.name}${qtyLabel}`
+          : `gave ${item.name}${qtyLabel} to ${dst.label}`
+    )
+    await writeJsonAtomic(this.partyPath(), party)
+    this.markWrite()
+    return this.load()
+  }
+
+  /** Move coins pouch↔stash with auto-make-change on the paying side. */
+  async transferCoins(req: {
+    from: string // 'stash' | characterId
+    to: string
+    coin: CoinKey
+    amount: number
+    who: string
+  }): Promise<CampaignState> {
+    const amount = Math.floor(req.amount)
+    if (amount <= 0 || req.from === req.to) return this.load()
+    const party = await this.loadParty()
+    const characters = await this.loadCharacters([])
+    const pouch = (id: string): Coins =>
+      id === 'stash'
+        ? party.coins
+        : { ...emptyCoins(), ...(characters.find((x) => x.id === id)?.coins ?? {}) }
+    const setPouch = async (id: string, coins: Coins): Promise<void> => {
+      if (id === 'stash') {
+        party.coins = coins
+        return
+      }
+      const c = characters.find((x) => x.id === id)
+      if (!c?._sourceFile) throw new Error(`character "${id}" not found`)
+      c.coins = coins
+      const { _sourceFile, ...rest } = c
+      void _sourceFile
+      await writeJsonAtomic(path.join(this.campaignPath, c._sourceFile!), rest)
+    }
+    const paid = addCoins(pouch(req.from), req.coin, -amount)
+    if (!paid) throw new Error('not enough coin')
+    await setPouch(req.from, paid)
+    const received = addCoins(pouch(req.to), req.coin, amount)!
+    await setPouch(req.to, received)
+    this.logParty(
+      party,
+      req.who,
+      req.to === 'stash' ? `stashed ${amount} ${req.coin}` : `took ${amount} ${req.coin}`
+    )
+    await writeJsonAtomic(this.partyPath(), party)
     this.markWrite()
     return this.load()
   }
@@ -547,6 +762,7 @@ export class CampaignManager {
         path.join(this.campaignPath, 'characters'),
         path.join(this.campaignPath, 'maps'),
         path.join(this.campaignPath, 'table.json'),
+        path.join(this.campaignPath, 'party.json'),
         path.join(this.campaignPath, 'library.json')
       ],
       {

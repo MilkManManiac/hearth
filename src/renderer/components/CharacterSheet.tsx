@@ -20,6 +20,8 @@ import { loadSpells, SPELL_LEVEL_LABEL, type ClassEntry, type NamedEntry, type S
 import { fuzzyScore } from '../lib/fuzzy'
 import { pendingChoices } from '../lib/builder'
 import { expectedSpells } from '../lib/progression'
+import { autoAc, effectiveAc } from '../../shared/inventory'
+import InventoryBox from './InventoryBox'
 import LevelUpModal from './LevelUp'
 
 // The one character sheet, shared by the DM's 🛡 Party panel (Electron) and
@@ -38,6 +40,8 @@ export interface SheetCallbacks {
   onOpenSpecies?: (key: string) => void
   /** Send a roll to the campaign Game Log (D1). Absent = no dice on this surface. */
   onRoll?: (roll: RollEvent) => void
+  /** M4: move an inventory row to the shared party stash (transfer-never-copy). */
+  onStashItem?: (itemId: string) => void
 }
 
 type RollMode = 'adv' | 'dis' | null
@@ -148,6 +152,14 @@ export default function CharacterSheet({
     patch({ hp: Math.min(c.maxHp, Math.max(0, c.hp + sign * n)) })
   }
 
+  /** Item charges refill on rests too ('long' covers dawn; 'none' never). */
+  const restCharges = (rest: 'short' | 'long') =>
+    c.inventory?.map((i) =>
+      i.charges && (i.charges.reset ?? 'long') !== 'none' && (rest === 'long' || i.charges.reset === 'short')
+        ? { ...i, charges: { ...i.charges, used: 0 } }
+        : i
+    )
+
   const longRest = () =>
     patch({
       hp: c.maxHp,
@@ -156,7 +168,8 @@ export default function CharacterSheet({
       usesSpent: {},
       concentratingOn: undefined,
       deathSaves: { success: 0, fail: 0 },
-      hitDiceSpent: Math.max(0, (c.hitDiceSpent ?? 0) - Math.max(1, Math.floor(c.level / 2)))
+      hitDiceSpent: Math.max(0, (c.hitDiceSpent ?? 0) - Math.max(1, Math.floor(c.level / 2))),
+      inventory: restCharges('long')
     })
 
   const shortRest = () => {
@@ -167,7 +180,8 @@ export default function CharacterSheet({
     }
     patch({
       slotsUsed: levels.some((e) => e.classKey === 'warlock') ? {} : c.slotsUsed,
-      usesSpent: uses
+      usesSpent: uses,
+      inventory: restCharges('short')
     })
   }
 
@@ -297,10 +311,51 @@ export default function CharacterSheet({
 
       {/* Vitals */}
       <div className="flex flex-wrap items-center gap-3 rounded-md border border-hearth-border bg-hearth-panel2/40 px-3 py-2">
-        <label className="flex items-center gap-1 text-xs text-hearth-muted">
-          AC
-          <input type="number" value={c.ac} onChange={(e) => patch({ ac: Number(e.target.value) || 0 })} className="w-12 rounded border border-hearth-border bg-hearth-bg px-1 py-0.5 text-center text-sm text-hearth-text" />
-        </label>
+        {(() => {
+          // M4 auto-AC: derived from equipped armor/shield (2024 formulas) once
+          // the character has a structured inventory; typing a number pins an
+          // override; ⟲ returns to auto. Legacy sheets keep the manual box.
+          const acInfo = effectiveAc(c)
+          const auto = autoAc(c)
+          return (
+            <label className="flex items-center gap-1 text-xs text-hearth-muted">
+              AC
+              <input
+                type="number"
+                value={acInfo.value}
+                onChange={(e) => {
+                  const v = Number(e.target.value) || 0
+                  if (auto) patch({ acOverride: v === auto.value ? undefined : v })
+                  else patch({ ac: v })
+                }}
+                title={
+                  acInfo.source === 'auto'
+                    ? `Auto: ${acInfo.label} — type a number to override`
+                    : acInfo.source === 'override'
+                      ? `Manual override${auto ? ` (auto would be ${auto.value}: ${auto.label})` : ''}`
+                      : 'Manual AC (equip armor in the inventory for auto-AC)'
+                }
+                className={`w-12 rounded border bg-hearth-bg px-1 py-0.5 text-center text-sm text-hearth-text ${
+                  acInfo.source === 'override' ? 'border-hearth-gold/60' : 'border-hearth-border'
+                }`}
+              />
+              {acInfo.source === 'auto' && (
+                <span className="max-w-28 truncate text-[9px] text-hearth-muted/60" title={acInfo.label}>
+                  {acInfo.label}
+                </span>
+              )}
+              {acInfo.source === 'override' && auto && (
+                <button
+                  onClick={() => patch({ acOverride: undefined })}
+                  className="text-[10px] text-hearth-muted hover:text-hearth-ember"
+                  title={`Back to auto (${auto.value}: ${auto.label})`}
+                >
+                  ⟲ auto
+                </button>
+              )}
+            </label>
+          )
+        })()}
         <label className="flex items-center gap-1 text-xs text-hearth-muted">
           HP
           <span className="text-sm text-hearth-text">{c.hp}</span>/
@@ -600,35 +655,9 @@ export default function CharacterSheet({
         </details>
       )}
 
-      {/* Equipment + notes */}
+      {/* Inventory (M4: structured rows + pouch) + notes */}
       <div className="grid gap-3 md:grid-cols-2">
-        <label className="block">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
-            Equipment (one per line)
-            {(() => {
-              const attuned = (c.equipment ?? []).filter((l) => l.trimStart().startsWith('*')).length
-              return attuned > 0 ? (
-                <span
-                  className={`ml-2 normal-case ${attuned > 3 ? 'font-bold text-red-400' : 'text-hearth-gold'}`}
-                  title="Lines starting with * count as attuned magic items (max 3)"
-                >
-                  ✦ attuned {attuned}/3
-                </span>
-              ) : (
-                <span className="ml-2 normal-case text-hearth-muted/50" title="Start a line with * to mark an attuned magic item (max 3)">
-                  (* = attuned)
-                </span>
-              )
-            })()}
-          </span>
-          <textarea
-            value={(c.equipment ?? []).join('\n')}
-            onChange={(e) => patch({ equipment: e.target.value.split('\n') })}
-            onBlur={(e) => patch({ equipment: e.target.value.split('\n').map((l) => l.trim()).filter(Boolean) })}
-            rows={5}
-            className="mt-1 w-full rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-xs text-hearth-text focus:border-hearth-ember focus:outline-none"
-          />
-        </label>
+        <InventoryBox c={c} onPatch={patch} onStashItem={cb.onStashItem} />
         <label className="block">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">Notes</span>
           <textarea

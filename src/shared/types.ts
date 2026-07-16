@@ -581,6 +581,62 @@ export interface AbilityScores {
   cha: number
 }
 
+// --- Inventory & equipment (SURFACES-PLAN M4): full DDB depth MINUS weight --
+
+/** The coin pouch. No weight, no encumbrance, ever. */
+export interface Coins {
+  cp: number
+  sp: number
+  ep: number
+  gp: number
+  pp: number
+}
+
+/** One pouch transaction (quick-box / grants), newest last, capped at 50. */
+export interface CoinTxn {
+  ts: number
+  /** Signed copper delta. */
+  deltaCp: number
+  note?: string
+}
+
+/**
+ * One structured inventory row. `attuned` is deliberately DECOUPLED from
+ * `equipped` (DDB's #1 inventory complaint) — the sheet shows an `n/3`
+ * counter and warns, never blocks. Charges reuse the limited-uses pip idiom
+ * but live on the row so the item travels with its state.
+ */
+export interface InventoryItem {
+  /** Stable id — transfers and the stash log track rows by it. */
+  id: string
+  name: string
+  /** Default 1. */
+  qty?: number
+  /** Worn/wielded — feeds auto-AC for armor/shields. */
+  equipped?: boolean
+  attuned?: boolean
+  /** Item charges as pips ('none' = never auto-resets; 'long' covers dawn). */
+  charges?: { max: number; used?: number; reset?: 'short' | 'long' | 'none' }
+  /** Flat AC bonus while equipped (Ring of Protection, +1 armor as a field). */
+  acBonus?: number
+  notes?: string
+  /** Set when added from the catalog — links back to the compendium card. */
+  catalogKind?: 'equipment' | 'magic-item'
+  catalogKey?: string
+}
+
+/**
+ * The shared party stash (<campaign>/party.json): one pool of items + coins
+ * any player can view and take from. Transfer-never-copy — moving an item
+ * removes it from the source and appends to the activity log.
+ */
+export interface PartyStash {
+  items: InventoryItem[]
+  coins: Coins
+  /** Activity log, newest first ("Cumb took the +1 Longsword"). */
+  log: Array<{ ts: number; who: string; text: string }>
+}
+
 export interface Character {
   id: string
   name: string
@@ -603,9 +659,25 @@ export interface Character {
   featKeys?: string[]
   /** Known/prepared spell keys (compendium). */
   spells?: string[]
-  /** Free-form gear lines ("Longsword", "Chain Mail", "50 ft rope"). */
+  /**
+   * LEGACY free-form gear lines — migrated into `inventory` on load (M4);
+   * originals preserved in `legacyEquipment`. Only pre-M4 files still use it.
+   */
   equipment?: string[]
-  // --- manual overrides (armor math is deliberately not automated in v1) ----
+  /** The original free-text lines, kept verbatim by the M4 migration. */
+  legacyEquipment?: string[]
+  /** Structured inventory rows (M4). Presence = migrated. */
+  inventory?: InventoryItem[]
+  /** Coin pouch (M4). */
+  coins?: Coins
+  /** Pouch transaction ledger (quick-box / grants), capped at 50. */
+  coinLog?: CoinTxn[]
+  /**
+   * Manual AC override: when set, it beats the derived auto-AC (mage armor,
+   * weird stacking, "trust me"). Cleared = back to auto. See effectiveAc().
+   */
+  acOverride?: number
+  // --- manual base AC (used only when there's no structured inventory) ------
   ac: number
   maxHp: number
   speed?: number
@@ -687,6 +759,8 @@ export interface CampaignState {
   maps: CampaignMap[]
   /** Which map the players see (table.json) — null = blackout/none. */
   liveMapId: string | null
+  /** The shared party stash (party.json) — M4. */
+  party: PartyStash
   library: Library
   /** Human-readable load errors (bad JSON, etc.) surfaced in the UI. */
   errors: string[]

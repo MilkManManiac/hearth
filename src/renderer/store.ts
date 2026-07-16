@@ -8,9 +8,11 @@ import {
   type CampaignState,
   type CueInline,
   type NoteKind,
+  type PartyStash,
   type Scene,
   type ScriptBlock
 } from '../shared/types'
+import type { CoinKey } from '../shared/inventory'
 import { docUncheckedItems } from '../shared/scriptCompile'
 import { prettyLabel, stem as assetStem } from '../shared/paths'
 import { AudioEngine, type EngineStatus } from './audio/AudioEngine'
@@ -26,6 +28,7 @@ const EMPTY_CAMPAIGN: CampaignState = {
   characters: [],
   maps: [],
   liveMapId: null,
+  party: { items: [], coins: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 }, log: [] },
   library: { assets: [] },
   errors: []
 }
@@ -246,6 +249,10 @@ interface AppState {
   updateCharacter: (characterId: string, mutate: (c: Character) => Character) => Promise<void>
   createCharacter: (name: string) => Promise<string | null>
   deleteCharacter: (characterId: string) => Promise<void>
+  /** Party stash (M4): full save (DM edits) + transfer-never-copy moves. */
+  saveParty: (p: PartyStash) => Promise<void>
+  transferItem: (req: { itemId: string; from: string; to: string; qty?: number; who: string }) => Promise<void>
+  transferCoins: (req: { from: string; to: string; coin: CoinKey; amount: number; who: string }) => Promise<void>
   /**
    * Append a timestamped line to the active session note's log (the current
    * scene's session, else the newest session note, else a new one) — the
@@ -1113,6 +1120,35 @@ export const useStore = create<AppState>((set, get) => ({
       get().setCampaign(state)
     } catch (err) {
       get().pushToast(`Delete failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  saveParty: async (p) => {
+    // Optimistic, like updateCharacter — the stash edits feel instant.
+    set((state) => ({ campaign: { ...state.campaign, party: p } }))
+    try {
+      const fresh = await window.hearth.saveParty(p)
+      get().setCampaign(fresh)
+    } catch (err) {
+      get().pushToast(`Stash save failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  transferItem: async (req) => {
+    try {
+      const fresh = await window.hearth.transferItem(req)
+      get().setCampaign(fresh)
+    } catch (err) {
+      get().pushToast(`Transfer failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  transferCoins: async (req) => {
+    try {
+      const fresh = await window.hearth.transferCoins(req)
+      get().setCampaign(fresh)
+    } catch (err) {
+      get().pushToast(`Transfer failed: ${(err as Error).message}`, 'error')
     }
   },
 

@@ -12,10 +12,12 @@ import type {
   Character,
   LibraryAsset,
   NoteKind,
+  PartyStash,
   PlaylistPreset,
   RollEvent,
   Scene
 } from '../shared/types'
+import type { CoinKey } from '../shared/inventory'
 import type { TriageKeepRequest } from '../preload/index'
 
 const MIME: Record<string, string> = {
@@ -253,6 +255,28 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  // --- Party stash (M4) ---
+  ipcMain.handle('party:save', async (_e, p: PartyStash) => {
+    const state = await campaign.saveParty(p)
+    broadcast('campaign:changed', state)
+    return state
+  })
+  ipcMain.handle(
+    'party:transfer-item',
+    async (_e, req: { itemId: string; from: string; to: string; qty?: number; who: string }) => {
+      const state = await campaign.transferItem(req)
+      broadcast('campaign:changed', state)
+      return state
+    }
+  )
+  ipcMain.handle(
+    'party:transfer-coins',
+    async (_e, req: { from: string; to: string; coin: CoinKey; amount: number; who: string }) => {
+      const state = await campaign.transferCoins(req)
+      broadcast('campaign:changed', state)
+      return state
+    }
+  )
   // --- Battle maps (SURFACES-PLAN M1) ---
   ipcMain.handle('map:save', async (_e, m: CampaignMap) => {
     const state = await campaign.saveMap(m)
@@ -404,6 +428,16 @@ app.whenReady().then(async () => {
     getLiveMap: async () => {
       const s = await campaign.load()
       return s.maps.find((m) => m.id === s.liveMapId) ?? null
+    },
+    // Party stash (M4): players view + transfer; edits broadcast like saves.
+    getParty: () => campaign.loadParty(),
+    transferItem: async (req) => {
+      const state = await campaign.transferItem(req)
+      broadcast('campaign:changed', state)
+    },
+    transferCoins: async (req) => {
+      const state = await campaign.transferCoins(req)
+      broadcast('campaign:changed', state)
     }
   })
   const initial = await campaign.init()
