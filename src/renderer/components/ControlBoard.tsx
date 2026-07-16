@@ -14,7 +14,6 @@ import ScriptPanel from './ScriptPanel'
 import ImageStrip from './ImageStrip'
 import IdeasPanel from './IdeasPanel'
 import CastPanel from './CastPanel'
-import EncounterPanel from './EncounterPanel'
 import GameLogPanel from './GameLog'
 import MapsPanel from './MapsPanel'
 import Toasts from './Toasts'
@@ -26,8 +25,6 @@ import QuickSwitcher from './QuickSwitcher'
 import QuickCapture from './QuickCapture'
 import ShortcutsHelp from './ShortcutsHelp'
 import CompendiumPanel from './CompendiumPanel'
-import MapEditor from './MapEditor'
-import PartyPanel from './PartyPanel'
 
 /**
  * Width-adjustable side panel: drag the inner edge to resize; drag it small
@@ -117,15 +114,6 @@ export default function ControlBoard() {
   const runMode = useStore((s) => s.uiMode === 'run')
   const leftTab = useStore((s) => s.leftTab)
   const currentNoteId = useStore((s) => s.currentNoteId)
-  const mapEditorOpen = useStore((s) => s.mapEditorOpen)
-  const setMapEditorOpen = useStore((s) => s.setMapEditorOpen)
-  const currentMapId = useStore((s) => s.currentMapId)
-  // The ⚔ tab + editor target: the selected map, else the live one, else the first.
-  const currentMap =
-    campaign.maps.find((m) => m.id === currentMapId) ??
-    campaign.maps.find((m) => m.id === campaign.liveMapId) ??
-    campaign.maps[0] ??
-    null
   const scene = campaign.scenes.find((s) => s.id === currentSceneId) ?? null
   const isLive = !!scene && scene.id === liveSceneId
   // Run-mode rails rule: the left rail is SCENES ONLY during play (the notes
@@ -272,9 +260,7 @@ export default function ControlBoard() {
       <QuickSwitcher />
       <QuickCapture />
       <CompendiumPanel />
-      <PartyPanel />
       <MapsPanel />
-      {mapEditorOpen && currentMap && <MapEditor map={currentMap} onClose={() => setMapEditorOpen(false)} />}
       <ShortcutsHelp />
       <Toasts />
     </div>
@@ -345,21 +331,33 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
         {tab === 'cast' && <CastPanel scene={scene} />}
         {tab === 'fight' &&
           (fightMap ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-[11px] text-hearth-muted">
-                <span className="min-w-0 truncate">
-                  on <span className="text-hearth-text">🗺 {fightMap.name}</span>
-                  {fightMap.id === campaign.liveMapId ? ' · 🔴 live' : ''}
-                </span>
-                <button onClick={() => setMapsOpen(true)} className="ml-auto rounded border border-hearth-border px-1.5 py-0.5 hover:text-hearth-text" title="Switch map (library)">
-                  ⇄
+            // M3: the tracker lives in the ⚔ Table window now — this tab is
+            // the pointer (glanceable status + one click to the real thing).
+            <div className="space-y-3 pt-2 text-center">
+              <p className="text-xs text-hearth-muted">
+                <span className="text-hearth-text">🗺 {fightMap.name}</span>
+                {fightMap.id === campaign.liveMapId ? ' · 🔴 live' : ''}
+                {fightCount ? ` · ${fightCount} combatant${fightCount > 1 ? 's' : ''}` : ''}
+              </p>
+              <button
+                onClick={() => void window.hearth.openWindow('table', { mapId: fightMap.id })}
+                className="rounded-full border border-hearth-ember bg-hearth-ember/15 px-4 py-1.5 text-sm text-hearth-ember shadow-ember transition-colors hover:bg-hearth-ember/30"
+                title="The battle window: map, fog, tokens, and the encounter tracker"
+              >
+                ⚔ Open the Table
+              </button>
+              <p className="text-[11px] text-hearth-muted/80">
+                Fights run in their own window since M3 — map + tracker together, console free for
+                sound and script.{' '}
+                <button onClick={() => setMapsOpen(true)} className="underline hover:text-hearth-text">
+                  map library
                 </button>
-              </div>
-              <EncounterPanel map={fightMap} />
+              </p>
             </div>
           ) : (
             <p className="pt-4 text-center text-xs text-hearth-muted">
-              Fights live on maps now — hit 🗺 on a scene image (or the TopBar 🗺 library) to create one.
+              Fights live on maps — hit 🗺 on a scene image (or the TopBar 🗺 library) to create one,
+              then run them in the ⚔ Table window.
             </p>
           ))}
         {tab === 'log' && <GameLogPanel />}

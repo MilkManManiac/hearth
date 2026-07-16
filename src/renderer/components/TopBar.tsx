@@ -179,14 +179,20 @@ export default function TopBar() {
           📖 Rules
         </Btn>
         <Btn
-          onClick={() => useStore.getState().setPartyOpen(true)}
-          title="The party: character sheets + the at-a-glance dashboard (AC/HP/passives/conditions)"
+          onClick={() => void window.hearth.openWindow('party')}
+          title="Open the 🛡 Party window: character sheets + the at-a-glance dashboard (AC/HP/passives/conditions)"
         >
           🛡 Party
         </Btn>
         <Btn
+          onClick={() => void window.hearth.openWindow('table')}
+          title="Open the ⚔ Table window: the live battle map + encounter tracker (fog zones, tokens, ruler, AoE)"
+        >
+          ⚔ Table
+        </Btn>
+        <Btn
           onClick={() => useStore.getState().setMapsOpen(true)}
-          title="The Table: map library — prep several maps, make one LIVE for the players (fog zones, tokens, tracker)"
+          title="Map library — prep several maps, make one LIVE for the players"
         >
           🗺 Maps
         </Btn>

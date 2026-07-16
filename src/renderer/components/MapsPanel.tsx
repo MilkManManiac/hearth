@@ -12,8 +12,6 @@ export default function MapsPanel() {
   const setOpen = useStore((s) => s.setMapsOpen)
   const maps = useStore((s) => s.campaign.maps)
   const liveMapId = useStore((s) => s.campaign.liveMapId)
-  const selectMap = useStore((s) => s.selectMap)
-  const setMapEditorOpen = useStore((s) => s.setMapEditorOpen)
   const deleteMap = useStore((s) => s.deleteMap)
   const goLiveMap = useStore((s) => s.goLiveMap)
   const updateMap = useStore((s) => s.updateMap)
@@ -75,12 +73,12 @@ export default function MapsPanel() {
                   >
                     <button
                       onClick={() => {
-                        selectMap(m.id)
-                        setMapEditorOpen(true)
+                        // M3: fog/zone editing lives in the ⚔ Table window.
+                        void window.hearth.openWindow('table', { mapId: m.id })
                         setOpen(false)
                       }}
                       className="relative block w-full"
-                      title="Open the fog/zone editor"
+                      title="Open in the ⚔ Table window (fog, zones, tokens, tracker)"
                     >
                       {m.image ? (
                         <img src={assetUrl(m.image)} alt={m.name} className="aspect-video w-full object-cover" />

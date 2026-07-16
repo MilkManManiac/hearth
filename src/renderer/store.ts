@@ -111,6 +111,13 @@ interface AppState {
   playlistPos: number
 
   bootstrap: () => Promise<void>
+  /**
+   * M3 window split: campaign data + change feed ONLY — no audio-engine or
+   * Discord wiring. The ⚔ Table / 🛡 Party windows use this; wiring the full
+   * bootstrap there would start a SECOND Discord PCM tap and double the
+   * stream. All sound stays in the console window.
+   */
+  bootstrapData: () => Promise<void>
   pushToast: (message: string, tone?: Toast['tone']) => void
   dismissToast: (id: number) => void
   probeAssets: () => Promise<void>
@@ -397,6 +404,12 @@ export const useStore = create<AppState>((set, get) => ({
     }
     window.hearth.onDiscordStatus(syncDiscord)
     window.hearth.discordStatus().then(syncDiscord)
+    const campaign = await window.hearth.getCampaign()
+    get().setCampaign(campaign)
+  },
+
+  bootstrapData: async () => {
+    window.hearth.onCampaignChanged((c) => get().setCampaign(c))
     const campaign = await window.hearth.getCampaign()
     get().setCampaign(campaign)
   },

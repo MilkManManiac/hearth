@@ -4,6 +4,7 @@ import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
 import { DiscordBridge } from './discord'
 import { PlayerPortal } from './playerServer'
+import { WindowManager, type WindowRole } from './windows'
 import type {
   AssetKind,
   CampaignMap,
@@ -63,6 +64,7 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
 let mainWindow: BrowserWindow | null = null
 let presenterWindow: BrowserWindow | null = null
+let windowManager: WindowManager
 let campaign: CampaignManager
 let discord: DiscordBridge
 let portal: PlayerPortal
@@ -340,6 +342,18 @@ function registerIpc(): void {
   // High-rate PCM sink — fire-and-forget send, not invoke.
   ipcMain.on('discord:pcm', (_e, chunk: ArrayBuffer) => discord.pushPcm(chunk))
 
+  // --- M3 window split: Table + Party as real windows ---
+  ipcMain.handle('window:open', async (_e, role: WindowRole, opts?: { mapId?: string }) => {
+    const win = windowManager.open(role)
+    // "Edit this map" from the console lands on the right map in the Table
+    // window — delivered after load so a fresh window doesn't miss it.
+    if (role === 'table' && opts?.mapId) {
+      const send = () => win.webContents.send('table:select-map', opts.mapId)
+      if (win.webContents.isLoading()) win.webContents.once('did-finish-load', send)
+      else send()
+    }
+  })
+
   ipcMain.handle('presenter:open', async () => {
     ensurePresenterWindow()
   })
@@ -365,6 +379,7 @@ app.whenReady().then(async () => {
   registerAssetProtocol()
   registerIpc()
 
+  windowManager = new WindowManager(preloadPath, loadRenderer)
   campaign = new CampaignManager((state) => broadcast('campaign:changed', state))
   discord = new DiscordBridge((status) => broadcast('discord:status-changed', status))
   portal = new PlayerPortal({
@@ -403,6 +418,48 @@ app.whenReady().then(async () => {
   }
 
   createMainWindow()
+
+  // Smoke-test hook (M3): HEARTH_SMOKE=windows opens the ⚔ Table and 🛡 Party
+  // windows, screenshots every window into HEARTH_SMOKE_DIR (or cwd), and
+  // quits — the agent-verifiable version of "do the new windows render".
+  if (process.env.HEARTH_SMOKE === 'windows') {
+    const outDir = process.env.HEARTH_SMOKE_DIR || process.cwd()
+    const log: string[] = []
+    setTimeout(() => {
+      try {
+        windowManager.open('table')
+        windowManager.open('party')
+        log.push('open(table)/open(party) ok')
+      } catch (err) {
+        log.push(`open failed: ${(err as Error).stack}`)
+      }
+    }, 1500)
+    setTimeout(async () => {
+      const { writeFile } = await import('fs/promises')
+      for (const win of BrowserWindow.getAllWindows()) {
+        const title = win.getTitle()
+        log.push(`window "${title}" url=${win.webContents.getURL()} crashed=${win.webContents.isCrashed()}`)
+        // Focus first — capturing an occluded window throws viz errors, and
+        // the compositor needs a beat after focus. Retry a few times.
+        let captured = false
+        for (let attempt = 0; attempt < 4 && !captured; attempt++) {
+          try {
+            win.focus()
+            await new Promise((r) => setTimeout(r, 900))
+            const img = await win.webContents.capturePage()
+            const name = `smoke-${title.replace(/[^\w]+/g, '-').toLowerCase()}.png`
+            await writeFile(path.join(outDir, name), img.toPNG())
+            captured = true
+          } catch (err) {
+            log.push(`  capture attempt ${attempt + 1} failed: ${(err as Error).message}`)
+          }
+        }
+        if (!captured) process.exitCode = 1
+      }
+      await writeFile(path.join(outDir, 'smoke-log.txt'), log.join('\n'), 'utf8')
+      app.quit()
+    }, 6500)
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createMainWindow()

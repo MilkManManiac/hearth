@@ -94,8 +94,19 @@ deadline pressure ("take our time and make sure those are set").
    the live map (fog zones clear in real time, initiative strip, PC HP rings);
    GET /api/table + path-guarded /asset image route. Presenter retires when
    this is proven at a real table.
-3. **M3 — The window split**: Table + Party become real windows; tracker moves
-   into Table; console slims down.
+3. **M3 — The window split** ✅ SHIPPED 2026-07-16: `WindowManager`
+   (src/main/windows.ts) — per-role singleton windows with remembered bounds;
+   Table gets `backgroundThrottling: false`. App.tsx hash-routes `#table` /
+   `#party` to window roots; both use the store's data-only `bootstrapData()`
+   (NO audio engine / Discord-tap wiring — one engine, console only). ⚔ Table
+   window = container-sized MapEditor + docked encounter tracker (collapsible,
+   map switcher); 🛡 Party window = the full party manager. Console slimmed:
+   TopBar 🛡/⚔ open the windows, the right-panel ⚔ tab is an "Open the Table"
+   pointer, MapsPanel/ImageStrip 🗺 route map editing into the Table window.
+   Smoke-verified (HEARTH_SMOKE=windows + HEARTH_CAMPAIGN override capture
+   per-window screenshots headlessly). Deferred to post-freeze: the Table
+   window's SFX pad (needs an audio relay to the console window — the frozen
+   core).
 4. **M4 — Inventory/equipment overhaul** + migration (can interleave with M2/M3).
 5. **M5 — Ember E2** (own token + ping + measure), then E3.
 

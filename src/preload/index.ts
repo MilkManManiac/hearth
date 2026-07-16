@@ -141,6 +141,15 @@ const api = {
   discordSetRollChannel: (channelId: string | undefined): Promise<void> =>
     ipcRenderer.invoke('discord:set-roll-channel', channelId),
   revealCampaign: (): Promise<void> => ipcRenderer.invoke('campaign:reveal'),
+  /** M3 window split: open (or focus) the ⚔ Table / 🛡 Party window. */
+  openWindow: (role: 'table' | 'party', opts?: { mapId?: string }): Promise<void> =>
+    ipcRenderer.invoke('window:open', role, opts),
+  /** Table window only: the console asked us to show a specific map. */
+  onTableSelectMap: (cb: (mapId: string) => void): (() => void) => {
+    const listener = (_e: unknown, mapId: string) => cb(mapId)
+    ipcRenderer.on('table:select-map', listener)
+    return () => ipcRenderer.removeListener('table:select-map', listener)
+  },
   openPresenter: (): Promise<void> => ipcRenderer.invoke('presenter:open'),
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),
   /** Ephemeral map ping (D4) — never re-commits fog, just a pulse on the presenter. */

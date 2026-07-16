@@ -9,22 +9,19 @@ export default function ImageStrip({ scene }: { scene: Scene }) {
   const buildMode = useStore((s) => s.uiMode === 'build')
   const maps = useStore((s) => s.campaign.maps)
   const createMap = useStore((s) => s.createMap)
-  const selectMap = useStore((s) => s.selectMap)
-  const setMapEditorOpen = useStore((s) => s.setMapEditorOpen)
   const setMapsOpen = useStore((s) => s.setMapsOpen)
   const images = scene.images ?? []
 
-  /** Open this image's library map — creating it on first use (M1). */
+  /** Open this image's library map in the ⚔ Table window — creating it on first use (M1/M3). */
   const openAsMap = async (file: string) => {
     const existing = maps.find((m) => m.image === file)
     if (existing) {
-      selectMap(existing.id)
-      setMapEditorOpen(true)
+      void window.hearth.openWindow('table', { mapId: existing.id })
       return
     }
     const stem = file.split('/').pop()?.replace(/\.[^.]+$/, '') ?? 'map'
     const id = await createMap(stem.replace(/[-_]+/g, ' '), file)
-    if (id) setMapEditorOpen(true)
+    if (id) void window.hearth.openWindow('table', { mapId: id })
   }
   // Inline caption editing: which image file is being edited + the draft text.
   const [editingFile, setEditingFile] = useState<string | null>(null)

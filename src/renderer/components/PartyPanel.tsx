@@ -89,9 +89,13 @@ function GrantDialog({
   )
 }
 
-export default function PartyPanel() {
-  const open = useStore((s) => s.partyOpen)
+export default function PartyPanel({ windowed = false }: { windowed?: boolean }) {
+  const modalOpen = useStore((s) => s.partyOpen)
   const setOpen = useStore((s) => s.setPartyOpen)
+  // M3: `windowed` = we ARE the 🛡 Party window (always open; ✕/Esc close the
+  // window itself). Without it this stays the console's overlay modal.
+  const open = windowed || modalOpen
+  const close = () => (windowed ? window.close() : setOpen(false))
   const characters = useStore((s) => s.campaign.characters)
   const createCharacter = useStore((s) => s.createCharacter)
   const updateCharacter = useStore((s) => s.updateCharacter)
@@ -115,22 +119,31 @@ export default function PartyPanel() {
   }, [open])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || windowed) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, setOpen])
+  }, [open, windowed, setOpen])
 
   const selected = characters.find((c) => c.id === selectedId) ?? characters[0] ?? null
 
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
+    <div
+      className={
+        windowed ? 'h-full w-full' : 'fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4'
+      }
+      onClick={windowed ? undefined : close}
+    >
       <div
-        className="flex h-full max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-lg border border-hearth-border bg-hearth-panel shadow-2xl"
+        className={`flex flex-col overflow-hidden bg-hearth-panel ${
+          windowed
+            ? 'h-full w-full'
+            : 'h-full max-h-[92vh] w-full max-w-6xl rounded-lg border border-hearth-border shadow-2xl'
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-wrap items-center gap-3 border-b border-hearth-border px-4 py-2.5">
@@ -173,7 +186,11 @@ export default function PartyPanel() {
               {portal.url} ⧉
             </button>
           )}
-          <button onClick={() => setOpen(false)} className="rounded px-2 py-1 text-hearth-muted hover:text-hearth-text" title="Close (Esc)">
+          <button
+            onClick={close}
+            className="rounded px-2 py-1 text-hearth-muted hover:text-hearth-text"
+            title={windowed ? 'Close the Party window' : 'Close (Esc)'}
+          >
             ✕
           </button>
         </div>

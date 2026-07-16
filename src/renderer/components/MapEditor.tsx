@@ -454,6 +454,9 @@ export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose:
   const [drawing, setDrawing] = useState<FogStroke | null>(null)
   const [view, setView] = useState({ x: 40, y: 40, scale: 0.8 })
   const stageRef = useRef<Konva.Stage | null>(null)
+  // Sized to the CONTAINER, not the viewport — since M3 the editor also lives
+  // inside the ⚔ Table window's layout (with a tracker column beside it).
+  const rootRef = useRef<HTMLDivElement | null>(null)
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
   // Zone drafting (M1): vertices of the polygon being drawn.
   const [draftZone, setDraftZone] = useState<number[] | null>(null)
@@ -461,9 +464,13 @@ export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose:
   draftRef.current = draftZone
 
   useEffect(() => {
-    const onResize = () => setSize({ w: window.innerWidth, h: window.innerHeight })
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    const el = rootRef.current
+    if (!el) return
+    const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight })
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
   }, [])
 
   useEffect(() => {
@@ -765,7 +772,7 @@ export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose:
   )
 
   return (
-    <div className="fixed inset-0 z-40 bg-hearth-bg">
+    <div ref={rootRef} className="absolute inset-0 overflow-hidden bg-hearth-bg">
       {/* Toolbar */}
       <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center gap-2 border-b border-hearth-border bg-hearth-panel/95 px-4 py-2">
         <span className="font-display text-sm font-semibold text-hearth-text">🗺 {map.name}</span>

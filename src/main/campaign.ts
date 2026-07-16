@@ -178,7 +178,10 @@ export class CampaignManager {
   private lastInternalWrite = 0
 
   constructor(private onChange: (state: CampaignState) => void) {
-    this.campaignPath = readConfig().campaignPath ?? defaultCampaignPath()
+    // HEARTH_CAMPAIGN: headless/testing override (like HEARTH_PORTAL) — point
+    // a smoke run at any campaign folder without touching the user's config.
+    this.campaignPath =
+      process.env.HEARTH_CAMPAIGN ?? readConfig().campaignPath ?? defaultCampaignPath()
   }
 
   private markWrite(): void {

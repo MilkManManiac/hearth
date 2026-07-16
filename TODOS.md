@@ -9,6 +9,17 @@ session (see bottom) to turn the big ones into concrete specs before building.
 
 ## 🔔 WES — review queue (updated 2026-07-16; everything Claude needs from you)
 
+**M3 window split (Claude, 2026-07-16 — SURFACES-PLAN M3 shipped):**
+- [ ] Try it: TopBar **⚔ Table** opens the battle window (map + fog + tokens with the
+  encounter tracker docked beside it); TopBar **🛡 Party** opens the sheets window.
+  Both remember their size/position. The console's right-panel ⚔ tab is now a
+  pointer into the Table window; 🗺 on a scene image / map-library thumbnails open
+  the Table window too (the in-console fog overlay is gone).
+- [ ] Windows sync live: damage someone in the Table tracker → watch the Party
+  window + portal update. All audio stays in the console (untouched, still frozen).
+- [ ] Deferred: the Table window's small SFX pad — needs an audio relay into the
+  console window, so it waits until the audio-core freeze lifts after Tuesday.
+
 **Session 26 prep package (Claude, 2026-07-16 — session is TUESDAY 2026-07-21):**
 - [ ] Read **notes/session-26** (prep note: strong start, crawl shape, tiered reveals,
   Secrets & clues). Everything ⚑-flagged is an open call from grill-queue that only

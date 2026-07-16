@@ -3,11 +3,17 @@ import { isTypingTarget } from './lib/keys'
 import { useStore } from './store'
 import ControlBoard from './components/ControlBoard'
 import PresenterView from './components/PresenterView'
+import TableWindow from './components/TableWindow'
+import PartyWindow from './components/PartyWindow'
 
-const isPresenter = window.location.hash.replace('#', '') === 'presenter'
+// M3 window split: the hash is the window switch point — one renderer bundle,
+// each BrowserWindow loads with the hash for its role.
+const route = window.location.hash.replace('#', '').replace(/^\//, '')
 
 export default function App() {
-  if (isPresenter) return <PresenterView />
+  if (route === 'presenter') return <PresenterView />
+  if (route === 'table') return <TableWindow />
+  if (route === 'party') return <PartyWindow />
   return <MainApp />
 }
 
