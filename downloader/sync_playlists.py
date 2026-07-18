@@ -32,7 +32,7 @@ then re-run this script to fold them in.
 Personal-table use only: assets are stamped source="spotify", license="private"
 and live under the gitignored music/ folder. Don't redistribute.
 """
-import argparse, json, re, subprocess, sys, tempfile, unicodedata
+import argparse, json, re, subprocess, sys, tempfile, time, unicodedata
 from pathlib import Path
 
 CAMPAIGN = Path(r"C:\Users\weshu\Campaigns\Elor Rebirth")
@@ -73,6 +73,22 @@ PLAYLISTS = [
      ["sad", "somber", "melancholy", "emotional", "grief"]),
 ]
 
+# Discovered 2026-07-18 from the profile.
+PLAYLISTS += [
+    ("https://open.spotify.com/playlist/3wee9GwyRWIw6FDZAARhZI",
+     "spotify-scary-eerie", "Scary / Eerie", "horror", ["horror"],
+     ["scary", "eerie", "horror", "creepy", "dread", "unsettling"]),
+    ("https://open.spotify.com/playlist/2TmorVazZM7KALsafPuFZU",
+     "spotify-ambiance", "Ambiance", "ambient", ["ambient"],
+     ["ambient", "ambiance", "atmosphere", "background", "underscore"]),
+    ("https://open.spotify.com/playlist/1l3t4VDpkEouJeavnCbvet",
+     "spotify-combat-action", "Combat / Action", "combat", ["combat"],
+     ["combat", "action", "battle", "fight", "energetic", "driving"]),
+    ("https://open.spotify.com/playlist/5DryaWFKgo9dKeyigLvBbF",
+     "spotify-romance", "Romance", "romance", ["romance"],
+     ["romance", "love", "tender", "emotional", "intimate", "warm"]),
+]
+
 
 # Name keyword -> primary category for auto-tagging discovered playlists.
 AUTO_CATS = [
@@ -85,6 +101,77 @@ AUTO_CATS = [
     (("horror", "creepy", "dread", "undead"), "horror"),
     (("mystery", "intrigue", "sneak", "stealth"), "mystery"),
 ]
+
+
+# One-time browser OAuth: new dev-mode Spotify apps get 403 on the public
+# profile endpoints, but /me/playlists works once the owner approves the app.
+# The refresh_token lands in spotify_sync.json; after that it's zero-touch
+# (and private playlists work too — no need to keep them public).
+REDIRECT = "http://127.0.0.1:8080/"
+SCOPES = "playlist-read-private playlist-read-collaborative"
+
+
+def user_token(cfg) -> str | None:
+    """Access token for Wes's account — silent via refresh_token, else a
+    one-time browser approval. None if creds are missing or auth fails."""
+    import requests
+    cid, secret = cfg.get("client_id"), cfg.get("client_secret")
+    if not (cid and secret):
+        return None
+    if cfg.get("refresh_token"):
+        r = requests.post("https://accounts.spotify.com/api/token",
+                          data={"grant_type": "refresh_token",
+                                "refresh_token": cfg["refresh_token"]},
+                          auth=(cid, secret), timeout=15)
+        if r.ok:
+            return r.json()["access_token"]
+        print("Stored Spotify login expired — need a fresh browser approval.")
+
+    import http.server, secrets, urllib.parse, webbrowser
+    state = secrets.token_urlsafe(16)
+    got: dict = {}
+
+    class Catch(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            if q.get("state", [""])[0] == state and q.get("code"):
+                got["code"] = q["code"][0]
+                self.wfile.write("<h2>Hearth is connected — you can close this tab. 🔥</h2>".encode())
+            else:
+                self.wfile.write("<h2>Hmm, that didn't work — go back to Claude.</h2>".encode())
+
+        def log_message(self, *a):
+            pass
+
+    auth_url = "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode({
+        "client_id": cid, "response_type": "code", "redirect_uri": REDIRECT,
+        "scope": SCOPES, "state": state})
+    srv = http.server.HTTPServer(("127.0.0.1", 8080), Catch)
+    srv.timeout = 10
+    print("Opening a browser tab — approve Hearth's access to your playlists…")
+    webbrowser.open(auth_url)
+    deadline = time.monotonic() + 240
+    # Keep serving until the real callback arrives — the browser may hit us
+    # with favicon/probe requests first, which must not end the wait.
+    while "code" not in got and time.monotonic() < deadline:
+        srv.handle_request()
+    srv.server_close()
+    if "code" not in got:
+        print("No approval received (timed out) — running without discovery.")
+        return None
+    r = requests.post("https://accounts.spotify.com/api/token",
+                      data={"grant_type": "authorization_code", "code": got["code"],
+                            "redirect_uri": REDIRECT},
+                      auth=(cid, secret), timeout=15)
+    r.raise_for_status()
+    tok = r.json()
+    cfg["refresh_token"] = tok["refresh_token"]
+    CONFIG.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+    print("Spotify login saved — future syncs need no browser.")
+    return tok["access_token"]
 
 
 def playlist_id(url: str) -> str:
@@ -111,19 +198,27 @@ def discover() -> list | None:
         return None
     cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
     user = (cfg.get("user") or "").rstrip("/").split("/")[-1].split("?")[0]
-    if not user:
-        print(f'{CONFIG.name} has no "user" — using the built-in playlist table.')
-        return None
-    cid, secret = cfg.get("client_id"), cfg.get("client_secret")
-    if not (cid and secret):  # fall back to spotdl's shared (rate-limited) creds
-        from spotdl.utils.config import DEFAULT_CONFIG
-        cid, secret = DEFAULT_CONFIG["client_id"], DEFAULT_CONFIG["client_secret"]
     import requests
     try:
-        tok = requests.post("https://accounts.spotify.com/api/token",
-                            data={"grant_type": "client_credentials"},
-                            auth=(cid, secret), timeout=15).json()["access_token"]
-        found, url = [], f"https://api.spotify.com/v1/users/{user}/playlists?limit=50"
+        # Preferred: logged-in as Wes (one-time browser approval, then silent).
+        # Sees private playlists; immune to the dev-mode 403 on /users/{id}.
+        tok = user_token(cfg)
+        if tok:
+            url = "https://api.spotify.com/v1/me/playlists?limit=50"
+        elif user:
+            # Fallback: public profile via client credentials (may 403/429).
+            cid, secret = cfg.get("client_id"), cfg.get("client_secret")
+            if not (cid and secret):  # last resort: spotdl's shared creds
+                from spotdl.utils.config import DEFAULT_CONFIG
+                cid, secret = DEFAULT_CONFIG["client_id"], DEFAULT_CONFIG["client_secret"]
+            tok = requests.post("https://accounts.spotify.com/api/token",
+                                data={"grant_type": "client_credentials"},
+                                auth=(cid, secret), timeout=15).json()["access_token"]
+            url = f"https://api.spotify.com/v1/users/{user}/playlists?limit=50"
+        else:
+            print(f'{CONFIG.name} has no login or "user" — using the built-in playlist table.')
+            return None
+        found = []
         while url:
             r = requests.get(url, headers={"Authorization": f"Bearer {tok}"}, timeout=15)
             if r.status_code == 429:
