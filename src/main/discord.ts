@@ -280,7 +280,8 @@ export class DiscordBridge {
         StreamType,
         NoSubscriberBehavior,
         entersState,
-        VoiceConnectionStatus
+        VoiceConnectionStatus,
+        AudioPlayerStatus
       } = await import('@discordjs/voice')
       const guild = await this.client.guilds.fetch(guildId)
       const channel = (await guild.channels.fetch(channelId)) as VoiceBasedChannel | null
@@ -297,25 +298,68 @@ export class DiscordBridge {
       })
       await entersState(connection, VoiceConnectionStatus.Ready, 20_000)
 
-      const pcm = new PassThrough({ highWaterMark: MAX_BUFFERED_BYTES })
       const player = createAudioPlayer({
-        behaviors: { noSubscriber: NoSubscriberBehavior.Play }
+        // maxMissedFrames default is 5 (100ms): any renderer hiccup — GC pause,
+        // window drag, CPU spike — killed the player mid-session. 250 = 5s of
+        // tolerance (Kenku FM uses the same figure).
+        behaviors: { noSubscriber: NoSubscriberBehavior.Play, maxMissedFrames: 250 }
       })
-      // Raw = s16le 48kHz stereo; prism-media opus-encodes via opusscript.
-      player.play(createAudioResource(pcm, { inputType: StreamType.Raw }))
+      // Fresh PassThrough per resource: a stopped resource destroys its input
+      // stream, so the restart path below must never reuse one.
+      const startFeed = (): void => {
+        const pcm = new PassThrough({ highWaterMark: MAX_BUFFERED_BYTES })
+        this.pcm = pcm
+        // Raw = s16le 48kHz stereo; prism-media opus-encodes via opusscript.
+        player.play(createAudioResource(pcm, { inputType: StreamType.Raw }))
+      }
+      startFeed()
       connection.subscribe(player)
 
+      // Watchdog: if the player ever stops (starved past maxMissedFrames, or
+      // any internal error), restart the feed instead of going silent forever.
+      // leave() nulls this.player before stopping it, so a manual leave never
+      // trips this.
+      player.on('stateChange', (_old, s) => {
+        if (
+          s.status === AudioPlayerStatus.Idle &&
+          this.player === player &&
+          this.connection === connection
+        ) {
+          console.warn('[discord] audio player went idle — restarting the PCM feed')
+          startFeed()
+        }
+      })
+
       connection.on('stateChange', (_old, s) => {
-        if (s.status === VoiceConnectionStatus.Disconnected || s.status === VoiceConnectionStatus.Destroyed) {
-          if (this.connection === connection) {
-            this.setStatus({ state: 'connected', guildName: undefined, channelName: undefined })
-          }
+        if (this.connection !== connection) return
+        if (s.status === VoiceConnectionStatus.Disconnected) {
+          // Distinguish a self-healing blip (region move, channel drag — the
+          // connection re-signals on its own) from a real drop. Only a real
+          // drop tears down; the UI then shows "connected" so the DM rejoins.
+          void (async () => {
+            try {
+              await Promise.race([
+                entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                entersState(connection, VoiceConnectionStatus.Connecting, 5_000)
+              ])
+            } catch {
+              try {
+                connection.destroy()
+              } catch {
+                /* already destroyed */
+              }
+            }
+          })()
+        } else if (s.status === VoiceConnectionStatus.Destroyed) {
+          this.connection = null
+          this.player = null
+          this.pcm = null
+          this.setStatus({ state: 'connected', guildName: undefined, channelName: undefined })
         }
       })
 
       this.connection = connection
       this.player = player
-      this.pcm = pcm
       this.setStatus({ state: 'joined', guildName: guild.name, channelName: channel.name })
     } catch (err) {
       const msg = friendly(err as Error)
@@ -443,16 +487,20 @@ export class DiscordBridge {
 
   leave(): void {
     this.stopChronicle()
-    this.pcm?.end()
-    this.player?.stop()
-    try {
-      this.connection?.destroy()
-    } catch {
-      /* already destroyed */
-    }
+    // Null the fields BEFORE stopping: the player's idle watchdog and the
+    // connection's stateChange handler check identity against them, so this
+    // makes an intentional teardown a no-op there.
+    const { connection, player, pcm } = this
     this.connection = null
     this.player = null
     this.pcm = null
+    pcm?.end()
+    player?.stop()
+    try {
+      connection?.destroy()
+    } catch {
+      /* already destroyed */
+    }
     if (this.status.state === 'joined') {
       this.setStatus({ state: 'connected', guildName: undefined, channelName: undefined })
     }
