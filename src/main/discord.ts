@@ -1,7 +1,7 @@
 // Discord voice bridge (Phase 2) — streams the app's mixed audio into a voice
 // channel. See DISCORD-BRIDGE.md for the architecture. EXPERIMENTAL until the
 // first end-to-end test with a real bot token.
-import { app } from 'electron'
+import { app, powerSaveBlocker } from 'electron'
 import * as path from 'path'
 import * as fsSync from 'fs'
 import { promises as fs } from 'fs'
@@ -154,6 +154,9 @@ export class DiscordBridge {
   private player: AudioPlayer | null = null
   private pcm: PassThrough | null = null
   private status: DiscordStatus = { state: 'idle', hasToken: !!readToken() }
+  /** powerSaveBlocker id while in a voice channel — keeps Windows from
+   *  suspending timers when Hearth is minimized (audible stutter otherwise). */
+  private psbId: number | null = null
 
   // --- The Chronicler (per-speaker session recorder) ---
   private chronicleDir: string | null = null
@@ -165,6 +168,17 @@ export class DiscordBridge {
   private usernames = new Map<string, string>()
 
   constructor(private onStatus: (s: DiscordStatus) => void) {}
+
+  private blockPowerSave(): void {
+    if (this.psbId === null) this.psbId = powerSaveBlocker.start('prevent-app-suspension')
+  }
+
+  private unblockPowerSave(): void {
+    if (this.psbId !== null) {
+      powerSaveBlocker.stop(this.psbId)
+      this.psbId = null
+    }
+  }
 
   getStatus(): DiscordStatus {
     return this.status
@@ -354,12 +368,14 @@ export class DiscordBridge {
           this.connection = null
           this.player = null
           this.pcm = null
+          this.unblockPowerSave()
           this.setStatus({ state: 'connected', guildName: undefined, channelName: undefined })
         }
       })
 
       this.connection = connection
       this.player = player
+      this.blockPowerSave()
       this.setStatus({ state: 'joined', guildName: guild.name, channelName: channel.name })
     } catch (err) {
       const msg = friendly(err as Error)
@@ -494,6 +510,7 @@ export class DiscordBridge {
     this.connection = null
     this.player = null
     this.pcm = null
+    this.unblockPowerSave()
     pcm?.end()
     player?.stop()
     try {

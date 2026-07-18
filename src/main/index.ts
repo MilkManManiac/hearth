@@ -116,7 +116,14 @@ function createMainWindow(): void {
     minHeight: 680,
     backgroundColor: '#14110f',
     title: 'Hearth',
-    webPreferences: { preload: preloadPath, sandbox: false }
+    webPreferences: {
+      preload: preloadPath,
+      sandbox: false,
+      // The audio engine + Discord tap run in this renderer. Minimizing the
+      // window must not throttle the thread relaying PCM to the voice bridge
+      // (throttled = bursty chunks = audible stutter in the Discord channel).
+      backgroundThrottling: false
+    }
   })
   loadRenderer(mainWindow)
   mainWindow.on('closed', () => {
