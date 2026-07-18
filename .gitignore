@@ -40,3 +40,6 @@ campaigns/*/blocklist.json
 
 # Agent tooling: papercuts complaint log (local, not project content)
 .papercuts.jsonl
+
+# Spotify API creds for downloader/sync_playlists.py playlist discovery
+downloader/spotify_sync.json

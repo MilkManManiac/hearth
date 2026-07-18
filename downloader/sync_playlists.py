@@ -1,16 +1,25 @@
 #!/usr/bin/env python3
 """
-sync_playlists.py — keep Hearth's 6 "DND Hearth ..." Spotify playlists in sync
+sync_playlists.py — keep Wes's "DND Hearth ..." Spotify playlists in sync
 with the Elor: Rebirth campaign as queue-able PlaylistPresets.
 
-Re-runnable: the user's future links are the SAME playlists with new songs
-added. Before downloading anything, every playlist track is fuzzy-matched
-against the mp3s already on disk (from any source, any filename); only the
-missing ones are fetched. Dupes across playlists — or songs left in Spotify
-that we already grabbed another way — are never downloaded twice. Rewrites the
-6 "spotify-*" presets in place; non-spotify assets/presets are never touched.
+Zero-paste discovery: if downloader/spotify_sync.json holds Wes's Spotify
+user id (+ his own API client id/secret), the script fetches his PUBLIC
+profile playlists and syncs every one whose name contains "DND Hearth" —
+new playlists need no link-pasting, just the naming convention. (Spotify's
+API cannot see folders, so the name is the marker.) Known playlists keep
+their curated categories/tags from the table below; newly discovered ones
+get auto-derived tags and are flagged for curation. If discovery is
+unavailable (no config, offline, rate-limited) it falls back to the table.
 
-    python sync_playlists.py              # sync all 6
+Re-runnable: the playlists grow over time. Before downloading anything,
+every playlist track is fuzzy-matched against the mp3s already on disk
+(from any source, any filename); only the missing ones are fetched. Dupes
+across playlists — or songs left in Spotify that we already grabbed another
+way — are never downloaded twice. Rewrites the "spotify-*" presets in
+place; non-spotify assets/presets are never touched.
+
+    python sync_playlists.py              # discover + sync everything
     python sync_playlists.py --save-only  # just refresh the track lists, no DL
 
 Pipeline per playlist:  spotdl save (metadata) -> spotdl download (mp3, skips
@@ -30,9 +39,18 @@ CAMPAIGN = Path(r"C:\Users\weshu\Campaigns\Elor Rebirth")
 MUSIC = CAMPAIGN / "music"
 LIB = CAMPAIGN / "library.json"
 
-# The 6 playlists, in order. Each: url, preset id, display name, primary
-# category, extra categories, base tags. To add a new "DND Hearth X" playlist,
-# append a row here.
+# downloader/spotify_sync.json (gitignored — holds an API secret):
+#   { "user": "<spotify user id or full profile URL>",
+#     "client_id": "...", "client_secret": "..." }
+# client_id/secret are optional; without them we borrow spotdl's shared creds,
+# which Spotify frequently rate-limits (429, 24h) — own creds are reliable.
+CONFIG = Path(__file__).with_name("spotify_sync.json")
+PREFIX = "dnd hearth"  # case-insensitive substring that marks a Hearth playlist
+
+# Curated playlists: url, preset id, display name, primary category, extra
+# categories, base tags. Discovery matches these by playlist id and keeps this
+# metadata; playlists found on the profile but NOT listed here get auto tags —
+# promote them into this table to curate.
 PLAYLISTS = [
     ("https://open.spotify.com/playlist/1y5dRModd4RO3nLgHNg4ae",
      "spotify-boss-combat", "Boss / Combat", "boss", ["boss", "combat"],
@@ -54,6 +72,92 @@ PLAYLISTS = [
      "spotify-sad", "Sad / Somber", "somber", ["somber"],
      ["sad", "somber", "melancholy", "emotional", "grief"]),
 ]
+
+
+# Name keyword -> primary category for auto-tagging discovered playlists.
+AUTO_CATS = [
+    (("boss", "combat", "battle", "fight"), "boss"),
+    (("chase", "suspense", "tension"), "tension"),
+    (("ethereal", "angelic", "divine", "sacred"), "ethereal"),
+    (("adventure", "exploration", "travel", "journey"), "exploration"),
+    (("chill", "calm", "tavern", "rest", "downtime"), "chill"),
+    (("sad", "somber", "grief", "mourn"), "somber"),
+    (("horror", "creepy", "dread", "undead"), "horror"),
+    (("mystery", "intrigue", "sneak", "stealth"), "mystery"),
+]
+
+
+def playlist_id(url: str) -> str:
+    return url.rstrip("/").split("/")[-1].split("?")[0]
+
+
+def auto_row(url: str, name: str):
+    """Build a playlist row for a discovered playlist not in the curated table."""
+    label = re.sub(re.escape(PREFIX), "", name, flags=re.I).strip(" -–—:")
+    slug = re.sub(r"[^a-z0-9]+", "-", (label or name).lower()).strip("-")
+    low = name.lower()
+    cat = next((c for words, c in AUTO_CATS if any(w in low for w in words)), "misc")
+    tags = sorted({w for w in re.findall(r"[a-z]+", (label or name).lower()) if len(w) > 2})
+    return (url, f"spotify-{slug}", label or name, cat, [cat], tags or [cat])
+
+
+def discover() -> list | None:
+    """Fetch Wes's public profile playlists and return rows for every one whose
+    name contains PREFIX — curated-table metadata when known, auto tags when
+    new. Returns None (with a reason printed) if discovery can't run; the
+    caller falls back to the curated table."""
+    if not CONFIG.exists():
+        print(f"No {CONFIG.name} — using the built-in playlist table.")
+        return None
+    cfg = json.loads(CONFIG.read_text(encoding="utf-8"))
+    user = (cfg.get("user") or "").rstrip("/").split("/")[-1].split("?")[0]
+    if not user:
+        print(f'{CONFIG.name} has no "user" — using the built-in playlist table.')
+        return None
+    cid, secret = cfg.get("client_id"), cfg.get("client_secret")
+    if not (cid and secret):  # fall back to spotdl's shared (rate-limited) creds
+        from spotdl.utils.config import DEFAULT_CONFIG
+        cid, secret = DEFAULT_CONFIG["client_id"], DEFAULT_CONFIG["client_secret"]
+    import requests
+    try:
+        tok = requests.post("https://accounts.spotify.com/api/token",
+                            data={"grant_type": "client_credentials"},
+                            auth=(cid, secret), timeout=15).json()["access_token"]
+        found, url = [], f"https://api.spotify.com/v1/users/{user}/playlists?limit=50"
+        while url:
+            r = requests.get(url, headers={"Authorization": f"Bearer {tok}"}, timeout=15)
+            if r.status_code == 429:
+                print(f"Spotify rate-limited playlist discovery (retry in {r.headers.get('Retry-After', '?')}s) "
+                      "— using the built-in playlist table. Own client_id/secret in "
+                      f"{CONFIG.name} avoids this.")
+                return None
+            r.raise_for_status()
+            page = r.json()
+            found += [(p["external_urls"]["spotify"], p["name"])
+                      for p in page["items"] if p and PREFIX in p["name"].lower()]
+            url = page.get("next")
+    except Exception as e:  # offline, bad creds, API change — sync must still run
+        print(f"Playlist discovery failed ({e}) — using the built-in playlist table.")
+        return None
+
+    known = {playlist_id(row[0]): row for row in PLAYLISTS}
+    rows, fresh = [], []
+    for purl, pname in found:
+        row = known.get(playlist_id(purl))
+        if row is None:
+            row = auto_row(purl, pname)
+            fresh.append(pname)
+        rows.append(row)
+    print(f'Discovered {len(rows)} "{PREFIX}" playlist(s) on profile "{user}".')
+    for pname in fresh:
+        print(f"  ✨ NEW: {pname} — auto-tagged; tell Claude to curate its tags.")
+    missing = [row[2] for pid, row in known.items()
+               if pid not in {playlist_id(u) for u, _ in found}]
+    for name in missing:
+        print(f"  ⚠ known playlist not on the public profile (private? renamed?): {name} — still syncing it.")
+    rows += [known[pid] for pid in known
+             if pid not in {playlist_id(u) for u, _ in found}]
+    return rows or None
 
 
 def norm(s: str) -> str:
@@ -93,11 +197,13 @@ def main():
                     help="refresh track lists only; skip downloading")
     args = ap.parse_args()
 
+    playlists = discover() or PLAYLISTS
+
     tmp = Path(tempfile.mkdtemp())
     saved = []
-    for i, (url, *_rest) in enumerate(PLAYLISTS, 1):
+    for i, (url, *_rest) in enumerate(playlists, 1):
         songs = spotdl_save(url, tmp / f"pl{i}.spotdl")
-        print(f"[{i}/{len(PLAYLISTS)}] {_rest[1]}: {len(songs)} tracks")
+        print(f"[{i}/{len(playlists)}] {_rest[1]}: {len(songs)} tracks")
         saved.append(songs)
 
     # Dedupe BEFORE downloading: fuzzy-match every playlist track against the
@@ -130,7 +236,7 @@ def main():
     keep = [p for p in lib.get("playlists", []) if not p["id"].startswith("spotify-")]
 
     new_presets, unmatched = [], []
-    for songs, (url, pid, pname, cat, cats, base_tags) in zip(saved, PLAYLISTS):
+    for songs, (url, pid, pname, cat, cats, base_tags) in zip(saved, playlists):
         files = []
         for s in songs:
             artists = s.get("artists") or ([s["artist"]] if s.get("artist") else [])
