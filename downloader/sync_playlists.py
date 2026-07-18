@@ -4,9 +4,11 @@ sync_playlists.py — keep Hearth's 6 "DND Hearth ..." Spotify playlists in sync
 with the Elor: Rebirth campaign as queue-able PlaylistPresets.
 
 Re-runnable: the user's future links are the SAME playlists with new songs
-added. Running this again downloads only the new tracks (spotdl skips files
-already on disk), dedupes shared tracks, and rewrites the 6 "spotify-*" presets
-in place. Non-spotify assets/presets are never touched.
+added. Before downloading anything, every playlist track is fuzzy-matched
+against the mp3s already on disk (from any source, any filename); only the
+missing ones are fetched. Dupes across playlists — or songs left in Spotify
+that we already grabbed another way — are never downloaded twice. Rewrites the
+6 "spotify-*" presets in place; non-spotify assets/presets are never touched.
 
     python sync_playlists.py              # sync all 6
     python sync_playlists.py --save-only  # just refresh the track lists, no DL
@@ -67,8 +69,8 @@ def spotdl_save(url: str, dest: Path) -> list[dict]:
     return d if isinstance(d, list) else d.get("songs", d)
 
 
-def spotdl_download(url: str):
-    subprocess.run([sys.executable, "-m", "spotdl", "download", url,
+def spotdl_download(urls: list[str]):
+    subprocess.run([sys.executable, "-m", "spotdl", "download", *urls,
                     "--format", "mp3", "--bitrate", "192k",
                     "--output", str(MUSIC / "{artists} - {title}.{output-ext}")])
 
@@ -95,10 +97,32 @@ def main():
     saved = []
     for i, (url, *_rest) in enumerate(PLAYLISTS, 1):
         songs = spotdl_save(url, tmp / f"pl{i}.spotdl")
-        print(f"[{i}/6] {_rest[1]}: {len(songs)} tracks")
-        if not args.save_only:
-            spotdl_download(url)
+        print(f"[{i}/{len(PLAYLISTS)}] {_rest[1]}: {len(songs)} tracks")
         saved.append(songs)
+
+    # Dedupe BEFORE downloading: fuzzy-match every playlist track against the
+    # mp3s already on disk (any source — spotdl, yt-dlp, the GUI grabber) and
+    # only fetch the ones we genuinely don't have. spotdl's own skip only
+    # catches exact filename matches, which re-downloads dupes whenever the
+    # metadata differs slightly.
+    if not args.save_only:
+        files_index = [(f.name, norm(f.stem)) for f in MUSIC.glob("*.mp3")]
+        to_download, have = {}, 0
+        for songs in saved:
+            for s in songs:
+                artists = s.get("artists") or ([s["artist"]] if s.get("artist") else [])
+                if match_file(files_index, artists, s.get("name", "")):
+                    have += 1
+                elif s.get("url"):
+                    to_download[s["url"]] = f"{', '.join(artists)} - {s.get('name', '')}"
+        print(f"\nAlready on disk: {have} tracks — skipping those.")
+        if to_download:
+            print(f"Downloading {len(to_download)} new track(s):")
+            for label in to_download.values():
+                print(f"  + {label}")
+            spotdl_download(list(to_download))
+        else:
+            print("Nothing new to download. ✓")
 
     lib = json.loads(LIB.read_text(encoding="utf-8"))
     assets_by_file = {a["file"]: a for a in lib["assets"]}
@@ -116,6 +140,8 @@ def main():
                 unmatched.append((pname, f"{', '.join(artists)} - {title}"))
                 continue
             rel = f"music/{fname}"
+            if rel in files:  # same song twice in one playlist — keep one
+                continue
             files.append(rel)
             if rel not in assets_by_file:
                 a = {"file": rel, "kind": "music", "category": cat,
