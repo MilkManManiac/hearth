@@ -50,6 +50,21 @@ export interface PortalDeps {
   getParty: () => Promise<PartyStash>
   transferItem: (req: { itemId: string; from: string; to: string; qty?: number; who: string }) => Promise<void>
   transferCoins: (req: { from: string; to: string; coin: CoinKey; amount: number; who: string }) => Promise<void>
+  /** Ember E2: move a token on the LIVE map — only ever the player's own PC
+   * token (the server checks token.characterId, the one rule that matters). */
+  moveToken: (req: { tokenId: string; characterId: string; x: number; y: number }) => Promise<{ ok: boolean; error?: string }>
+  /** Ember E2: a player pinged the live map — ephemeral fan-out, never saved. */
+  playerPing: (p: PortalPing) => void
+}
+
+/** An ephemeral player ping (E2): position + who/color, relayed everywhere. */
+export interface PortalPing {
+  id: string
+  x: number
+  y: number
+  color?: string
+  label?: string
+  mapId?: string
 }
 
 /** Image types the /asset/ route will serve to browsers (maps + handouts). */
@@ -89,6 +104,18 @@ export class PlayerPortal {
   /** Stream a public roll to connected players (named SSE event). */
   pushRoll(roll: RollEvent): void {
     const payload = `event: roll\ndata: ${JSON.stringify(roll)}\n\n`
+    for (const res of this.sseClients) {
+      try {
+        res.write(payload)
+      } catch {
+        this.sseClients.delete(res)
+      }
+    }
+  }
+
+  /** Stream a map ping to connected players (E2) — ephemeral, never persisted. */
+  pushPing(ping: PortalPing): void {
+    const payload = `event: ping\ndata: ${JSON.stringify(ping)}\n\n`
     for (const res of this.sseClients) {
       try {
         res.write(payload)
@@ -194,6 +221,48 @@ export class PlayerPortal {
       // Ember Table view (M2): the live map, rendered client-side.
       if (url === '/api/table' && req.method === 'GET') {
         return this.json(res, { map: await this.deps.getLiveMap() })
+      }
+      // Ember E2: a player moved their OWN token on the live map. The server
+      // enforces the only rule that matters — the token must belong to the
+      // character the browser claims (monsters/others are never movable).
+      if (url === '/api/table/move-token' && req.method === 'POST') {
+        const r = JSON.parse(await readBody(req)) as { tokenId?: string; characterId?: string; x?: number; y?: number }
+        if (
+          typeof r.tokenId !== 'string' ||
+          typeof r.characterId !== 'string' ||
+          !Number.isFinite(r.x) ||
+          !Number.isFinite(r.y)
+        ) {
+          return this.json(res, { error: 'bad move' }, 400)
+        }
+        const result = await this.deps.moveToken({
+          tokenId: r.tokenId.slice(0, 60),
+          characterId: r.characterId.slice(0, 60),
+          x: Math.max(0, Math.min(100_000, r.x!)),
+          y: Math.max(0, Math.min(100_000, r.y!))
+        })
+        return result.ok ? this.json(res, { ok: true }) : this.json(res, { error: result.error ?? 'refused' }, 403)
+      }
+      // Ember E2: player ping — ephemeral relay to every surface, never saved.
+      if (url === '/api/table/ping' && req.method === 'POST') {
+        const r = JSON.parse(await readBody(req)) as {
+          id?: string
+          x?: number
+          y?: number
+          color?: string
+          label?: string
+          mapId?: string
+        }
+        if (!Number.isFinite(r.x) || !Number.isFinite(r.y)) return this.json(res, { error: 'bad ping' }, 400)
+        this.deps.playerPing({
+          id: String(r.id ?? `${Date.now()}-${Math.random()}`).slice(0, 60),
+          x: r.x!,
+          y: r.y!,
+          color: typeof r.color === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(r.color) ? r.color : undefined,
+          label: typeof r.label === 'string' ? r.label.slice(0, 24) : undefined,
+          mapId: typeof r.mapId === 'string' ? r.mapId.slice(0, 60) : undefined
+        })
+        return this.json(res, { ok: true })
       }
       // Party stash (M4): shared items + coins + activity log.
       if (url === '/api/party' && req.method === 'GET') {

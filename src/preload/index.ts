@@ -172,10 +172,20 @@ const api = {
   presenterShow: (payload: PresenterPayload): Promise<void> => ipcRenderer.invoke('presenter:show', payload),
   /** Ephemeral map ping (D4) — never re-commits fog, just a pulse on the presenter. */
   presenterPing: (p: { x: number; y: number }): Promise<void> => ipcRenderer.invoke('presenter:ping', p),
-  onPresenterPing: (cb: (p: { x: number; y: number; id: string }) => void): (() => void) => {
-    const listener = (_e: unknown, p: { x: number; y: number; id: string }) => cb(p)
+  onPresenterPing: (cb: (p: { x: number; y: number; id: string; color?: string; label?: string }) => void): (() => void) => {
+    const listener = (_e: unknown, p: { x: number; y: number; id: string; color?: string; label?: string }) => cb(p)
     ipcRenderer.on('presenter:ping', listener)
     return () => ipcRenderer.removeListener('presenter:ping', listener)
+  },
+  /** Ember E2: a player pinged the live map from the portal — pulse it in any
+   * open DM map editor (mapId filters stale views). */
+  onTablePing: (
+    cb: (p: { x: number; y: number; id: string; color?: string; label?: string; mapId?: string }) => void
+  ): (() => void) => {
+    const listener = (_e: unknown, p: { x: number; y: number; id: string; color?: string; label?: string; mapId?: string }) =>
+      cb(p)
+    ipcRenderer.on('table:ping', listener)
+    return () => ipcRenderer.removeListener('table:ping', listener)
   },
 
   // --- Discord voice bridge (experimental) ---

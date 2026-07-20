@@ -389,10 +389,14 @@ function registerIpc(): void {
     ensurePresenterWindow()
   })
   ipcMain.handle('presenter:ping', async (_e, p: { x: number; y: number }) => {
+    const ping = { ...p, id: `${Date.now()}-${Math.random()}` }
     // Only if the presenter is already open — a ping never spawns the window.
     if (presenterWindow && !presenterWindow.isDestroyed()) {
-      presenterWindow.webContents.send('presenter:ping', { ...p, id: `${Date.now()}-${Math.random()}` })
+      presenterWindow.webContents.send('presenter:ping', ping)
     }
+    // Ember E2: the live map streams everything — DM pings pulse on player
+    // phones too (portal browsers follow the live map by definition).
+    portal?.pushPing(ping)
   })
   ipcMain.handle('presenter:show', async (_e, payload) => {
     ensurePresenterWindow()
@@ -445,6 +449,32 @@ app.whenReady().then(async () => {
     transferCoins: async (req) => {
       const state = await campaign.transferCoins(req)
       broadcast('campaign:changed', state)
+    },
+    // Ember E2: move-own-token on the LIVE map only. The characterId check is
+    // the whole security model — a token without a matching characterId
+    // (monsters, other PCs, unlinked markers) can never be moved from Ember.
+    moveToken: async ({ tokenId, characterId, x, y }) => {
+      const s = await campaign.load()
+      const map = s.maps.find((m) => m.id === s.liveMapId)
+      if (!map) return { ok: false, error: 'no live map' }
+      const tk = (map.tokens ?? []).find((t) => t.id === tokenId)
+      if (!tk) return { ok: false, error: 'no such token' }
+      if (!tk.characterId || tk.characterId !== characterId) return { ok: false, error: 'not your token' }
+      const next = { ...map, tokens: (map.tokens ?? []).map((t) => (t.id === tokenId ? { ...t, x, y } : t)) }
+      const state = await campaign.saveMap(next)
+      broadcast('campaign:changed', state)
+      return { ok: true }
+    },
+    // Ember E2: player ping → every surface at the table (other browsers via
+    // SSE, the presenter window, any open DM map editor). Ephemeral.
+    playerPing: (p) => {
+      portal.pushPing(p)
+      if (presenterWindow && !presenterWindow.isDestroyed()) {
+        presenterWindow.webContents.send('presenter:ping', p)
+      }
+      for (const win of BrowserWindow.getAllWindows()) {
+        win.webContents.send('table:ping', p)
+      }
     }
   })
   const initial = await campaign.init()

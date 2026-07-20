@@ -4,7 +4,7 @@ import { loadKind, type ClassEntry, type NamedEntry } from '../lib/compendium'
 import CharacterSheet from './CharacterSheet'
 import StashBox from './StashBox'
 import { RollFeed } from './GameLog'
-import { PresenterMap, playerTableView } from './MapEditor'
+import { PresenterMap, playerTableView, usePings } from './MapEditor'
 import { EntryArticle, SpellCard } from './StatBlock'
 import type { Spell } from '../lib/compendium'
 import { loadSpells } from '../lib/compendium'
@@ -74,6 +74,12 @@ export default function PlayerApp() {
   // Ember Table view (M2): live-follows the DM's live map.
   const [view, setView] = useState<'sheet' | 'table'>('sheet')
   const [liveMap, setLiveMap] = useState<CampaignMap | null>(null)
+  // Ember E2: drag-your-token is the default; 📍/📏 are explicit modes so a
+  // stray phone tap never pings the whole table by accident.
+  const [tableMode, setTableMode] = useState<'move' | 'ping' | 'ruler'>('move')
+  const [pings, addPing] = usePings()
+  // Pings we sent — the server echoes them back over SSE; don't double-pulse.
+  const myPingIds = useRef<Set<string>>(new Set())
   const [rolls, setRolls] = useState<RollEvent[]>([])
   const [logOpen, setLogOpen] = useState(false)
   const [unseen, setUnseen] = useState(0)
@@ -128,6 +134,15 @@ export default function PlayerApp() {
         /* malformed roll event — ignore */
       }
     })
+    // Ember E2: pings from the DM and other players pulse on the table view.
+    es.addEventListener('ping', (e) => {
+      try {
+        const p = JSON.parse((e as MessageEvent).data) as { id: string; x: number; y: number; color?: string; label?: string }
+        if (!myPingIds.current.has(p.id)) addPing(p)
+      } catch {
+        /* malformed ping event — ignore */
+      }
+    })
     return () => es.close()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -144,6 +159,38 @@ export default function PlayerApp() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updated)
     }).catch((e) => setError((e as Error).message))
+  }
+
+  // Ember E2 (M5): my token on the live map — the only one I may drag.
+  const myToken = liveMap?.tokens?.find((t) => !t.hidden && t.characterId && t.characterId === selectedId)
+
+  const moveMyToken = (tokenId: string, x: number, y: number) => {
+    if (!selectedId) return
+    // Optimistic: the drop sticks immediately; a refused move refetches truth.
+    setLiveMap((m) => (m ? { ...m, tokens: (m.tokens ?? []).map((t) => (t.id === tokenId ? { ...t, x, y } : t)) } : m))
+    void fetch('/api/table/move-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tokenId, characterId: selectedId, x, y })
+    })
+      .then((r) => {
+        if (!r.ok) void refetch()
+      })
+      .catch(() => void refetch())
+  }
+
+  const sendPing = (x: number, y: number) => {
+    // No crypto.randomUUID — http:// on LAN is an insecure context.
+    const id = `${Date.now()}-${Math.random()}`
+    myPingIds.current.add(id)
+    setTimeout(() => myPingIds.current.delete(id), 10_000)
+    const ping = { id, x, y, color: myToken?.color, label: selected?.name, mapId: liveMap?.id }
+    addPing(ping)
+    void fetch('/api/table/ping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ping)
+    }).catch(() => undefined)
   }
 
   return (
@@ -191,6 +238,13 @@ export default function PlayerApp() {
                   overlays={liveMap.overlays}
                   decor={pv.decor}
                   initiative={pv.initiative}
+                  pings={pings}
+                  interact={{
+                    myCharacterId: selectedId,
+                    mode: tableMode,
+                    onMoveToken: moveMyToken,
+                    onPing: sendPing
+                  }}
                 />
               )
             })()
@@ -205,6 +259,35 @@ export default function PlayerApp() {
           >
             ← my sheet
           </button>
+          {/* E2 tool pills: drag-my-token / ping / measure. */}
+          {liveMap && liveMap.image && (
+            <div className="absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 overflow-hidden rounded-full border border-white/20 bg-black/70">
+              {(
+                [
+                  {
+                    m: 'move' as const,
+                    icon: '🖐',
+                    title: myToken
+                      ? 'Move — drag your own token (gold halo). Only yours.'
+                      : 'Move — your character has no token on this map yet (ask the DM)'
+                  },
+                  { m: 'ping' as const, icon: '📍', title: 'Ping — tap the map; everyone sees a pulse with your name' },
+                  { m: 'ruler' as const, icon: '📏', title: 'Measure — drag to read the distance in feet' }
+                ] as const
+              ).map(({ m, icon, title }) => (
+                <button
+                  key={m}
+                  onClick={() => setTableMode(m)}
+                  title={title}
+                  className={`px-3.5 py-2 text-sm transition-colors ${
+                    tableMode === m ? 'bg-hearth-ember/80 text-black' : 'text-white/70 hover:text-white'
+                  }`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

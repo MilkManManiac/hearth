@@ -93,7 +93,8 @@ Phases — **ALL FIVE SHIPPED 2026-07-10** (full detail in DDB-MECHANICS.md):
   through), ⚔→map stamping (auto-sized, foes hidden), 📏 ruler (5 ft/cell),
   📤 Send bakes PC-only HP rings + an initiative strip. Also shipped same day:
   ⭘ AoE templates (circle/cone/line in feet, damage tints, players see them) and
-  Alt+click pings (pulse on DM + presenter). Still open: portal token-moving.
+  Alt+click pings (pulse on DM + presenter). ~~Still open: portal token-moving~~
+  — ✅ shipped 2026-07-20 as SURFACES-PLAN M5 (Ember E2).
 - **D5 — Campaign glue** ✅: 🎁 Grant bar in the Party panel (give item/gold,
   🔔 unlock milestone level-up — badges the portal, cleared by leveling — and
   party-wide ☀️ long rest).

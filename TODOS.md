@@ -7,7 +7,18 @@
 Captured for later. Not being worked on yet. We'll likely run a **grill-me**
 session (see bottom) to turn the big ones into concrete specs before building.
 
-## 🔔 WES — review queue (updated 2026-07-16; everything Claude needs from you)
+## 🔔 WES — review queue (updated 2026-07-20; everything Claude needs from you)
+
+**M5 — Ember E2: players can now act on the Table view (Claude, 2026-07-20):**
+- [ ] Try it: portal → pick a character → 🗺 Table. New tool pills at the bottom:
+  **🖐 move** (drag YOUR token — it has a gold dashed halo; everyone else's and
+  all monsters are untouchable, server-enforced), **📍 ping** (tap → pulse with
+  your name + token color, seen by every phone, the presenter, and your open
+  map editor), **📏 measure** (drag → distance in ft). Grid-snap on drop.
+- [ ] Your Alt+click pings on a map now pulse on player phones too (live-map
+  streams everything). If that ever feels wrong mid-session, say so — easy to gate.
+- [ ] Note: a player's token must be **linked** (stamped from the ⚔ tracker with
+  a characterId) to be draggable — hand-placed unlinked tokens stay DM-only.
 
 **M4 inventory overhaul (Claude, 2026-07-16 — SURFACES-PLAN M4 shipped):**
 - [ ] Open 🛡 Party → any sheet: the equipment textarea is now **structured rows**

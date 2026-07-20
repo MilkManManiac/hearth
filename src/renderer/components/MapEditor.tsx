@@ -192,32 +192,54 @@ export function OverlayLayer({
   )
 }
 
-/** Ephemeral ping markers (D4): a bright double ring that fades after ~2.5s. */
+/** Ephemeral ping markers (D4): a bright double ring that fades after ~2.5s.
+ * E2: player pings carry their token color + name so the table sees WHO. */
 export interface Ping {
   id: string
   x: number
   y: number
+  color?: string
+  label?: string
 }
 
 export function PingLayer({ pings, scale = 1 }: { pings: Ping[]; scale?: number }) {
   return (
     <Group listening={false}>
-      {pings.map((p) => (
-        <Group key={p.id} x={p.x} y={p.y}>
-          <Circle radius={34 / scale} stroke="#e0a83c" strokeWidth={5 / scale} opacity={0.9} />
-          <Circle radius={16 / scale} fill="#e0a83c" opacity={0.5} />
-        </Group>
-      ))}
+      {pings.map((p) => {
+        const c = p.color ?? '#e0a83c'
+        return (
+          <Group key={p.id} x={p.x} y={p.y}>
+            <Circle radius={34 / scale} stroke={c} strokeWidth={5 / scale} opacity={0.9} />
+            <Circle radius={16 / scale} fill={c} opacity={0.5} />
+            {p.label && (
+              <Text
+                text={p.label}
+                fontSize={15 / scale}
+                fontStyle="bold"
+                fill="white"
+                stroke="black"
+                strokeWidth={0.8 / scale}
+                width={200 / scale}
+                offsetX={100 / scale}
+                y={40 / scale}
+                align="center"
+              />
+            )}
+          </Group>
+        )
+      })}
     </Group>
   )
 }
 
 /** Keep a self-expiring ping list (shared by the editor and the presenter). */
-export function usePings(): [Ping[], (p: { x: number; y: number; id?: string }) => void] {
+export function usePings(): [Ping[], (p: { x: number; y: number; id?: string; color?: string; label?: string }) => void] {
   const [pings, setPings] = useState<Ping[]>([])
-  const add = (p: { x: number; y: number; id?: string }) => {
-    const ping: Ping = { id: p.id ?? crypto.randomUUID(), x: p.x, y: p.y }
-    setPings((ps) => [...ps, ping])
+  const add = (p: { x: number; y: number; id?: string; color?: string; label?: string }) => {
+    // No crypto.randomUUID here — the portal is plain http:// on LAN, an
+    // insecure context where that API does not exist.
+    const ping: Ping = { id: p.id ?? `${Date.now()}-${Math.random()}`, x: p.x, y: p.y, color: p.color, label: p.label }
+    setPings((ps) => (ps.some((x) => x.id === ping.id) ? ps : [...ps, ping]))
     setTimeout(() => setPings((ps) => ps.filter((x) => x.id !== ping.id)), 2500)
   }
   return [pings, add]
@@ -240,6 +262,7 @@ export function TokenLayer({
   tokens,
   draggable,
   decor,
+  highlightId,
   onMove,
   onToggleHidden,
   onRemove,
@@ -249,6 +272,8 @@ export function TokenLayer({
   draggable?: boolean
   /** Live (DM) or baked-at-send (presenter) HP rings + condition tags by token id. */
   decor?: Record<string, TokenDecor>
+  /** E2: "this one is YOU" — a dashed gold halo on the player's own token. */
+  highlightId?: string
   onMove?: (id: string, x: number, y: number) => void
   onToggleHidden?: (id: string) => void
   onRemove?: (id: string) => void
@@ -275,6 +300,9 @@ export function TokenLayer({
             opacity={tk.hidden ? 0.45 : 1}
           >
             <Circle radius={tk.r} fill={tk.color} stroke="black" strokeWidth={2} shadowBlur={6} shadowOpacity={0.6} />
+            {highlightId === tk.id && (
+              <Circle radius={tk.r + 9} stroke="#f4d03f" strokeWidth={2.5} dash={[7, 5]} opacity={0.95} listening={false} />
+            )}
             {d?.hpFrac != null && (
               <Arc
                 innerRadius={tk.r + 2}
@@ -320,6 +348,16 @@ export function TokenLayer({
   )
 }
 
+/** Ember E2: what a PLAYER may do on the live map — drag their own token,
+ * ping, measure. Everything else stays view-only. */
+export interface PresenterInteract {
+  /** The character this browser belongs to — gates which token is draggable. */
+  myCharacterId: string | null
+  mode: 'move' | 'ping' | 'ruler'
+  onMoveToken: (tokenId: string, x: number, y: number) => void
+  onPing: (x: number, y: number) => void
+}
+
 /** Player-side render: image + committed fog, scaled to fit the window. */
 export function PresenterMap({
   file,
@@ -330,7 +368,8 @@ export function PresenterMap({
   overlays = [],
   decor,
   initiative,
-  pings = []
+  pings = [],
+  interact
 }: {
   file: string
   strokes: FogStroke[]
@@ -341,9 +380,13 @@ export function PresenterMap({
   decor?: Record<string, TokenDecor>
   initiative?: { names: string[]; turn: number }
   pings?: Ping[]
+  interact?: PresenterInteract
 }) {
   const [img] = useImage(assetUrl(file))
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
+  // E2 ruler: player-local measurement, never networked (same as the DM's).
+  const [ruler, setRuler] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
+  const stageRef = useRef<Konva.Stage | null>(null)
   useEffect(() => {
     const onResize = () => setSize({ w: window.innerWidth, h: window.innerHeight })
     window.addEventListener('resize', onResize)
@@ -353,9 +396,57 @@ export function PresenterMap({
   const scale = Math.min(size.w / img.width, size.h / img.height)
   const x = (size.w - img.width * scale) / 2
   const y = (size.h - img.height * scale) / 2
+
+  const visible = tokens.filter((t) => !t.hidden)
+  const myToken =
+    interact?.myCharacterId != null
+      ? visible.find((t) => t.characterId && t.characterId === interact.myCharacterId)
+      : undefined
+  const canDrag = !!interact && interact.mode === 'move' && !!myToken
+  const others = myToken ? visible.filter((t) => t.id !== myToken.id) : visible
+
+  /** Pointer position in image coordinates (undoes the fit-to-screen transform). */
+  const imgPos = (): { x: number; y: number } | null => {
+    const p = stageRef.current?.getPointerPosition()
+    if (!p) return null
+    return { x: (p.x - x) / scale, y: (p.y - y) / scale }
+  }
+  const onDown = () => {
+    if (!interact) return
+    const p = imgPos()
+    if (!p) return
+    if (interact.mode === 'ping') interact.onPing(p.x, p.y)
+    else if (interact.mode === 'ruler') setRuler({ x1: p.x, y1: p.y, x2: p.x, y2: p.y })
+  }
+  const onMove = () => {
+    if (!ruler) return
+    const p = imgPos()
+    if (p) setRuler((r) => (r ? { ...r, x2: p.x, y2: p.y } : r))
+  }
+  const onUp = () => setRuler(null)
+  const rulerText = ruler
+    ? grid && grid >= 8
+      ? `${Math.round((Math.hypot(ruler.x2 - ruler.x1, ruler.y2 - ruler.y1) / grid) * 5)} ft`
+      : `${Math.round(Math.hypot(ruler.x2 - ruler.x1, ruler.y2 - ruler.y1))} px`
+    : ''
+
   return (
-    <div className="relative h-full w-full">
-      <Stage width={size.w} height={size.h} x={x} y={y} scaleX={scale} scaleY={scale}>
+    <div className="relative h-full w-full" style={interact ? { touchAction: 'none' } : undefined}>
+      <Stage
+        ref={stageRef}
+        width={size.w}
+        height={size.h}
+        x={x}
+        y={y}
+        scaleX={scale}
+        scaleY={scale}
+        onMouseDown={onDown}
+        onTouchStart={onDown}
+        onMouseMove={onMove}
+        onTouchMove={onMove}
+        onMouseUp={onUp}
+        onTouchEnd={onUp}
+      >
         <Layer listening={false}>
           <KImage image={img} />
           {grid ? <GridLayer w={img.width} h={img.height} cell={grid} /> : null}
@@ -363,9 +454,45 @@ export function PresenterMap({
         <FogLayer w={img.width} h={img.height} strokes={strokes} zones={zones} opacity={1} />
         <Layer listening={false}>
           <OverlayLayer overlays={overlays} grid={grid ?? 0} />
-          <TokenLayer tokens={tokens.filter((t) => !t.hidden)} decor={decor} />
+          <TokenLayer tokens={others} decor={decor} highlightId={undefined} />
+          {myToken && !canDrag && <TokenLayer tokens={[myToken]} decor={decor} highlightId={myToken.id} />}
           <PingLayer pings={pings} scale={scale} />
         </Layer>
+        {myToken && canDrag && (
+          <Layer>
+            <TokenLayer
+              tokens={[myToken]}
+              decor={decor}
+              highlightId={myToken.id}
+              draggable
+              onMove={(id, nx, ny) => {
+                const sp = snapToGrid(nx, ny, grid)
+                interact!.onMoveToken(id, sp.x, sp.y)
+              }}
+            />
+          </Layer>
+        )}
+        {ruler && (
+          <Layer listening={false}>
+            <Line
+              points={[ruler.x1, ruler.y1, ruler.x2, ruler.y2]}
+              stroke="#f4d03f"
+              strokeWidth={3 / scale}
+              dash={[12 / scale, 8 / scale]}
+            />
+            <Text
+              text={rulerText}
+              x={ruler.x2}
+              y={ruler.y2}
+              offsetY={30 / scale}
+              fontSize={18 / scale}
+              fontStyle="bold"
+              fill="#f4d03f"
+              stroke="black"
+              strokeWidth={0.8 / scale}
+            />
+          </Layer>
+        )}
       </Stage>
       {/* Initiative strip (D4): who's up, baked at 📤 Send. */}
       {initiative && initiative.names.length > 0 && (
@@ -517,6 +644,15 @@ export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose:
   const [inspectId, setInspectId] = useState<string | null>(null)
   const [ruler, setRuler] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
   const [pings, addPing] = usePings()
+
+  // Ember E2: a player pinged from the portal — pulse it here too (their
+  // token color + name) so the DM sees who's pointing where.
+  useEffect(() => {
+    return window.hearth.onTablePing((p) => {
+      if (!p.mapId || p.mapId === map.id) addPing(p)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map.id])
 
   // AoE templates (D4)
   const overlays = map.overlays ?? []

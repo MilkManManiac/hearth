@@ -119,7 +119,21 @@ deadline pressure ("take our time and make sure those are set").
    real sheets auto-migrated (verified on scratch copies first: 4/5 ACs
    reproduced by the formula, Eddy pinned at his imported 16; originals kept
    in `legacyEquipment`).
-5. **M5 — Ember E2** (own token + ping + measure), then E3.
+5. **M5 — Ember E2** ✅ SHIPPED 2026-07-20: the portal Table view is
+   interactive — tool pills (🖐 move / 📍 ping / 📏 measure) at the bottom.
+   Players drag ONLY their own PC token (gold dashed halo marks "you"; the
+   server refuses any move where the token's `characterId` doesn't match the
+   claimed character — monsters/others are structurally unmovable), grid-snap
+   on drop, optimistic + persisted via the atomic `saveMap`. Pings are
+   ephemeral (never persisted), carry the player's token color + name, and
+   relay everywhere: other browsers (new SSE `ping` event), the presenter
+   window, and any open DM map editor (`table:ping` IPC); DM Alt+click pings
+   now pulse on player phones too. Ruler is player-local (ft via the grid),
+   touch + mouse. New portal routes: POST `/api/table/move-token` (403 on
+   non-owned), POST `/api/table/ping` (sanitized). Smoke-tested headless
+   (15-check API/write-path script + Playwright phone-viewport run — drag
+   persisted to maps/*.json at a snapped cell center). Next: **E3** as the
+   table demands it.
 
 ## Research appendix (4-agent pass, 2026-07-10 — details in the session log)
 

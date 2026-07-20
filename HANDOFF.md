@@ -78,8 +78,9 @@ appendix is effectively the design doc):
   auto-AC (`src/shared/inventory.ts` — armor table + `effectiveAc()`), coin
   pouches, party stash (`party.json`, transfer-never-copy), Grant → rows,
   5 real sheets migrated (originals in `legacyEquipment`).
-- **M5 — Ember E2**: players move their OWN token + ping + measure. Never
-  other tokens.
+- ~~M5 — Ember E2~~ ✅ shipped 2026-07-20 (portal Table view: own-token move
+  server-enforced by characterId, ping relay everywhere, local ruler). Next
+  Ember stage (E3) waits on real-table demand.
 - **Design pass**: the app is "functional but plain" (Wes's words, TODOS #1).
   Shared primitives, visual polish. Wide open for someone with taste.
 - Smaller open items: guided builder wizard, portal auth-for-tunnel (needed
