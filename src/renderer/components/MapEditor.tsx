@@ -386,16 +386,24 @@ export function PresenterMap({
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
   // E2 ruler: player-local measurement, never networked (same as the DM's).
   const [ruler, setRuler] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
+  // E2 zoom/pan (players only): null = auto-fit. Pinch or wheel to zoom in for
+  // precise token moves on a phone; drag empty ground (move mode) to pan.
+  const [zoomView, setZoomView] = useState<{ x: number; y: number; scale: number } | null>(null)
+  const panRef = useRef<{ px: number; py: number } | null>(null)
+  const pinchRef = useRef<{ dist: number; cx: number; cy: number } | null>(null)
+  const pingStartRef = useRef<{ ix: number; iy: number; sx: number; sy: number } | null>(null)
   const stageRef = useRef<Konva.Stage | null>(null)
   useEffect(() => {
     const onResize = () => setSize({ w: window.innerWidth, h: window.innerHeight })
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+  useEffect(() => setZoomView(null), [file])
   if (!img) return null
-  const scale = Math.min(size.w / img.width, size.h / img.height)
-  const x = (size.w - img.width * scale) / 2
-  const y = (size.h - img.height * scale) / 2
+  const fit = Math.min(size.w / img.width, size.h / img.height)
+  const scale = zoomView?.scale ?? fit
+  const x = zoomView?.x ?? (size.w - img.width * scale) / 2
+  const y = zoomView?.y ?? (size.h - img.height * scale) / 2
 
   const visible = tokens.filter((t) => !t.hidden)
   const myToken =
@@ -405,25 +413,96 @@ export function PresenterMap({
   const canDrag = !!interact && interact.mode === 'move' && !!myToken
   const others = myToken ? visible.filter((t) => t.id !== myToken.id) : visible
 
-  /** Pointer position in image coordinates (undoes the fit-to-screen transform). */
+  /** Pointer position in image coordinates (undoes the current transform). */
   const imgPos = (): { x: number; y: number } | null => {
     const p = stageRef.current?.getPointerPosition()
     if (!p) return null
     return { x: (p.x - x) / scale, y: (p.y - y) / scale }
   }
-  const onDown = () => {
+  /** Zoom around a screen point, clamped [fit … 8×fit]; at fit, back to auto. */
+  const zoomAt = (sx: number, sy: number, factor: number) => {
+    const ns = Math.min(fit * 8, Math.max(fit, scale * factor))
+    if (ns <= fit + 1e-9) {
+      setZoomView(null)
+      return
+    }
+    const ix = (sx - x) / scale
+    const iy = (sy - y) / scale
+    setZoomView({ scale: ns, x: sx - ix * ns, y: sy - iy * ns })
+  }
+  const onDown = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     if (!interact) return
     const p = imgPos()
-    if (!p) return
-    if (interact.mode === 'ping') interact.onPing(p.x, p.y)
-    else if (interact.mode === 'ruler') setRuler({ x1: p.x, y1: p.y, x2: p.x, y2: p.y })
+    const sp = stageRef.current?.getPointerPosition()
+    if (!p || !sp) return
+    if (interact.mode === 'ping') {
+      // Fire on RELEASE, not press — a press that turns into a pinch/drag
+      // must not ping the whole table.
+      pingStartRef.current = { ix: p.x, iy: p.y, sx: sp.x, sy: sp.y }
+    } else if (interact.mode === 'ruler') {
+      setRuler({ x1: p.x, y1: p.y, x2: p.x, y2: p.y })
+    } else if (interact.mode === 'move') {
+      // Dragging empty ground pans; dragging YOUR token moves it (Konva's
+      // draggable handles that — skip pan when the press lands on a token).
+      const onToken = e.target !== e.target.getStage() && e.target.findAncestor('.token')
+      if (!onToken) panRef.current = { px: sp.x, py: sp.y }
+    }
   }
-  const onMove = () => {
+  const onMove = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+    // Two fingers anywhere = pinch zoom (+ two-finger pan); trumps every mode.
+    const touches = 'touches' in e.evt ? e.evt.touches : undefined
+    if (touches && touches.length === 2) {
+      const cx = (touches[0].clientX + touches[1].clientX) / 2
+      const cy = (touches[0].clientY + touches[1].clientY) / 2
+      const dist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY)
+      setRuler(null)
+      panRef.current = null
+      pingStartRef.current = null
+      const prev = pinchRef.current
+      pinchRef.current = { dist, cx, cy }
+      if (prev && prev.dist > 0) {
+        const ns = Math.min(fit * 8, Math.max(fit, scale * (dist / prev.dist)))
+        const ix = (cx - x) / scale
+        const iy = (cy - y) / scale
+        setZoomView({ scale: ns, x: cx - ix * ns + (cx - prev.cx), y: cy - iy * ns + (cy - prev.cy) })
+      }
+      return
+    }
+    if (panRef.current) {
+      const sp = stageRef.current?.getPointerPosition()
+      if (sp) {
+        setZoomView({ scale, x: x + sp.x - panRef.current.px, y: y + sp.y - panRef.current.py })
+        panRef.current = { px: sp.x, py: sp.y }
+      }
+      return
+    }
+    if (pingStartRef.current) {
+      // A press that wanders is a drag, not a tap — cancel the pending ping.
+      const sp = stageRef.current?.getPointerPosition()
+      if (sp && Math.hypot(sp.x - pingStartRef.current.sx, sp.y - pingStartRef.current.sy) > 12) {
+        pingStartRef.current = null
+      }
+      return
+    }
     if (!ruler) return
     const p = imgPos()
     if (p) setRuler((r) => (r ? { ...r, x2: p.x, y2: p.y } : r))
   }
-  const onUp = () => setRuler(null)
+  const onUp = () => {
+    setRuler(null)
+    panRef.current = null
+    pinchRef.current = null
+    if (pingStartRef.current && interact) {
+      interact.onPing(pingStartRef.current.ix, pingStartRef.current.iy)
+      pingStartRef.current = null
+    }
+  }
+  const onWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
+    if (!interact) return
+    e.evt.preventDefault()
+    const sp = stageRef.current?.getPointerPosition()
+    if (sp) zoomAt(sp.x, sp.y, e.evt.deltaY < 0 ? 1.15 : 1 / 1.15)
+  }
   const rulerText = ruler
     ? grid && grid >= 8
       ? `${Math.round((Math.hypot(ruler.x2 - ruler.x1, ruler.y2 - ruler.y1) / grid) * 5)} ft`
@@ -446,6 +525,7 @@ export function PresenterMap({
         onTouchMove={onMove}
         onMouseUp={onUp}
         onTouchEnd={onUp}
+        onWheel={onWheel}
       >
         <Layer listening={false}>
           <KImage image={img} />
@@ -494,6 +574,16 @@ export function PresenterMap({
           </Layer>
         )}
       </Stage>
+      {/* E2: zoomed in — one tap back to fit. */}
+      {interact && zoomView && (
+        <button
+          onClick={() => setZoomView(null)}
+          className="absolute right-3 top-3 z-40 rounded-full border border-white/20 bg-black/70 px-3 py-2 text-sm text-white/80 hover:border-hearth-ember"
+          title="Back to full map"
+        >
+          ⤢ fit
+        </button>
+      )}
       {/* Initiative strip (D4): who's up, baked at 📤 Send. */}
       {initiative && initiative.names.length > 0 && (
         <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
