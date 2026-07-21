@@ -20,9 +20,15 @@ files:
   - '!scripts/**'
   - '!Elor Campaign Import/**'
 
-# Pure-JS/optional deps only (opusscript for Opus, prism-media) — no native
-# compilation — so the app is portable across Windows machines as-is.
+# Native modules (@discordjs/opus, sodium-native) ship as N-API prebuilds that
+# scripts/ensure-opus-prebuild.mjs puts in place — there is no C++ toolchain on
+# the build machine, so electron-builder must NOT try to rebuild them from
+# source. N-API binaries are ABI-stable across Node/Electron versions.
+npmRebuild: false
 asar: true
+# Native .node binaries can't load from inside the asar archive.
+asarUnpack:
+  - '**/*.node'
 
 win:
   # dir  -> release/win-unpacked/Hearth.exe  (self-contained folder, no install)

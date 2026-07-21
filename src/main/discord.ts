@@ -2,6 +2,7 @@
 // channel. See DISCORD-BRIDGE.md for the architecture. EXPERIMENTAL until the
 // first end-to-end test with a real bot token.
 import { app, powerSaveBlocker } from 'electron'
+import * as os from 'os'
 import * as path from 'path'
 import * as fsSync from 'fs'
 import { promises as fs } from 'fs'
@@ -182,12 +183,26 @@ export class DiscordBridge {
 
   private blockPowerSave(): void {
     if (this.psbId === null) this.psbId = powerSaveBlocker.start('prevent-app-suspension')
+    // Above-normal process priority while streaming: the 20ms opus encode +
+    // packet dispatch loop lives on this process's event loop, and Windows
+    // deprioritizes background apps (efficiency mode) when the window is
+    // minimized — exactly when the DM needs the stream steady.
+    try {
+      os.setPriority(process.pid, os.constants.priority.PRIORITY_ABOVE_NORMAL)
+    } catch (err) {
+      console.warn('[discord] could not raise process priority:', (err as Error).message)
+    }
   }
 
   private unblockPowerSave(): void {
     if (this.psbId !== null) {
       powerSaveBlocker.stop(this.psbId)
       this.psbId = null
+    }
+    try {
+      os.setPriority(process.pid, os.constants.priority.PRIORITY_NORMAL)
+    } catch {
+      /* best effort */
     }
   }
 
@@ -306,8 +321,12 @@ export class DiscordBridge {
         NoSubscriberBehavior,
         entersState,
         VoiceConnectionStatus,
-        AudioPlayerStatus
+        AudioPlayerStatus,
+        generateDependencyReport
       } = await import('@discordjs/voice')
+      // Which opus/encryption impls actually loaded — "@discordjs/opus" must
+      // appear or we're on the slow opusscript fallback (stutter risk).
+      console.log('[discord] voice deps:\n' + generateDependencyReport())
       const guild = await this.client.guilds.fetch(guildId)
       const channel = (await guild.channels.fetch(channelId)) as VoiceBasedChannel | null
       if (!channel?.isVoiceBased()) throw new Error('Not a voice channel')
