@@ -12,6 +12,14 @@ their curated categories/tags from the table below; newly discovered ones
 get auto-derived tags and are flagged for curation. If discovery is
 unavailable (no config, offline, rate-limited) it falls back to the table.
 
+Not every playlist is music. A playlist's `kind` decides where its files land
+and what they become: music -> music/ + a queue-able PlaylistPreset; ambience
+-> ambience/; sfx -> sfx/. Ambience and SFX get NO preset — in Hearth those are
+palette assets the DM taps per scene, not queues — so they're categorized
+per-track (rain -> weather, wolves -> creatures) and found via the library
+browser. Discovery guesses the kind from the playlist name ("... SFX",
+"... Ambient Sounds"); curate it in the PLAYLISTS table below.
+
 Re-runnable: the playlists grow over time. Before downloading anything,
 every playlist track is fuzzy-matched against the mp3s already on disk
 (from any source, any filename); only the missing ones are fetched. Dupes
@@ -39,6 +47,12 @@ CAMPAIGN = Path(r"C:\Users\weshu\Campaigns\Elor Rebirth")
 MUSIC = CAMPAIGN / "music"
 LIB = CAMPAIGN / "library.json"
 
+# A playlist's kind decides where its files land and what they become in the
+# library. Music playlists also become queue-able PlaylistPresets; ambience and
+# sfx do NOT — in Hearth those are palette assets a DM taps per scene, not
+# queues, so they're tagged for the library browser and left out of playlists[].
+FOLDERS = {"music": MUSIC, "ambience": CAMPAIGN / "ambience", "sfx": CAMPAIGN / "sfx"}
+
 # downloader/spotify_sync.json (gitignored — holds an API secret):
 #   { "user": "<spotify user id or full profile URL>",
 #     "client_id": "...", "client_secret": "..." }
@@ -47,46 +61,93 @@ LIB = CAMPAIGN / "library.json"
 CONFIG = Path(__file__).with_name("spotify_sync.json")
 PREFIX = "dnd hearth"  # case-insensitive substring that marks a Hearth playlist
 
+def P(url, pid, name, cat, cats, tags, kind="music"):
+    """One curated playlist row."""
+    return {"url": url, "id": pid, "name": name, "kind": kind,
+            "category": cat, "categories": list(cats), "tags": list(tags)}
+
+
 # Curated playlists: url, preset id, display name, primary category, extra
-# categories, base tags. Discovery matches these by playlist id and keeps this
-# metadata; playlists found on the profile but NOT listed here get auto tags —
-# promote them into this table to curate.
+# categories, base tags, and (for non-music) the asset kind. Discovery matches
+# these by playlist id and keeps this metadata; playlists found on the profile
+# but NOT listed here get auto tags — promote them into this table to curate.
 PLAYLISTS = [
-    ("https://open.spotify.com/playlist/1y5dRModd4RO3nLgHNg4ae",
-     "spotify-boss-combat", "Boss / Combat", "boss", ["boss", "combat"],
-     ["boss", "combat", "epic", "battle", "orchestral", "intense"]),
-    ("https://open.spotify.com/playlist/6Mu21QzVeADro7kQYtZs3M",
-     "spotify-ethereal", "Angelic / Ethereal", "ethereal", ["ethereal"],
-     ["angelic", "ethereal", "vocals", "choir", "sacred", "atmospheric"]),
-    ("https://open.spotify.com/playlist/0ZIkA0Dk8yXRe0qa1on2Bs",
-     "spotify-chase-suspense", "Chase / Suspense", "tension", ["tension"],
-     ["chase", "suspense", "tension", "pursuit", "danger"]),
-    ("https://open.spotify.com/playlist/50ck6o9PDn5CWLOMRPZcEZ",
-     "spotify-adventure", "Adventure / Exploration", "exploration",
-     ["exploration", "travel"],
-     ["adventure", "exploration", "travel", "wonder", "journey"]),
-    ("https://open.spotify.com/playlist/4C1CjrntCYeFZWZDUUJM4d",
-     "spotify-chill", "Chill", "chill", ["chill"],
-     ["chill", "calm", "peaceful", "downtime", "ambient"]),
-    ("https://open.spotify.com/playlist/15IV0OLu3oCzX3l6A4REWr",
-     "spotify-sad", "Sad / Somber", "somber", ["somber"],
-     ["sad", "somber", "melancholy", "emotional", "grief"]),
+    P("https://open.spotify.com/playlist/1y5dRModd4RO3nLgHNg4ae",
+      "spotify-boss-combat", "Boss / Combat", "boss", ["boss", "combat"],
+      ["boss", "combat", "epic", "battle", "orchestral", "intense"]),
+    P("https://open.spotify.com/playlist/6Mu21QzVeADro7kQYtZs3M",
+      "spotify-ethereal", "Angelic / Ethereal", "ethereal", ["ethereal"],
+      ["angelic", "ethereal", "vocals", "choir", "sacred", "atmospheric"]),
+    P("https://open.spotify.com/playlist/0ZIkA0Dk8yXRe0qa1on2Bs",
+      "spotify-chase-suspense", "Chase / Suspense", "tension", ["tension"],
+      ["chase", "suspense", "tension", "pursuit", "danger"]),
+    P("https://open.spotify.com/playlist/50ck6o9PDn5CWLOMRPZcEZ",
+      "spotify-adventure", "Adventure / Exploration", "exploration",
+      ["exploration", "travel"],
+      ["adventure", "exploration", "travel", "wonder", "journey"]),
+    P("https://open.spotify.com/playlist/4C1CjrntCYeFZWZDUUJM4d",
+      "spotify-chill", "Chill", "chill", ["chill"],
+      ["chill", "calm", "peaceful", "downtime", "ambient"]),
+    P("https://open.spotify.com/playlist/15IV0OLu3oCzX3l6A4REWr",
+      "spotify-sad", "Sad / Somber", "somber", ["somber"],
+      ["sad", "somber", "melancholy", "emotional", "grief"]),
 ]
 
 # Discovered 2026-07-18 from the profile.
 PLAYLISTS += [
-    ("https://open.spotify.com/playlist/3wee9GwyRWIw6FDZAARhZI",
-     "spotify-scary-eerie", "Scary / Eerie", "horror", ["horror"],
-     ["scary", "eerie", "horror", "creepy", "dread", "unsettling"]),
-    ("https://open.spotify.com/playlist/2TmorVazZM7KALsafPuFZU",
-     "spotify-ambiance", "Ambiance", "ambient", ["ambient"],
-     ["ambient", "ambiance", "atmosphere", "background", "underscore"]),
-    ("https://open.spotify.com/playlist/1l3t4VDpkEouJeavnCbvet",
-     "spotify-combat-action", "Combat / Action", "combat", ["combat"],
-     ["combat", "action", "battle", "fight", "energetic", "driving"]),
-    ("https://open.spotify.com/playlist/5DryaWFKgo9dKeyigLvBbF",
-     "spotify-romance", "Romance", "romance", ["romance"],
-     ["romance", "love", "tender", "emotional", "intimate", "warm"]),
+    P("https://open.spotify.com/playlist/3wee9GwyRWIw6FDZAARhZI",
+      "spotify-scary-eerie", "Scary / Eerie", "horror", ["horror"],
+      ["scary", "eerie", "horror", "creepy", "dread", "unsettling"]),
+    P("https://open.spotify.com/playlist/2TmorVazZM7KALsafPuFZU",
+      "spotify-ambiance", "Ambiance", "ambient", ["ambient"],
+      ["ambient", "ambiance", "atmosphere", "background", "underscore"]),
+    P("https://open.spotify.com/playlist/1l3t4VDpkEouJeavnCbvet",
+      "spotify-combat-action", "Combat / Action", "combat", ["combat"],
+      ["combat", "action", "battle", "fight", "energetic", "driving"]),
+    P("https://open.spotify.com/playlist/5DryaWFKgo9dKeyigLvBbF",
+      "spotify-romance", "Romance", "romance", ["romance"],
+      ["romance", "love", "tender", "emotional", "intimate", "warm"]),
+]
+
+# Discovered 2026-07-20 — NOT music. These are loops and one-shots, so they
+# land in ambience/ and sfx/ as palette assets. Per-track categories are
+# refined by TRACK_CATS below; the row category is the fallback.
+PLAYLISTS += [
+    P("https://open.spotify.com/playlist/5WeIO0p4JGQtp2vttL0NYo",
+      "spotify-ambient-sounds", "Ambient Sounds", "places", ["places"],
+      ["ambient", "loop", "background", "atmosphere"], kind="ambience"),
+    P("https://open.spotify.com/playlist/3T45IxdwSZbQIFeAyrpXOP",
+      "spotify-sfx", "SFX", "objects", ["objects"],
+      ["sfx", "one-shot", "effect"], kind="sfx"),
+]
+
+# Track-title keyword -> category for ambience/sfx assets, so a big sound
+# playlist doesn't land as one undifferentiated blob in the library browser.
+# FIRST MATCH WINS, so order is load-bearing: creatures precedes horror (else
+# "screaming crows" files as horror), footsteps precedes combat ("marching
+# soldiers" is footsteps). Keywords are matched as substrings, so prefer stems
+# ("wolv" catches wolf/wolves) over whole words.
+TRACK_CATS = [
+    (("rain", "storm", "thunder", "wind", "snow", "blizzard", "weather"), "weather"),
+    (("ocean", "sea", "wave", "river", "stream", "water", "waterfall", "underwater",
+      "rapids", "surf"), "water"),
+    (("fire", "campfire", "flame", "torch", "hearth", "burn", "ember"), "fire"),
+    (("dragon", "wolv", "wolf", "howl", "beast", "monster", "growl", "roar", "bird",
+      "crow", "raven", "horse", "insect", "cricket", "bat ", "rat ", "creature",
+      "animal", "dog", "cat ", "owl"), "creatures"),
+    (("footstep", "walk", "run ", "step", "march", "boots"), "footsteps"),
+    (("ghost", "horror", "scream", "eerie", "haunt", "demon", "evil", "creepy",
+      "scary", "clown", "nightmare", "dread", "undead", "zombie"), "horror"),
+    (("sword", "battle", "arrow", "shield", "axe", "combat", "war", "soldier",
+      "siege"), "combat"),
+    (("tavern", "market", "crowd", "village", "town", "city", "inn ", "people",
+      "street", "bazaar"), "town"),
+    (("spell", "magic", "arcane", "portal", "teleport", "ritual"), "magic"),
+    (("shout", "cry", "voice", "chant", "whisper", "laugh"), "voices"),
+    (("forest", "cave", "dungeon", "swamp", "desert", "mountain", "jungle", "field",
+      "carriage", "ship", "road", "camp"), "places"),
+    (("door", "chest", "lock", "chain", "bell", "coin", "glass", "wood", "chime",
+      "clock", "paper"), "objects"),
 ]
 
 
@@ -183,9 +244,20 @@ def auto_row(url: str, name: str):
     label = re.sub(re.escape(PREFIX), "", name, flags=re.I).strip(" -–—:")
     slug = re.sub(r"[^a-z0-9]+", "-", (label or name).lower()).strip("-")
     low = name.lower()
+    # A playlist named for sounds rather than songs isn't music — route it to
+    # the right folder/kind instead of dumping loops into the music palette.
+    kind = "sfx" if "sfx" in low or "sound effect" in low else \
+        "ambience" if "ambient sound" in low or "ambience" in low else "music"
     cat = next((c for words, c in AUTO_CATS if any(w in low for w in words)), "misc")
+    if kind != "music":
+        cat = "places" if kind == "ambience" else "objects"
     tags = sorted({w for w in re.findall(r"[a-z]+", (label or name).lower()) if len(w) > 2})
-    return (url, f"spotify-{slug}", label or name, cat, [cat], tags or [cat])
+    return P(url, f"spotify-{slug}", label or name, cat, [cat], tags or [cat], kind)
+
+
+def track_category(title: str, fallback: str) -> str:
+    low = title.lower()
+    return next((c for words, c in TRACK_CATS if any(w in low for w in words)), fallback)
 
 
 def discover() -> list | None:
@@ -235,18 +307,18 @@ def discover() -> list | None:
         print(f"Playlist discovery failed ({e}) — using the built-in playlist table.")
         return None
 
-    known = {playlist_id(row[0]): row for row in PLAYLISTS}
+    known = {playlist_id(row["url"]): row for row in PLAYLISTS}
     rows, fresh = [], []
     for purl, pname in found:
         row = known.get(playlist_id(purl))
         if row is None:
             row = auto_row(purl, pname)
-            fresh.append(pname)
+            fresh.append(f'{pname} → {row["kind"]}')
         rows.append(row)
     print(f'Discovered {len(rows)} "{PREFIX}" playlist(s) on profile "{user}".')
     for pname in fresh:
         print(f"  ✨ NEW: {pname} — auto-tagged; tell Claude to curate its tags.")
-    missing = [row[2] for pid, row in known.items()
+    missing = [row["name"] for pid, row in known.items()
                if pid not in {playlist_id(u) for u, _ in found}]
     for name in missing:
         print(f"  ⚠ known playlist not on the public profile (private? renamed?): {name} — still syncing it.")
@@ -268,25 +340,44 @@ def spotdl_save(url: str, dest: Path) -> list[dict]:
     return d if isinstance(d, list) else d.get("songs", d)
 
 
-def spotdl_download(urls: list[str]):
+def spotdl_download(urls: list[str], dest: Path):
+    dest.mkdir(parents=True, exist_ok=True)
     subprocess.run([sys.executable, "-m", "spotdl", "download", *urls,
                     "--format", "mp3", "--bitrate", "192k",
-                    "--output", str(MUSIC / "{artists} - {title}.{output-ext}")])
+                    "--output", str(dest / "{artists} - {title}.{output-ext}")])
 
 
-def match_file(files_index, artists, title):
-    """Best mp3 whose normalized stem contains the title (and ideally artist)."""
+def match_file(files_index, artists, title, strict=False):
+    """Best mp3 whose normalized stem contains the title (and ideally artist).
+
+    strict=True also REQUIRES the artist — used for ambience/sfx, whose titles
+    are short generic words ("Fire", "Door", "Thunder") that would otherwise
+    substring-match an unrelated CC0 file already in the folder and either skip
+    a needed download or overwrite that file's curated tags."""
     nt, na = norm(title), norm(artists[0] if artists else "")
+    if strict and not na:
+        return None
     best, best_score = None, -1
     for name, nstem in files_index:
         if nt and nt in nstem:
-            score = len(nt) + (5 if na and na in nstem else 0)
+            hit_artist = bool(na and na in nstem)
+            if strict and not hit_artist:
+                continue
+            score = len(nt) + (5 if hit_artist else 0)
             if score > best_score:
                 best, best_score = name, score
     return best
 
 
 def main():
+    # Windows consoles default to cp1252, which raises on the ✓/✨/⚠ in our
+    # output (and mangles non-ASCII track titles). Never let a print kill a sync.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--save-only", action="store_true",
                     help="refresh track lists only; skip downloading")
@@ -296,9 +387,10 @@ def main():
 
     tmp = Path(tempfile.mkdtemp())
     saved = []
-    for i, (url, *_rest) in enumerate(playlists, 1):
-        songs = spotdl_save(url, tmp / f"pl{i}.spotdl")
-        print(f"[{i}/{len(playlists)}] {_rest[1]}: {len(songs)} tracks")
+    for i, row in enumerate(playlists, 1):
+        songs = spotdl_save(row["url"], tmp / f"pl{i}.spotdl")
+        kind = "" if row["kind"] == "music" else f'  [{row["kind"]}]'
+        print(f'[{i}/{len(playlists)}] {row["name"]}: {len(songs)} tracks{kind}')
         saved.append(songs)
 
     # Dedupe BEFORE downloading: fuzzy-match every playlist track against the
@@ -306,62 +398,84 @@ def main():
     # only fetch the ones we genuinely don't have. spotdl's own skip only
     # catches exact filename matches, which re-downloads dupes whenever the
     # metadata differs slightly.
+    # Dedupe and download per kind — each kind has its own folder, so a track's
+    # "do we already have it?" question is only ever asked of that folder.
     if not args.save_only:
-        files_index = [(f.name, norm(f.stem)) for f in MUSIC.glob("*.mp3")]
-        to_download, have = {}, 0
-        for songs in saved:
-            for s in songs:
-                artists = s.get("artists") or ([s["artist"]] if s.get("artist") else [])
-                if match_file(files_index, artists, s.get("name", "")):
-                    have += 1
-                elif s.get("url"):
-                    to_download[s["url"]] = f"{', '.join(artists)} - {s.get('name', '')}"
-        print(f"\nAlready on disk: {have} tracks — skipping those.")
-        if to_download:
-            print(f"Downloading {len(to_download)} new track(s):")
-            for label in to_download.values():
-                print(f"  + {label}")
-            spotdl_download(list(to_download))
-        else:
-            print("Nothing new to download. ✓")
+        for kind, dest in FOLDERS.items():
+            rows = [(r, s) for r, s in zip(playlists, saved) if r["kind"] == kind]
+            if not rows:
+                continue
+            index = [(f.name, norm(f.stem)) for f in dest.glob("*.mp3")]
+            to_download, have = {}, 0
+            for _row, songs in rows:
+                for s in songs:
+                    artists = s.get("artists") or ([s["artist"]] if s.get("artist") else [])
+                    if match_file(index, artists, s.get("name", ""), strict=kind != "music"):
+                        have += 1
+                    elif s.get("url"):
+                        to_download[s["url"]] = f"{', '.join(artists)} - {s.get('name', '')}"
+            print(f"\n[{kind}] already on disk: {have} — skipping those.")
+            if to_download:
+                print(f"[{kind}] downloading {len(to_download)} new track(s):")
+                for label in to_download.values():
+                    print(f"  + {label}")
+                spotdl_download(list(to_download), dest)
+            else:
+                print(f"[{kind}] nothing new to download. ✓")
 
     lib = json.loads(LIB.read_text(encoding="utf-8"))
     assets_by_file = {a["file"]: a for a in lib["assets"]}
-    files_index = [(f.name, norm(f.stem)) for f in MUSIC.glob("*.mp3")]
+    index_by_kind = {k: [(f.name, norm(f.stem)) for f in d.glob("*.mp3")]
+                     for k, d in FOLDERS.items()}
     keep = [p for p in lib.get("playlists", []) if not p["id"].startswith("spotify-")]
 
-    new_presets, unmatched = [], []
-    for songs, (url, pid, pname, cat, cats, base_tags) in zip(saved, playlists):
+    new_presets, unmatched, added = [], [], {}
+    for songs, row in zip(saved, playlists):
+        kind, pname, cat = row["kind"], row["name"], row["category"]
+        folder = FOLDERS[kind].name
         files = []
         for s in songs:
             artists = s.get("artists") or ([s["artist"]] if s.get("artist") else [])
             title = s.get("name", "")
-            fname = match_file(files_index, artists, title)
+            fname = match_file(index_by_kind[kind], artists, title, strict=kind != "music")
             if not fname:
                 unmatched.append((pname, f"{', '.join(artists)} - {title}"))
                 continue
-            rel = f"music/{fname}"
+            rel = f"{folder}/{fname}"
             if rel in files:  # same song twice in one playlist — keep one
                 continue
             files.append(rel)
             if rel not in assets_by_file:
-                a = {"file": rel, "kind": "music", "category": cat,
-                     "categories": list(cats), "tags": list(base_tags), "name": title,
+                # Sound assets get a per-track category so they scatter into the
+                # right library buckets instead of landing as one lump.
+                tcat = cat if kind == "music" else track_category(title, cat)
+                tags = list(row["tags"])
+                if kind != "music":  # title words are the searchable handle
+                    tags += [w for w in re.findall(r"[a-z]+", title.lower())
+                             if len(w) > 2 and w not in tags]
+                a = {"file": rel, "kind": kind, "category": tcat,
+                     "categories": sorted({tcat, *row["categories"]}), "tags": tags,
+                     "name": title,
                      "description": f"{', '.join(artists)} — from the “{pname}” playlist.",
                      "source": "spotify", "license": "private"}
                 assets_by_file[rel] = a
                 lib["assets"].append(a)
+                added[kind] = added.get(kind, 0) + 1
             else:  # shared across playlists — merge categories/tags
                 a = assets_by_file[rel]
                 a.setdefault("categories", [])
-                for c in cats:
+                for c in row["categories"]:
                     if c not in a["categories"]:
                         a["categories"].append(c)
-                for t in base_tags:
+                for t in row["tags"]:
                     if t not in a.setdefault("tags", []):
                         a["tags"].append(t)
-        if files:
-            new_presets.append({"id": pid, "name": pname, "files": files})
+        # Only music becomes a queue-able preset; ambience/sfx are palette
+        # assets the DM taps per scene, found via the library browser.
+        if files and kind == "music":
+            new_presets.append({"id": row["id"], "name": pname, "files": files})
+        elif files:
+            print(f'  {row["id"]:24} {len(files):3} {kind} assets — no preset (palette kind)')
 
     lib["playlists"] = keep + new_presets
     LIB.write_text(json.dumps(lib, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -369,6 +483,8 @@ def main():
     print("\nPresets written:")
     for p in new_presets:
         print(f"  {p['id']:22} {len(p['files']):2} tracks  — {p['name']}")
+    if added:
+        print("New library assets: " + ", ".join(f"{n} {k}" for k, n in added.items()))
     print(f"Library assets total: {len(lib['assets'])}")
     if unmatched:
         print("\nNot matched (grab with yt-dlp, then re-run):")
