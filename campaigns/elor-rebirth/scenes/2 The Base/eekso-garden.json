@@ -1,0 +1,43 @@
+{
+  "id": "eekso-garden",
+  "name": "Eekso — The Garden (Ambush)",
+  "session": "session-26",
+  "dmNotes": "SET-PIECE 1 — the flytrap. Structure: LURE → THRESHOLD → CLOSE → FIGHT. The music does the work: start on 'bloom' (genuinely beautiful, zero irony) and hold it longer than feels comfortable. The turn comes from the WORLD first — the plants move, the music follows a beat later.\n\nThreshold = the pool's edge. Fire is the intended answer. Escape through the sealing archway is a valid win.\n\n⚑ STAT BLOCK STILL OWED (ask Claude): plant lure-predator, ~moderate budget (~4,500 XP vs 4x lvl 6 + Cumb) since they can flee mid-crawl.",
+
+  "music": [
+    { "id": "bloom", "label": "The garden (beautiful — play it straight)", "file": "music/mp1-oliver-siimon-celestial-gardens-95.mp3", "volume": 0.5, "default": true },
+    { "id": "wrong", "label": "It's wrong", "file": "music/mp1-oliver-siimon-music-creepy-tension-cinematic-gp-f-minor-85-4-4.mp3", "volume": 0.55 },
+    { "id": "close", "label": "The garden closes", "file": "music/mp1-oliver-siimon-music-horror-intense-stalker-strings-c-minor-60-12-8.mp3", "volume": 0.6 },
+    { "id": "fight", "label": "Fight for the door", "file": "music/battle-rpg.ogg", "volume": 0.65 },
+    { "id": "after", "label": "Aftermath", "file": "music/somber-what-is-left.mp3", "volume": 0.45 }
+  ],
+
+  "ambience": [
+    { "file": "ambience/fap-forest-birds.ogg", "volume": 0.35 },
+    { "file": "ambience/nox-hot-spring.ogg", "volume": 0.3 },
+    { "file": "ambience/fap-forest-day.ogg", "volume": 0.25 },
+    { "file": "ambience/fap-cave-creepy.ogg", "volume": 0.3, "autoplay": false }
+  ],
+
+  "sfx": [],
+
+  "images": [],
+
+  "scriptText": "# The Garden\n\nYou come around the rock and the fortress simply stops being a fortress.\n\nA garden grows here — a real one, walled in old stone, under a hundred feet of black rock. Trees you can't name lean over a pool so clear and blue it looks lit from underneath. Flowers in colours that have no business existing this far from the sun. The air is warm. Birds are singing somewhere in the branches.\n\nAfter everything behind you, it is the first thing in this place that looks *alive*.\n\n> [!dm] **Play it completely straight.** No ominous adjectives, no knowing pauses. Let them enjoy it; let somebody suggest resting here. The longer the honeymoon, the better the turn.\n\n## The Wrongnesses\n\n> [!dm] Only if a player actively looks — never volunteer:\n>\n> - **Perception DC 15:** the birdsong doesn't move. Same calls, same places, on a loop.\n> - **Nature DC 15:** nothing here has ever *seeded* — no saplings, no dead leaves, no litter. This garden has never been young.\n> - **Investigation DC 17:** bones at the base of the trees, half-swallowed by root and moss. Not cleaned up — *grown over*.\n> - **Survival DC 13:** no insect noise. In a garden. None.\n>\n> If they clock it early and back out — **let them.** Outsmarting the flytrap is a win. Don't force the fight.\n\n## The Threshold\n\n{{music:wrong}} {{amb:fap-cave-creepy|vol=30%|in=5s}}\n\n- **Trigger:** drinking, wading, or stepping past the pool's far edge\n\n- The birdsong stops — all of it, at once, mid-phrase\n\n- In the silence, every branch in the garden turns\n\n- If they're being *too* careful: a low branch bends down and **offers fruit** to whoever's closest\n\n## The Close\n\n{{music:close}}\n\nThe trees are moving. Not swaying — *walking*, dragging their roots out of the soil in long wet handfuls, closing the gaps between their trunks. The flowers turn to face you the way a crowd turns. Behind you, where the archway was, three trunks have already leaned together, and the vines are lacing them shut like fingers.\n\nAnd the whole garden takes one slow, wet, enormous breath.\n\n> [!dm] Run a **closing perimeter**, not a standing monster:\n>\n> - Each round the wall of growth advances — the open floor shrinks\n> - Ground inside becomes difficult terrain as roots surface\n> - End your turn touching the wall → grabbed: **restrained, and pulled**\n> - The real question: **can they reach the archway before it seals?** Escape is a legitimate win; killing it is optional.\n>\n> ⚑ **Stat block owed — get it from Claude before you run this.**\n\n## Fight\n\n{{music:fight}}\n\n> [!dm]\n> - **Fire works.** It's a plant — reward it fast and visibly.\n> - Restrained creatures get dragged toward the pool. **The pool is the mouth.** What goes under, dissolves.\n> - Badly hurt, it restarts the birdsong — the same loop, sped up, wrong. It's trying the lure a second time.\n\n## After\n\n{{music:after}}\n\n- The garden is a garden again. Still. Warm. The pool perfectly clear.\n\n- The birds do not come back.\n\n> [!dm] Loot is in the root-mass, not a chest — decades of travellers' metal: buckles, a shield boss, a signet. Clean place to hand them something if you want to.",
+
+  "ideas": [
+    { "id": "idea-birdsong-loop", "text": "The birdsong is a loop — same calls, same positions. Perception catches it before anything moves.", "done": false },
+    { "id": "idea-never-young", "text": "No saplings, no dead leaves, no seeds. The garden has never been young — it was made, not grown.", "done": false },
+    { "id": "idea-offered-fruit", "text": "If the party is too careful, a branch bends down and offers fruit to the nearest PC", "done": false },
+    { "id": "idea-second-lure", "text": "Badly wounded, it restarts the birdsong — sped up and wrong. Trying the lure again.", "done": false },
+    { "id": "idea-pool-mouth", "text": "Restrained creatures get dragged toward the pool. The pool is the mouth.", "done": false }
+  ],
+
+  "entities": [
+    { "id": "ent-garden", "type": "monster", "name": "The Garden (lure-predator) ⚑ stat block owed", "note": "Plant ambusher: lure → threshold → encircle → constrict. Vulnerable to fire. Escape through the sealing archway is a valid win.", "status": "present", "used": false },
+    { "id": "ent-pool", "type": "hazard", "name": "The pool", "note": "Not water. Dissolves what goes under. The mouth.", "status": "present", "used": false },
+    { "id": "ent-bones", "type": "loot", "name": "Bones and gear in the root-mass", "note": "Decades of travellers. Metal survives — buckles, shield boss, signet.", "status": "present", "used": false }
+  ],
+
+  "transition": { "crossfadeMs": 2500 }
+}

@@ -502,6 +502,8 @@ export interface Scene {
   transition?: { crossfadeMs?: number }
   /** Populated by the loader: relative path of the source file within the campaign. */
   _sourceFile?: string
+  /** Populated by the loader: subfolder under scenes/ this file lives in (rail grouping). */
+  _folder?: string
 }
 
 // ---------------------------------------------------------------------------

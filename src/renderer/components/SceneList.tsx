@@ -33,10 +33,16 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
   const [draft, setDraft] = useState('')
   // Which scene row has the session-assign popover open.
   const [assigningId, setAssigningId] = useState<string | null>(null)
+  // Collapsed folder groups (folder name → hidden). Session groups don't collapse.
+  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set())
   const renameRef = useRef<HTMLInputElement>(null)
 
-  // Sessions group the scene list (Scene.session → a kind:"session" note).
-  // Newest session first; scenes without one land in Unfiled at the bottom.
+  // Grouping, two tiers:
+  // 1. Physical subfolders under scenes/ (Scene._folder) — these are the DM's
+  //    own organisation (e.g. one folder per dungeon level) and go on top.
+  //    A leading "1 " / "2." on the folder name orders it and is hidden.
+  // 2. Everything else groups by session (Scene.session → kind:"session"
+  //    note), newest first; scenes with neither land in Unfiled at the bottom.
   const sessionNotes = campaign.notes
     .filter((n) => n.kind === 'session')
     .sort(
@@ -44,17 +50,34 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
         (b.date ?? b.createdAt ?? '').localeCompare(a.date ?? a.createdAt ?? '') ||
         a.title.localeCompare(b.title)
     )
-  const groups = sessionNotes
-    .map((sn) => ({
-      id: sn.id as string | null,
-      title: sn.title,
-      items: campaign.scenes.filter((s) => s.session === sn.id)
-    }))
-    .filter((g) => g.items.length > 0)
+  type Group = { id: string | null; title: string; items: (typeof campaign.scenes)[number][]; folder?: string }
+  const folderNames = [...new Set(campaign.scenes.flatMap((s) => (s._folder ? [s._folder] : [])))].sort(
+    (a, b) => a.localeCompare(b, undefined, { numeric: true })
+  )
+  const groups: Group[] = folderNames.map((name) => ({
+    id: null,
+    folder: name,
+    title: name.replace(/^\d+[\s.\-–—]*/, '') || name,
+    items: campaign.scenes.filter((s) => s._folder === name)
+  }))
+  const loose = campaign.scenes.filter((s) => !s._folder)
+  for (const sn of sessionNotes) {
+    const items = loose.filter((s) => s.session === sn.id)
+    if (items.length > 0) groups.push({ id: sn.id, title: sn.title, items })
+  }
   const filed = new Set(groups.flatMap((g) => g.items.map((s) => s.id)))
   const unfiled = campaign.scenes.filter((s) => !filed.has(s.id))
   if (unfiled.length > 0) {
     groups.push({ id: null, title: groups.length > 0 ? 'Unfiled' : '', items: unfiled })
+  }
+
+  const toggleFolder = (name: string): void => {
+    setCollapsedFolders((prev) => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      return next
+    })
   }
 
   const assignSession = (sceneId: string, sessionId: string | undefined): void => {
@@ -94,28 +117,43 @@ export default function SceneList({ onCollapse }: { onCollapse?: () => void }) {
           </p>
         )}
         {groups.map((group) => (
-          <div key={group.id ?? 'unfiled'}>
+          <div key={group.folder ?? group.id ?? 'unfiled'}>
             {group.title && (
               <button
                 onClick={() => {
-                  // A session header opens its session note (prep lives there).
-                  if (group.id) {
+                  // Folder headers collapse/expand; session headers open the
+                  // session note (prep lives there).
+                  if (group.folder) {
+                    toggleFolder(group.folder)
+                  } else if (group.id) {
                     selectNote(group.id)
                     setLeftTab('notes')
                   }
                 }}
-                disabled={!group.id}
-                title={group.id ? `Open the "${group.title}" session note` : undefined}
+                disabled={!group.id && !group.folder}
+                title={
+                  group.folder
+                    ? `${collapsedFolders.has(group.folder) ? 'Expand' : 'Collapse'} "${group.title}"`
+                    : group.id
+                      ? `Open the "${group.title}" session note`
+                      : undefined
+                }
                 className={`flex w-full items-center gap-1.5 px-3 pb-0.5 pt-2 text-left text-[10px] font-semibold uppercase tracking-wider text-hearth-muted ${
-                  group.id ? 'hover:text-hearth-ember' : ''
+                  group.id || group.folder ? 'hover:text-hearth-ember' : ''
                 }`}
               >
-                {group.id && <span aria-hidden>📅</span>}
+                {group.folder ? (
+                  <span aria-hidden>{collapsedFolders.has(group.folder) ? '▸' : '▾'}</span>
+                ) : (
+                  group.id && <span aria-hidden>📅</span>
+                )}
                 {group.title}
                 <span className="text-hearth-muted/60">{group.items.length}</span>
               </button>
             )}
-            {group.items.map((scene) => {
+            {group.folder && collapsedFolders.has(group.folder)
+              ? null
+              : group.items.map((scene) => {
           const active = scene.id === currentSceneId
           const live = scene.id === liveSceneId
           const renaming = scene.id === renamingId

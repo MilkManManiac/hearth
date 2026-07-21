@@ -1,0 +1,38 @@
+{
+  "id": "eekso-intro",
+  "name": "Eekso — Session Open",
+  "session": "session-26",
+  "dmNotes": "THE OPENER. Order: poem → welcome → recap → where we're at → the bridge. The poem is played warm and fun — the last stanza tips dark, and that's the whole session in miniature. Recap covers Session 25 (the courier hulk, the bottle, IT CONSUMES, the bird, the roar). End on the exterior reveal of Eekso from the bridge, then switch to 'The Broken Foyer' when they go through the doors.",
+
+  "music": [
+    { "id": "welcome", "label": "Welcome to the table", "file": "music/hearth-warmth.ogg", "volume": 0.45, "default": true },
+    { "id": "recap", "label": "Previously, on...", "file": "music/mystery-exploration.mp3", "volume": 0.5 },
+    { "id": "run", "label": "The roar behind", "file": "music/tension-pursuit.wav", "volume": 0.6 },
+    { "id": "reveal", "label": "EEKSO", "file": "music/mp1-oliver-siimon-music-2-introduction-epic-orchestra-vocal-eb-minor.mp3", "volume": 0.55 }
+  ],
+
+  "ambience": [
+    { "file": "ambience/nox-campfire-small.ogg", "volume": 0.3 },
+    { "file": "ambience/nox-stream.ogg", "volume": 0.35, "autoplay": false },
+    { "file": "ambience/fap-cave-wind.ogg", "volume": 0.3, "autoplay": false }
+  ],
+
+  "sfx": [],
+
+  "images": [],
+
+  "scriptText": "# Session Open\n\n## The Poem\n\n*Gather in close, there's a tale to be told,*\n*Of a bottle of monster, a bird brave and bold,*\n*Of five stubborn heroes who marched underground*\n*And followed a river the wrong way down.*\n\n*They say what's given freely is the holiest thing —*\n*A coin, a kindness, the shirt off your back.*\n*But deep under stone, where the old pipes sing,*\n*A generous man keeps his ledger in black.*\n\n*So count all your fingers, and count all your toes,*\n*And count every friend at the table tonight —*\n*For the fortress ahead counts everything it owes,*\n*And it never, ever forgets to write.*\n\n## Welcome\n\n> [!dm] Off-script, your voice:\n>\n> - Welcome everyone back, thanks for making it\n> - Any housekeeping (schedule, snacks, levels — nobody levels tonight)\n> - Tonight is a dungeon crawl, start to finish. Pace yourselves.\n\n## The Recap\n\n{{music:recap}}\n\n> [!dm] Last time, on Elor —\n>\n> - You fought the **umber hulk** on the riverbank. [[pc-varen|Varen]] went down; [[cumb]] poured a potion into him; you killed it — and as it died it *half-became something else* and let out a roar that **burst eardrums**\n> - The autopsy: a claw for the cook-pot, the skull cracked open — and [[pc-eddy|Eddy]]'s Divine Sense caught something *like* divine, but strange. Foreign.\n> - Then the body **melted**. The claw melted. [[pc-felson|Felson]] got some of the liquid into an empty potion bottle before the river took the rest — **he still has it**\n> - Downriver: an abandoned researcher's shed. Carved into the desk, over and over, in Elvish: **\"IT CONSUMES.\"** Outside, a broken slave collar.\n> - Then strange sounds in the dark — meows, moos, cries for help — and a **weird colorful bird** walked straight up to Eddy like it knew him, and stayed\n> - And then, from behind you: **that same roar.** Again. *Closer.*\n\n## Where We're At\n\n{{music:run}}\n\n- You ran — downriver, no discussion, the roar somewhere behind you in the dark\n- The tunnel narrowed, the water got faster and louder\n- And then the cave opened up, and you saw where the river was going\n\n## The Bridge\n\n{{music:reveal}} {{amb:nox-stream|vol=40%|in=3s}} {{amb:fap-cave-wind|vol=30%|in=3s}}\n\nThe cavern opens like a throat, and the river drops away white and roaring into the dark below.\n\nSpanning it, a bridge of old black stone, slick with spray. And past the bridge — filling the cave wall to wall, floor to unseen ceiling — a fortress.\n\nIt is built *across* the river. Towers fused into the living rock. Walls patched in three different centuries of stonework. Arrow slits with nothing behind them. The water runs straight in beneath its foundations through grates like a row of teeth, and you cannot hear it come out the other side.\n\nBehind you, the roar sounds again. Closer.\n\nAhead, at the end of the bridge, a pair of great doors stand a hand's width open.\n\n> [!dm] This is **Eekso**.\n>\n> - The roar does not follow them past the bridge — whatever it is stays parked ([[grill-queue]])\n> - If they inspect the doors: ancient Thundrak Dûrn hinges, but the **bar is new wood**. Someone maintains this door.\n> - Through the doors → switch to **'Eekso — The Broken Foyer'**",
+
+  "ideas": [
+    { "id": "idea-doors-ajar", "text": "The doors stand a hand's width open — an invitation dressed as an accident", "done": false },
+    { "id": "idea-new-bar", "text": "Ancient hinges, new wooden bar. Someone maintains this door.", "done": false },
+    { "id": "idea-river-in", "text": "The river runs INTO the fortress through grates like teeth, and you can't hear it come out", "done": false }
+  ],
+
+  "entities": [
+    { "id": "ent-eekso-exterior", "type": "location", "name": "Eekso, from the bridge", "note": "A fortress built across the river, fused into the cave rock. The doors stand ajar.", "status": "present", "used": false },
+    { "id": "ent-roar", "type": "hook", "name": "The roar behind", "note": "Sounds once more at the bridge, then never follows. Parked in grill-queue.", "status": "present", "used": false }
+  ],
+
+  "transition": { "crossfadeMs": 2500 }
+}

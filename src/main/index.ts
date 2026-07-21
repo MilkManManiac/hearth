@@ -64,6 +64,18 @@ protocol.registerSchemesAsPrivileged([
 // belt-and-braces fallback.
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 
+// The voice bridge ships 20ms PCM chunks through the main window's renderer.
+// backgroundThrottling:false (set per-window) stops TIMER throttling, but
+// Chromium separately LOWERS THE WHOLE RENDERER PROCESS PRIORITY when a window
+// is backgrounded — and on Windows, native occlusion detection treats a window
+// that's merely covered by other windows (not minimized) as hidden. Either one
+// starves the IPC pump and the Discord feed arrives in bursts (audible stutter
+// whenever Hearth isn't the front window). Kill all of it at the process level.
+app.commandLine.appendSwitch('disable-renderer-backgrounding')
+app.commandLine.appendSwitch('disable-background-timer-throttling')
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
+
 let mainWindow: BrowserWindow | null = null
 let presenterWindow: BrowserWindow | null = null
 let windowManager: WindowManager

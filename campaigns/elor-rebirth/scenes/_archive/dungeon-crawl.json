@@ -2,7 +2,18 @@
   "id": "dungeon-crawl",
   "name": "Dungeon Crawl",
   "dmNotes": "Template scene — rename it. Low drones and drip/echo ambience sell a dungeon better than music; keep the music sparse.",
-  "music": [],
+  "music": [
+    {
+      "id": "lib-yasunori-nishiki",
+      "label": "コーストランド地方",
+      "file": "music/Yasunori Nishiki - コーストランド地方.mp3"
+    },
+    {
+      "id": "lib-yuji-takenouchi-a-moment-s-peace",
+      "label": "A Moment's Peace",
+      "file": "music/Yuji Takenouchi - A Moment's Peace.mp3"
+    }
+  ],
   "ambience": [],
   "sfx": [],
   "script": [
@@ -73,5 +84,8 @@
     }
   ],
   "ideas": [],
-  "entities": []
+  "entities": [],
+  "playlist": {
+    "enabled": true
+  }
 }

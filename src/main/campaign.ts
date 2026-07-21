@@ -675,18 +675,37 @@ export class CampaignManager {
 
   private async loadScenes(errors: string[]): Promise<Scene[]> {
     const dir = path.join(this.campaignPath, 'scenes')
-    let files: string[] = []
+    // Scenes may live one folder deep (scenes/<Folder>/x.json) — the folder
+    // name becomes the rail grouping. `_`/`.`-prefixed folders (e.g.
+    // scenes/_archive) are invisible to the app: parked scenes stay on disk
+    // without cluttering the session rail.
+    let files: { rel: string; folder?: string }[] = []
     try {
-      files = (await fs.readdir(dir)).filter((f) => f.toLowerCase().endsWith('.json'))
+      for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+        if (entry.isFile() && entry.name.toLowerCase().endsWith('.json')) {
+          files.push({ rel: entry.name })
+        } else if (entry.isDirectory() && !/^[_.]/.test(entry.name)) {
+          try {
+            for (const f of await fs.readdir(path.join(dir, entry.name))) {
+              if (f.toLowerCase().endsWith('.json')) {
+                files.push({ rel: `${entry.name}/${f}`, folder: entry.name })
+              }
+            }
+          } catch {
+            /* unreadable subfolder — skip */
+          }
+        }
+      }
     } catch {
       return []
     }
     const scenes: Scene[] = []
-    for (const file of files) {
+    for (const { rel: file, folder } of files) {
       try {
         const raw = await fs.readFile(path.join(dir, file), 'utf-8')
         const scene = JSON.parse(raw) as Scene
         scene._sourceFile = `scenes/${file}`
+        if (folder) scene._folder = folder
         if (scene.script) {
           // Migrate any legacy flat script on disk into the block tree.
           scene.script = normalizeScript(scene.script)
@@ -840,8 +859,9 @@ export class CampaignManager {
     const rel = scene._sourceFile
     if (!rel) throw new Error('scene has no source file to save to')
     // Strip runtime-only fields; scriptText is dropped in favour of structured script.
-    const { _sourceFile, scriptText, ...rest } = scene
+    const { _sourceFile, _folder, scriptText, ...rest } = scene
     void _sourceFile
+    void _folder
     void scriptText
     const dest = path.join(this.campaignPath, rel)
     const root = path.resolve(this.campaignPath)
@@ -871,8 +891,9 @@ export class CampaignManager {
     let stem = base
     for (let n = 2; taken.has(stem); n++) stem = `${base}-${n}`
     // Strip runtime/stale fields; the filename stem becomes the scene id.
-    const { _sourceFile, id: _oldId, ...rest } = scene as Scene
+    const { _sourceFile, _folder, id: _oldId, ...rest } = scene as Scene
     void _sourceFile
+    void _folder
     void _oldId
     await writeJsonAtomic(path.join(dir, `${stem}.json`), { id: stem, ...rest })
     this.markWrite()
