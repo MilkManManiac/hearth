@@ -160,12 +160,42 @@ function friendly(err: Error): string {
   return m
 }
 
+/**
+ * Diagnostic logger for the stutter hunt: appends timestamped lines to
+ * userData/discord-audio.log while in a voice channel. Cheap (a few lines a
+ * minute) — records chunk-arrival gaps, buffer depth, and player breakdowns so
+ * a stutter repro shows WHERE the pipeline starved instead of forcing guesses.
+ */
+class AudioDiagLog {
+  private file = path.join(app.getPath('userData'), 'discord-audio.log')
+
+  start(): void {
+    try {
+      fsSync.writeFileSync(this.file, '')
+    } catch {
+      /* diag only */
+    }
+    this.line('=== voice session start ===')
+  }
+
+  line(msg: string): void {
+    try {
+      fsSync.appendFileSync(this.file, `${new Date().toISOString()} ${msg}\n`)
+    } catch {
+      /* diag only */
+    }
+  }
+}
+
 export class DiscordBridge {
   private client: Client | null = null
   private connection: VoiceConnection | null = null
   private player: AudioPlayer | null = null
   private pcm: PassThrough | null = null
   private status: DiscordStatus = { state: 'idle', hasToken: !!readToken() }
+  private diag = new AudioDiagLog()
+  private lastPushAt = 0
+  private diagTimer: ReturnType<typeof setInterval> | null = null
   /** powerSaveBlocker id while in a voice channel — keeps Windows from
    *  suspending timers when Hearth is minimized (audible stutter otherwise). */
   private psbId: number | null = null
@@ -326,7 +356,8 @@ export class DiscordBridge {
       } = await import('@discordjs/voice')
       // Which opus/encryption impls actually loaded — "@discordjs/opus" must
       // appear or we're on the slow opusscript fallback (stutter risk).
-      console.log('[discord] voice deps:\n' + generateDependencyReport())
+      this.diag.start()
+      this.diag.line('deps:\n' + generateDependencyReport())
       const guild = await this.client.guilds.fetch(guildId)
       const channel = (await guild.channels.fetch(channelId)) as VoiceBasedChannel | null
       if (!channel?.isVoiceBased()) throw new Error('Not a voice channel')
@@ -366,7 +397,8 @@ export class DiscordBridge {
       // any internal error), restart the feed instead of going silent forever.
       // leave() nulls this.player before stopping it, so a manual leave never
       // trips this.
-      player.on('stateChange', (_old, s) => {
+      player.on('stateChange', (old, s) => {
+        this.diag.line(`player ${old.status} -> ${s.status}`)
         if (
           s.status === AudioPlayerStatus.Idle &&
           this.player === player &&
@@ -401,6 +433,11 @@ export class DiscordBridge {
           this.connection = null
           this.player = null
           this.pcm = null
+          if (this.diagTimer) {
+            clearInterval(this.diagTimer)
+            this.diagTimer = null
+            this.diag.line('=== voice session end (connection destroyed) ===')
+          }
           this.unblockPowerSave()
           this.setStatus({ state: 'connected', guildName: undefined, channelName: undefined })
         }
@@ -408,6 +445,15 @@ export class DiscordBridge {
 
       this.connection = connection
       this.player = player
+      // Buffer-depth sampler: healthy = hovering near the 1.5s cushion
+      // (288000 bytes). Draining toward 0 = the renderer isn't producing;
+      // steady-but-stuttering = the fault is downstream (encode/dispatch/net).
+      this.lastPushAt = 0
+      if (this.diagTimer) clearInterval(this.diagTimer)
+      this.diagTimer = setInterval(() => {
+        const st = this.player?.state.status ?? 'none'
+        this.diag.line(`buffer=${this.pcm?.writableLength ?? -1} player=${st}`)
+      }, 5000)
       this.blockPowerSave()
       this.setStatus({ state: 'joined', guildName: guild.name, channelName: channel.name })
     } catch (err) {
@@ -421,6 +467,13 @@ export class DiscordBridge {
   pushPcm(chunk: ArrayBuffer): void {
     const pcm = this.pcm
     if (!pcm) return
+    // Chunks should arrive every 20ms; a big inter-arrival gap means the
+    // renderer→IPC side stalled (throttling), not the Discord side.
+    const now = Date.now()
+    if (this.lastPushAt && now - this.lastPushAt > 150) {
+      this.diag.line(`push gap ${now - this.lastPushAt}ms (buffer=${pcm.writableLength})`)
+    }
+    this.lastPushAt = now
     // Live audio: if Discord can't drain fast enough, drop instead of lagging.
     if (pcm.writableLength > MAX_BUFFERED_BYTES) return
     pcm.write(Buffer.from(chunk))
@@ -535,6 +588,11 @@ export class DiscordBridge {
   }
 
   leave(): void {
+    if (this.diagTimer) {
+      clearInterval(this.diagTimer)
+      this.diagTimer = null
+      this.diag.line('=== voice session end (leave) ===')
+    }
     this.stopChronicle()
     // Null the fields BEFORE stopping: the player's idle watchdog and the
     // connection's stateChange handler check identity against them, so this
