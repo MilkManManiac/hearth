@@ -5,6 +5,7 @@ import { CampaignManager } from './campaign'
 import { DiscordBridge } from './discord'
 import { PlayerPortal } from './playerServer'
 import { WindowManager, type WindowRole } from './windows'
+import { exemptFromTimerThrottling } from './winTimerExempt'
 import type {
   AssetKind,
   CampaignMap,
@@ -432,6 +433,9 @@ function registerIpc(): void {
 }
 
 app.whenReady().then(async () => {
+  // Win11 degrades timer precision for minimized apps — fatal for the 20ms
+  // Discord packet loop (see winTimerExempt.ts). Opt this process out.
+  exemptFromTimerThrottling()
   registerAssetProtocol()
   registerIpc()
 

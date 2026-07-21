@@ -452,7 +452,16 @@ export class DiscordBridge {
       if (this.diagTimer) clearInterval(this.diagTimer)
       this.diagTimer = setInterval(() => {
         const st = this.player?.state.status ?? 'none'
-        this.diag.line(`buffer=${this.pcm?.writableLength ?? -1} player=${st}`)
+        // Timer-precision probe: a 20ms setTimeout should land within ~2ms.
+        // Win11 background timer coalescing shows up here as 10ms+ drift —
+        // the packet-pacing failure mode measured on 2026-07-21.
+        const t0 = Date.now()
+        setTimeout(() => {
+          const drift = Date.now() - t0 - 20
+          this.diag.line(
+            `buffer=${this.pcm?.writableLength ?? -1} player=${st} timerDrift=${drift}ms`
+          )
+        }, 20)
       }, 5000)
       this.blockPowerSave()
       this.setStatus({ state: 'joined', guildName: guild.name, channelName: channel.name })
