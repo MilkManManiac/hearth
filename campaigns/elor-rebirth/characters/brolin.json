@@ -70,16 +70,6 @@
     "hideous-laughter",
     "unseen-servant"
   ],
-  "equipment": [
-    "Warhammer, +1",
-    "Scale Mail",
-    "Shield",
-    "Warhammer + handaxe",
-    "Potion of Healing ×2",
-    "Signet ring, alms box, incense ×2, censer, vestments, holy symbol",
-    "Fine clothes, blanket, candles ×10, rations ×2, tinderbox, waterskin, backpack",
-    "70 gp"
-  ],
   "ac": 15,
   "maxHp": 39,
   "speed": 25,
@@ -101,5 +91,102 @@
       "max": 2,
       "reset": "long"
     }
+  ],
+  "inventory": [
+    {
+      "id": "imru9c3h000",
+      "name": "Warhammer, +1"
+    },
+    {
+      "id": "imru9c3h001",
+      "name": "Scale Mail",
+      "equipped": true
+    },
+    {
+      "id": "imru9c3h002",
+      "name": "Shield",
+      "equipped": true
+    },
+    {
+      "id": "imru9c3h003",
+      "name": "Warhammer + handaxe"
+    },
+    {
+      "id": "imru9c3h004",
+      "name": "Potion of Healing",
+      "qty": 2
+    },
+    {
+      "id": "imru9c3h005",
+      "name": "Signet ring"
+    },
+    {
+      "id": "imru9c3h006",
+      "name": "alms box"
+    },
+    {
+      "id": "imru9c3h007",
+      "name": "incense",
+      "qty": 2
+    },
+    {
+      "id": "imru9c3h008",
+      "name": "censer"
+    },
+    {
+      "id": "imru9c3h009",
+      "name": "vestments"
+    },
+    {
+      "id": "imru9c3h00a",
+      "name": "holy symbol"
+    },
+    {
+      "id": "imru9c3h00b",
+      "name": "Fine clothes"
+    },
+    {
+      "id": "imru9c3h00c",
+      "name": "blanket"
+    },
+    {
+      "id": "imru9c3h00d",
+      "name": "candles",
+      "qty": 10
+    },
+    {
+      "id": "imru9c3h00e",
+      "name": "rations",
+      "qty": 2
+    },
+    {
+      "id": "imru9c3h00f",
+      "name": "tinderbox"
+    },
+    {
+      "id": "imru9c3h00g",
+      "name": "waterskin"
+    },
+    {
+      "id": "imru9c3h00h",
+      "name": "backpack"
+    }
+  ],
+  "coins": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 70,
+    "pp": 0
+  },
+  "legacyEquipment": [
+    "Warhammer, +1",
+    "Scale Mail",
+    "Shield",
+    "Warhammer + handaxe",
+    "Potion of Healing ×2",
+    "Signet ring, alms box, incense ×2, censer, vestments, holy symbol",
+    "Fine clothes, blanket, candles ×10, rations ×2, tinderbox, waterskin, backpack",
+    "70 gp"
   ]
 }

@@ -58,27 +58,6 @@
     "charm-person",
     "shield"
   ],
-  "equipment": [
-    "Velmire (attuned — +1d6 Necrotic, Misty Step 2/2 charges; Martial, Heavy, Two-Handed, Graze)",
-    "Shield",
-    "Chain Mail",
-    "Longsword",
-    "Handaxe",
-    "Dagger",
-    "Sending Stones",
-    "Arrowflax",
-    "Trunks' Journal",
-    "Trunks Potion",
-    "Evil Horny Guy's Head",
-    "Evil Horny Guys' Necklace",
-    "Runed Dwarvish Collar",
-    "Furbolg Invisibility ×4",
-    "Clover Mushroom",
-    "Shiny Quipper Fish",
-    "Big Spider Fang ×2",
-    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope (hemp + silk), tinderbox, waterskin",
-    "115 gp"
-  ],
   "ac": 16,
   "maxHp": 48,
   "speed": 30,
@@ -120,5 +99,114 @@
       "max": 2,
       "reset": "long"
     }
-  ]
+  ],
+  "inventory": [
+    {
+      "id": "imru9c3ph0z",
+      "name": "Velmire",
+      "attuned": true,
+      "notes": "attuned — +1d6 Necrotic, Misty Step 2/2 charges; Martial, Heavy, Two-Handed, Graze"
+    },
+    {
+      "id": "imru9c3ph10",
+      "name": "Shield",
+      "equipped": true
+    },
+    {
+      "id": "imru9c3ph11",
+      "name": "Chain Mail",
+      "equipped": true
+    },
+    {
+      "id": "imru9c3ph12",
+      "name": "Longsword"
+    },
+    {
+      "id": "imru9c3ph13",
+      "name": "Handaxe"
+    },
+    {
+      "id": "imru9c3ph14",
+      "name": "Dagger"
+    },
+    {
+      "id": "imru9c3ph15",
+      "name": "Sending Stones"
+    },
+    {
+      "id": "imru9c3ph16",
+      "name": "Arrowflax"
+    },
+    {
+      "id": "imru9c3ph17",
+      "name": "Trunks' Journal"
+    },
+    {
+      "id": "imru9c3ph18",
+      "name": "Trunks Potion"
+    },
+    {
+      "id": "imru9c3ph19",
+      "name": "Evil Horny Guy's Head"
+    },
+    {
+      "id": "imru9c3ph1a",
+      "name": "Evil Horny Guys' Necklace"
+    },
+    {
+      "id": "imru9c3ph1b",
+      "name": "Runed Dwarvish Collar"
+    },
+    {
+      "id": "imru9c3ph1c",
+      "name": "Furbolg Invisibility",
+      "qty": 4
+    },
+    {
+      "id": "imru9c3ph1d",
+      "name": "Clover Mushroom"
+    },
+    {
+      "id": "imru9c3ph1e",
+      "name": "Shiny Quipper Fish"
+    },
+    {
+      "id": "imru9c3ph1f",
+      "name": "Big Spider Fang",
+      "qty": 2
+    },
+    {
+      "id": "imru9c3ph1g",
+      "name": "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope (hemp + silk), tinderbox, waterskin"
+    }
+  ],
+  "coins": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 115,
+    "pp": 0
+  },
+  "legacyEquipment": [
+    "Velmire (attuned — +1d6 Necrotic, Misty Step 2/2 charges; Martial, Heavy, Two-Handed, Graze)",
+    "Shield",
+    "Chain Mail",
+    "Longsword",
+    "Handaxe",
+    "Dagger",
+    "Sending Stones",
+    "Arrowflax",
+    "Trunks' Journal",
+    "Trunks Potion",
+    "Evil Horny Guy's Head",
+    "Evil Horny Guys' Necklace",
+    "Runed Dwarvish Collar",
+    "Furbolg Invisibility ×4",
+    "Clover Mushroom",
+    "Shiny Quipper Fish",
+    "Big Spider Fang ×2",
+    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope (hemp + silk), tinderbox, waterskin",
+    "115 gp"
+  ],
+  "acOverride": 16
 }

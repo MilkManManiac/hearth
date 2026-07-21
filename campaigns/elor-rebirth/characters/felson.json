@@ -32,16 +32,6 @@
     "invisibility",
     "cause-fear"
   ],
-  "equipment": [
-    "Earthen Quarterstaff (Topple)",
-    "Quarterstaff",
-    "Dagger ×2",
-    "Gabriel's Keg (combat brews) — brewer's supplies proficiency",
-    "Bottled pool-liquid (S25!)",
-    "Emblem + vestments",
-    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope 50ft, tinderbox, waterskin, common clothes",
-    "215 gp"
-  ],
   "ac": 15,
   "maxHp": 39,
   "speed": 45,
@@ -68,5 +58,89 @@
       "max": 1,
       "reset": "long"
     }
+  ],
+  "inventory": [
+    {
+      "id": "imru9c3pl1h",
+      "name": "Earthen Quarterstaff",
+      "notes": "Topple"
+    },
+    {
+      "id": "imru9c3pl1i",
+      "name": "Quarterstaff"
+    },
+    {
+      "id": "imru9c3pl1j",
+      "name": "Dagger",
+      "qty": 2
+    },
+    {
+      "id": "imru9c3pl1k",
+      "name": "Gabriel's Keg (combat brews) — brewer's supplies proficiency"
+    },
+    {
+      "id": "imru9c3pl1l",
+      "name": "Bottled pool-liquid",
+      "notes": "S25!"
+    },
+    {
+      "id": "imru9c3pl1m",
+      "name": "Emblem + vestments"
+    },
+    {
+      "id": "imru9c3pl1n",
+      "name": "Backpack"
+    },
+    {
+      "id": "imru9c3pl1o",
+      "name": "bedroll"
+    },
+    {
+      "id": "imru9c3pl1p",
+      "name": "mess kit"
+    },
+    {
+      "id": "imru9c3pl1q",
+      "name": "rations",
+      "qty": 10
+    },
+    {
+      "id": "imru9c3pl1r",
+      "name": "torches",
+      "qty": 10
+    },
+    {
+      "id": "imru9c3pl1s",
+      "name": "rope 50ft"
+    },
+    {
+      "id": "imru9c3pl1t",
+      "name": "tinderbox"
+    },
+    {
+      "id": "imru9c3pl1u",
+      "name": "waterskin"
+    },
+    {
+      "id": "imru9c3pl1v",
+      "name": "common clothes"
+    }
+  ],
+  "coins": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 215,
+    "pp": 0
+  },
+  "legacyEquipment": [
+    "Earthen Quarterstaff (Topple)",
+    "Quarterstaff",
+    "Dagger ×2",
+    "Gabriel's Keg (combat brews) — brewer's supplies proficiency",
+    "Bottled pool-liquid (S25!)",
+    "Emblem + vestments",
+    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope 50ft, tinderbox, waterskin, common clothes",
+    "215 gp"
   ]
 }

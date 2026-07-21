@@ -54,16 +54,6 @@
     "tiny-hut",
     "feign-death"
   ],
-  "equipment": [
-    "Quarterstaff",
-    "Spellbook",
-    "Robe + fine clothes",
-    "Dragonchess set",
-    "Potion of Healing",
-    "Nostalgia Potion ×2",
-    "Oil ×10, parchment ×10, ink, book, tinderbox, perfume, backpack",
-    "200 gp"
-  ],
   "ac": 11,
   "maxHp": 26,
   "speed": 30,
@@ -90,5 +80,79 @@
       "max": 1,
       "reset": "long"
     }
+  ],
+  "inventory": [
+    {
+      "id": "imru9c3px1w",
+      "name": "Quarterstaff"
+    },
+    {
+      "id": "imru9c3px1x",
+      "name": "Spellbook"
+    },
+    {
+      "id": "imru9c3px1y",
+      "name": "Robe + fine clothes"
+    },
+    {
+      "id": "imru9c3px1z",
+      "name": "Dragonchess set"
+    },
+    {
+      "id": "imru9c3px20",
+      "name": "Potion of Healing"
+    },
+    {
+      "id": "imru9c3px21",
+      "name": "Nostalgia Potion",
+      "qty": 2
+    },
+    {
+      "id": "imru9c3px22",
+      "name": "Oil",
+      "qty": 10
+    },
+    {
+      "id": "imru9c3px23",
+      "name": "parchment",
+      "qty": 10
+    },
+    {
+      "id": "imru9c3px24",
+      "name": "ink"
+    },
+    {
+      "id": "imru9c3px25",
+      "name": "book"
+    },
+    {
+      "id": "imru9c3px26",
+      "name": "tinderbox"
+    },
+    {
+      "id": "imru9c3px27",
+      "name": "perfume"
+    },
+    {
+      "id": "imru9c3px28",
+      "name": "backpack"
+    }
+  ],
+  "coins": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 200,
+    "pp": 0
+  },
+  "legacyEquipment": [
+    "Quarterstaff",
+    "Spellbook",
+    "Robe + fine clothes",
+    "Dragonchess set",
+    "Potion of Healing",
+    "Nostalgia Potion ×2",
+    "Oil ×10, parchment ×10, ink, book, tinderbox, perfume, backpack",
+    "200 gp"
   ]
 }

@@ -31,19 +31,6 @@
     "savage-attacker",
     "ability-score-improvement"
   ],
-  "equipment": [
-    "Bag of Holding",
-    "Leather armor",
-    "Dagger ×2 (Nick mastery)",
-    "Dart ×3 (Vex mastery)",
-    "Shortbow",
-    "Thieves' Tools",
-    "Potion of Healing ×2",
-    "Ball Bearings ×1,000",
-    "Fishing tackle",
-    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope 50ft, tinderbox, waterskin",
-    "80 gp"
-  ],
   "ac": 16,
   "maxHp": 31,
   "speed": 30,
@@ -55,5 +42,104 @@
       "max": 2,
       "reset": "long"
     }
+  ],
+  "inventory": [
+    {
+      "id": "imru9c3p60i",
+      "name": "Bag of Holding"
+    },
+    {
+      "id": "imru9c3p60j",
+      "name": "Leather armor",
+      "equipped": true
+    },
+    {
+      "id": "imru9c3p60k",
+      "name": "Dagger",
+      "qty": 2,
+      "notes": "Nick mastery"
+    },
+    {
+      "id": "imru9c3p60l",
+      "name": "Dart",
+      "qty": 3,
+      "notes": "Vex mastery"
+    },
+    {
+      "id": "imru9c3p60m",
+      "name": "Shortbow"
+    },
+    {
+      "id": "imru9c3p60n",
+      "name": "Thieves' Tools"
+    },
+    {
+      "id": "imru9c3p60o",
+      "name": "Potion of Healing",
+      "qty": 2
+    },
+    {
+      "id": "imru9c3p60p",
+      "name": "Ball Bearings",
+      "qty": 1000
+    },
+    {
+      "id": "imru9c3p60q",
+      "name": "Fishing tackle"
+    },
+    {
+      "id": "imru9c3p60r",
+      "name": "Backpack"
+    },
+    {
+      "id": "imru9c3p60s",
+      "name": "bedroll"
+    },
+    {
+      "id": "imru9c3p60t",
+      "name": "mess kit"
+    },
+    {
+      "id": "imru9c3p60u",
+      "name": "rations",
+      "qty": 10
+    },
+    {
+      "id": "imru9c3p60v",
+      "name": "torches",
+      "qty": 10
+    },
+    {
+      "id": "imru9c3p60w",
+      "name": "rope 50ft"
+    },
+    {
+      "id": "imru9c3p60x",
+      "name": "tinderbox"
+    },
+    {
+      "id": "imru9c3p60y",
+      "name": "waterskin"
+    }
+  ],
+  "coins": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 80,
+    "pp": 0
+  },
+  "legacyEquipment": [
+    "Bag of Holding",
+    "Leather armor",
+    "Dagger ×2 (Nick mastery)",
+    "Dart ×3 (Vex mastery)",
+    "Shortbow",
+    "Thieves' Tools",
+    "Potion of Healing ×2",
+    "Ball Bearings ×1,000",
+    "Fishing tackle",
+    "Backpack, bedroll, mess kit, rations ×10, torches ×10, rope 50ft, tinderbox, waterskin",
+    "80 gp"
   ]
 }
