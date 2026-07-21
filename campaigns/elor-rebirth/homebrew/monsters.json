@@ -1,0 +1,185 @@
+[
+  {
+    "key": "garden-of-eekso",
+    "name": "The Garden of Eekso",
+    "size": "gargantuan",
+    "type": "plant",
+    "alignment": "unaligned",
+    "ac": 14,
+    "acDetail": "bark and root",
+    "hp": 150,
+    "hitDice": "12d20 + 24",
+    "initiative": -1,
+    "speed": { "walk": 0 },
+    "abilities": { "str": 19, "dex": 8, "con": 14, "int": 3, "wis": 12, "cha": 10 },
+    "saves": { "strength": 7, "constitution": 5 },
+    "skills": { "perception": 4 },
+    "senses": ["Tremorsense 60 ft.", "Blind beyond this radius"],
+    "passivePerception": 14,
+    "vulnerabilities": "fire",
+    "conditionImmunities": "blinded, charmed, deafened, frightened, prone",
+    "cr": 7,
+    "traits": [
+      {
+        "name": "The Garden Is the Monster",
+        "desc": "The garden's body is the entire grove — the walking trees, the vines, the pool at its heart. Its speed is 0, but its growth is everywhere: it can make attacks from any tree, root, or vine within the garden. It dies when its hit points are gone; the pool goes still and the growth sags where it stands."
+      },
+      {
+        "name": "The Garden Closes",
+        "desc": "At the start of each of the garden's turns, the ring of walking trunks and laced vines advances 10 feet inward, shrinking the open floor. Ground inside the ring is difficult terrain as roots surface. A creature that ends its turn within 5 feet of the advancing wall must succeed on a DC 14 Strength saving throw or be grappled by it (escape DC 14) and pulled 10 feet toward the pool. The archway out seals fully 3 rounds after the garden closes — until then a creature can squeeze through with 10 feet of movement."
+      },
+      {
+        "name": "Fire-Shy",
+        "desc": "When the garden takes fire damage, it recoils: the closing wall does not advance at the start of its next turn, and until the end of that turn every creature it is grappling has advantage on checks made to escape."
+      },
+      {
+        "name": "The Pool Is the Mouth",
+        "desc": "The pool is not water. A creature that starts its turn in the pool takes 18 (4d8) acid damage and is restrained until it escapes (DC 14 Strength (Athletics) check). Anything reduced to 0 hit points in the pool is dissolved."
+      },
+      {
+        "name": "False Chorus",
+        "desc": "The garden imitates birdsong, warmth, and stillness. A creature that listens closely and succeeds on a DC 15 Wisdom (Perception) check notices the song is a loop — the same calls from the same places. When the garden is below half its hit points, the chorus restarts on its own, sped up and wrong: each creature that can hear it must succeed on a DC 13 Wisdom saving throw or have disadvantage on its next attack roll as the sound gets inside its head."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Multiattack",
+        "desc": "The garden makes two Grasping Bough attacks. Grappling creatures does not limit how many attacks it can make — it has no shortage of limbs.",
+        "type": "ACTION"
+      },
+      {
+        "name": "Grasping Bough",
+        "desc": "Melee Attack Roll: +7, reach 20 ft. 13 (2d8 + 4) Bludgeoning damage, and if the target is a Large or smaller creature it has the Grappled condition (escape DC 14).",
+        "type": "ACTION"
+      },
+      {
+        "name": "Reel",
+        "desc": "Each creature grappled by the garden is pulled 15 feet toward the pool.",
+        "type": "BONUS_ACTION"
+      }
+    ]
+  },
+  {
+    "key": "necromancer-of-eekso",
+    "name": "The Necromancer of Eekso",
+    "size": "medium",
+    "type": "humanoid",
+    "alignment": "lawful evil",
+    "ac": 13,
+    "acDetail": "blessed scars",
+    "hp": 135,
+    "hitDice": "18d8 + 54",
+    "initiative": 1,
+    "speed": { "walk": 30 },
+    "abilities": { "str": 10, "dex": 12, "con": 16, "int": 14, "wis": 18, "cha": 16 },
+    "saves": { "constitution": 6, "wisdom": 7 },
+    "skills": { "insight": 7, "medicine": 7, "religion": 5 },
+    "senses": [],
+    "passivePerception": 14,
+    "immunities": "necrotic",
+    "conditionImmunities": "charmed, frightened",
+    "cr": 8,
+    "traits": [
+      {
+        "name": "The Wall Provides",
+        "desc": "Five feed-pipes rise from the floor around the chamber (AC 15, HP 20 each, immune to poison and psychic damage). At the start of the necromancer's turn, while the wall of flesh stands, he regains 3 hit points per intact pipe (15 while all five stand). Destroying pipes is the party's lever — make it visibly work."
+      },
+      {
+        "name": "Given, Not Taken",
+        "desc": "Damage the necromancer deals to himself cannot be prevented, reduced, or redirected by any means."
+      },
+      {
+        "name": "Deeper Giving",
+        "desc": "While the necromancer has fewer than half his hit points, his attacks deal an extra 4 (1d8) Necrotic damage. The more he gives, the more he has to give."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Multiattack",
+        "desc": "The necromancer makes two Tithe attacks, or one Tithe attack and one Giving Edge attack.",
+        "type": "ACTION"
+      },
+      {
+        "name": "Tithe",
+        "desc": "Ranged Spell Attack: +7, range 60 ft. 14 (4d6) Necrotic damage, and the target can't regain hit points until the start of the necromancer's next turn.",
+        "type": "ACTION"
+      },
+      {
+        "name": "Giving Edge",
+        "desc": "Melee Attack Roll: +4 with the small clean knife, reach 5 ft. 3 (1d4 + 1) Slashing damage plus 9 (2d8) Necrotic damage.",
+        "type": "ACTION"
+      },
+      {
+        "name": "Given Flesh",
+        "desc": "The necromancer opens his own arm, taking 25 damage (this damage cannot be prevented or reduced), and a Flesh Offering rises from a blood-channel within 30 feet of him. It acts immediately after his turn. He can sustain no more than two offerings at once, and he will do this even when it might kill him — especially then.",
+        "type": "ACTION"
+      },
+      {
+        "name": "Circle of Gift (Recharge 5–6)",
+        "desc": "Blood erupts from every channel in the floor. Each creature standing on the chamber floor must make a DC 15 Dexterity saving throw, taking 21 (6d6) Necrotic damage and having the Restrained condition until the end of its next turn as clutching hands rise from the channels on a failed save, or half as much damage only on a successful one.",
+        "type": "ACTION"
+      },
+      {
+        "name": "Step Through the Given",
+        "desc": "The necromancer sinks into a blood-channel and rises from another point on the lattice within 30 feet of where he sank.",
+        "type": "BONUS_ACTION"
+      },
+      {
+        "name": "Offered Shield",
+        "desc": "When the necromancer is hit by an attack while a Flesh Offering is within 5 feet of him, the offering takes the damage instead. It steps in front of the blow. It was given for exactly this.",
+        "type": "REACTION"
+      }
+    ]
+  },
+  {
+    "key": "flesh-offering",
+    "name": "Flesh Offering",
+    "size": "large",
+    "type": "undead",
+    "alignment": "unaligned",
+    "ac": 13,
+    "acDetail": "stitched plate",
+    "hp": 68,
+    "hitDice": "8d10 + 24",
+    "initiative": -1,
+    "speed": { "walk": 20 },
+    "abilities": { "str": 19, "dex": 8, "con": 16, "int": 3, "wis": 8, "cha": 5 },
+    "saves": {},
+    "skills": {},
+    "senses": ["Blindsight 60 ft.", "Blind beyond this radius"],
+    "passivePerception": 9,
+    "immunities": "necrotic, poison",
+    "conditionImmunities": "charmed, exhaustion, frightened, poisoned",
+    "cr": 4,
+    "traits": [
+      {
+        "name": "Still Giving",
+        "desc": "If damage reduces the offering to 0 hit points, it must make a Constitution saving throw with a DC of 5 plus the damage taken, unless the damage is radiant or from a critical hit. On a success, the offering drops to 1 hit point instead."
+      },
+      {
+        "name": "Bear Down",
+        "desc": "A creature grappled by the offering takes 7 (2d6) Bludgeoning damage at the start of each of the offering's turns."
+      },
+      {
+        "name": "Slow and Certain",
+        "desc": "The offering can't take reactions, and it always moves toward the nearest creature it can sense unless the necromancer directs it otherwise."
+      },
+      {
+        "name": "Given Back",
+        "desc": "When the offering is destroyed, it loses cohesion and drains away into the nearest blood-channel. Nothing is wasted."
+      }
+    ],
+    "actions": [
+      {
+        "name": "Multiattack",
+        "desc": "The offering makes two Slam attacks. It can grapple one creature with each of its arms.",
+        "type": "ACTION"
+      },
+      {
+        "name": "Slam",
+        "desc": "Melee Attack Roll: +6, reach 10 ft. 11 (2d6 + 4) Bludgeoning damage, and if the target is a Medium or smaller creature it has the Grappled condition (escape DC 14).",
+        "type": "ACTION"
+      }
+    ]
+  }
+]
