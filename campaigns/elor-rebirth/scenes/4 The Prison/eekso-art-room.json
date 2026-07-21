@@ -3,42 +3,550 @@
   "name": "Eekso — The Art Room (Blind Fight)",
   "session": "session-26",
   "dmNotes": "SET-PIECE 2 — the blind fight. The gimmick: DARKVISION DOESN'T HELP. The room isn't dark, it's FULL — thousands of hanging bones and trinkets physically block sight, while whatever's in here doesn't need eyes. Rules in 'How It Works'.\n\nThe pawn upstairs told them none of it is real and they can walk right through. That lie is why they'll be deep in the gallery before the first thing touches them.\n\nENEMIES: yours to place from the map — whatever you drop in, give it blindsight 60 ft. This scene runs the room, not the roster.\n\nFIRE IS THE INTENDED OUT. If a player burns the strings, reward it hard.",
-
   "music": [
-    { "id": "hang", "label": "The gallery", "file": "music/Derek Fiechter - Old Music Box.mp3", "volume": 0.5, "default": true },
-    { "id": "stalk", "label": "Something's in here", "file": "music/mp1-oliver-siimon-music-horror-intense-stalker-strings-c-minor-60-12-8.mp3", "volume": 0.55 },
-    { "id": "fight", "label": "Blind fight", "file": "music/Secession Studios, Greg Dombrowski - I Am the Shadow.mp3", "volume": 0.65 },
-    { "id": "burn", "label": "It's burning", "file": "music/Secession Studios, Greg Dombrowski - Follow the Light.mp3", "volume": 0.65 },
-    { "id": "after", "label": "Quiet again", "file": "music/Joachim Heinrich - Stjärna.mp3", "volume": 0.45 }
+    {
+      "id": "hang",
+      "label": "The gallery",
+      "file": "music/Derek Fiechter - Old Music Box.mp3",
+      "volume": 0.5,
+      "default": true
+    },
+    {
+      "id": "stalk",
+      "label": "Something's in here",
+      "file": "music/mp1-oliver-siimon-music-horror-intense-stalker-strings-c-minor-60-12-8.mp3",
+      "volume": 0.55
+    },
+    {
+      "id": "fight",
+      "label": "Blind fight",
+      "file": "music/Secession Studios, Greg Dombrowski - I Am the Shadow.mp3",
+      "volume": 0.65
+    },
+    {
+      "id": "burn",
+      "label": "It's burning",
+      "file": "music/Secession Studios, Greg Dombrowski - Follow the Light.mp3",
+      "volume": 0.65
+    },
+    {
+      "id": "after",
+      "label": "Quiet again",
+      "file": "music/Joachim Heinrich - Stjärna.mp3",
+      "volume": 0.45
+    }
   ],
-
   "ambience": [
-    { "file": "ambience/Sounds Dogs Love - Wood Chimes - Videos For Dogs.mp3", "volume": 0.4 },
-    { "file": "ambience/dungeon.ogg", "volume": 0.3 },
-    { "file": "ambience/fap-cave-dark.ogg", "volume": 0.25 },
-    { "file": "ambience/fap-cave-whispers.ogg", "volume": 0.25, "autoplay": false },
-    { "file": "ambience/nox-fire-big.ogg", "volume": 0.4, "autoplay": false }
+    {
+      "file": "ambience/Sounds Dogs Love - Wood Chimes - Videos For Dogs.mp3",
+      "volume": 0.4
+    },
+    {
+      "file": "ambience/dungeon.ogg",
+      "volume": 0.3
+    },
+    {
+      "file": "ambience/fap-cave-dark.ogg",
+      "volume": 0.25
+    },
+    {
+      "file": "ambience/fap-cave-whispers.ogg",
+      "volume": 0.25,
+      "autoplay": false
+    },
+    {
+      "file": "ambience/nox-fire-big.ogg",
+      "volume": 0.4,
+      "autoplay": false
+    },
+    {
+      "file": "ambience/It Lives Down Below - Scary Clown Music.mp3",
+      "volume": 0.35
+    }
   ],
-
   "sfx": [],
-
   "images": [],
-
-  "scriptText": "# The Art Room\n\n{{music:hang}} {{amb:dungeon|in=3s}}\n\nThe doorway opens into a room you cannot see the far wall of, because the room is full.\n\nThreads hang from the ceiling — thousands of them: cords, wires, gut, braided hair — and from every one hangs something small. A finger bone. A ring. A milk tooth. A coin, a buckle, a lock of hair tied with ribbon, a child's carved animal, a knucklebone, a knucklebone, a knucklebone. They hang at every height, in rows and drifts and curtains, on and on into the dark past where your light reaches.\n\nAnd they *move*. The air shifts, and ten thousand small hard things turn on their strings and touch each other, and the whole room makes a sound like rain on dry leaves that never quite stops.\n\n> [!dm] They've just been told **\"none of it is real, you can walk right through.\"**\n>\n> - **Investigation DC 12:** every object was taken off a person. Keepsakes, not decorations.\n> - **Perception DC 15** while moving: some threads were cut recently and re-tied at different heights. Rearranged, not long ago.\n\n## How It Works\n\n> [!dm] **Read before running the fight.**\n>\n> **Heavily obscured by OBJECTS, not darkness** — darkvision does nothing, light spells do nothing. You can't see through ten thousand hanging bones.\n>\n> - Everyone is effectively **blinded** beyond 5 ft\n> - **Attacking unseen:** disadvantage, and you must guess the space — wrong guess is an auto-miss\n> - **Attacked by something unseen:** attacker has advantage\n> - **Movement** through the gallery is difficult terrain\n> - **Noise gives you away:** move more than 5 ft on your turn and you're *heard* — your space is known to everything until your next turn\n> - **Finding by ear:** action — Perception vs. Stealth. Success pinpoints until it moves.\n>\n> **Whatever you place in here: give it blindsight 60 ft.** The party fights blind against things that aren't. It should feel genuinely unfair for two rounds.\n\n## The Fight\n\n{{music:stalk}}\n\n- Off to the left, the sound changes — a patch of the rain-on-leaves noise goes hard and fast, a whole curtain of bone swinging at once. Then stops.\n\n- Then the same thing behind you.\n\n- Then close.\n\n{{music:fight}}\n\n> [!dm]\n> - Make them declare which square they swing at\n> - Describe enemy positions by sound only\n> - Reinforcements arrive as new sound from a direction that was quiet\n\n## Burning It\n\n{{music:burn}} {{amb:nox-fire-big|vol=40%|in=2s}}\n\n> [!dm] **The intended clever answer** — gut, hair, cord and dry cloth take fire *instantly*. Don't hint; let a player find it.\n>\n> - Within a round the hangings fall — obscurement **gone**\n> - Burning debris: anything in the open takes **1d6 fire** at the end of its turn for 2–3 rounds\n\n## After\n\n{{music:after}}\n\n- Very quiet. If it burned: ash, small blackened things, a smell that won't leave their clothes. If not: the strings still turning, drifts of torn-down keepsakes underfoot.\n\n> [!dm] **One real find — Investigation DC 15, only if they search the drifts:** a **Ring of Protection**, hanging on a thread like everything else. Otherwise no treasure.\n>\n> Past the far side: the stair down. Switch to **'Eekso — The Ritual'**.",
-
   "ideas": [
-    { "id": "idea-composition", "text": "The hangings are ARRANGED — sight-lines and spacing. Somebody stands here and enjoys it.", "done": false },
-    { "id": "idea-rearranged", "text": "Some threads were cut and re-tied recently. The room has been rearranged, and not long ago.", "done": false },
-    { "id": "idea-sound-map", "text": "Describe every enemy position by sound only; make players name the square they swing at", "done": false },
-    { "id": "idea-silent-grab", "text": "The thing that grabs a PC makes no sound at all — no growl, no breath, just weight", "done": false },
-    { "id": "idea-burn-tradeoff", "text": "Burning the gallery removes the obscurement — and then they can see the whole room, which is worse", "done": false },
-    { "id": "idea-two-teeth", "text": "Two teeth tied to one thread — a child's and an adult's", "done": false }
+    {
+      "id": "idea-composition",
+      "text": "The hangings are ARRANGED — sight-lines and spacing. Somebody stands here and enjoys it.",
+      "done": false
+    },
+    {
+      "id": "idea-rearranged",
+      "text": "Some threads were cut and re-tied recently. The room has been rearranged, and not long ago.",
+      "done": false
+    },
+    {
+      "id": "idea-sound-map",
+      "text": "Describe every enemy position by sound only; make players name the square they swing at",
+      "done": false
+    },
+    {
+      "id": "idea-silent-grab",
+      "text": "The thing that grabs a PC makes no sound at all — no growl, no breath, just weight",
+      "done": false
+    },
+    {
+      "id": "idea-burn-tradeoff",
+      "text": "Burning the gallery removes the obscurement — and then they can see the whole room, which is worse",
+      "done": false
+    },
+    {
+      "id": "idea-two-teeth",
+      "text": "Two teeth tied to one thread — a child's and an adult's",
+      "done": false
+    }
   ],
-
   "entities": [
-    { "id": "ent-gallery", "type": "hazard", "name": "The hanging gallery", "note": "Heavily obscured by OBJECTS — darkvision and light spells do nothing. Difficult terrain. Movement makes noise.", "status": "present", "used": false },
-    { "id": "ent-keepsakes", "type": "prop", "name": "The keepsakes", "note": "Every object came off a person. Investigation DC 12. One find: a Ring of Protection on a thread (Investigation DC 15). Otherwise the payoff is the count.", "status": "present", "used": false }
+    {
+      "id": "ent-gallery",
+      "type": "hazard",
+      "name": "The hanging gallery",
+      "note": "Heavily obscured by OBJECTS — darkvision and light spells do nothing. Difficult terrain. Movement makes noise.",
+      "status": "present",
+      "used": false
+    },
+    {
+      "id": "ent-keepsakes",
+      "type": "prop",
+      "name": "The keepsakes",
+      "note": "Every object came off a person. Investigation DC 12. One find: a Ring of Protection on a thread (Investigation DC 15). Otherwise the payoff is the count.",
+      "status": "present",
+      "used": false
+    }
   ],
-
-  "transition": { "crossfadeMs": 2500 }
+  "transition": {
+    "crossfadeMs": 2500
+  },
+  "script": [
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Art Room"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "hang",
+          "label": "▶ hang"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "dungeon",
+          "label": "〜 dungeon",
+          "fadeInMs": 3000
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The doorway opens into a room you cannot see the far wall of, because the room is full."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Threads hang from the ceiling — thousands of them: cords, wires, gut, braided hair — and from every one hangs something small. "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "Sounds Dogs Love - Wood Chimes - Videos For Dogs",
+          "label": "〜 wood chimes",
+          "fadeInMs": 3000
+        },
+        {
+          "type": "text",
+          "text": " A finger bone. A ring. A milk tooth. A coin, a buckle, a lock of hair tied with ribbon, a child's carved animal, a knucklebone, a knucklebone, a knucklebone. They hang at every height, in rows and drifts and curtains, on and on into the dark past where your light reaches."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "And they "
+        },
+        {
+          "type": "text",
+          "text": "move",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ". The air shifts, and ten thousand small hard things turn on their strings and touch each other, and the whole room makes a sound like rain on dry leaves that never quite stops."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "How It Works"
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Heavily obscured by OBJECTS, not darkness", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " — darkvision does nothing, light spells do nothing. You can't see through ten thousand hanging bones." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "- Everyone is effectively " },
+            { "type": "text", "text": "blinded", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " beyond 5 ft" }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "- " },
+            { "type": "text", "text": "Attacking unseen:", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " disadvantage, and you must guess the space — wrong guess is an auto-miss" }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "- " },
+            { "type": "text", "text": "Attacked by something unseen:", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " attacker has advantage" }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "- " },
+            { "type": "text", "text": "Movement", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " through the gallery is difficult terrain" }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "- " },
+            { "type": "text", "text": "Noise gives you away:", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " move more than 5 ft on your turn and you're heard — your space is known to everything until your next turn" }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "- " },
+            { "type": "text", "text": "Finding by ear:", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " action — Perception vs. Stealth. Success pinpoints until it moves." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Whatever you place in here: give it blindsight 60 ft.", "marks": [{ "type": "bold" }] }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Fight"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "stalk",
+          "label": "▶ stalk"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- Off to the left, the sound changes — a patch of the rain-on-leaves noise goes hard and fast, a whole curtain of bone swinging at once. Then stops."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- Then the same thing behind you."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- Then close."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "fight",
+          "label": "▶ fight"
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "- Make them declare which square they swing at - Describe enemy positions by sound only - Reinforcements arrive as new sound from a direction that was quiet"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "Burning It"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "burn",
+          "label": "▶ burn"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "nox-fire-big",
+          "label": "〜 nox-fire-big",
+          "volume": 0.4,
+          "fadeInMs": 2000
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "The intended clever answer",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " — gut, hair, cord and dry cloth take fire "
+            },
+            {
+              "type": "text",
+              "text": "instantly",
+              "marks": [
+                {
+                  "type": "italic"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ". Don't hint; let a player find it."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "- Within a round the hangings fall — obscurement "
+            },
+            {
+              "type": "text",
+              "text": "gone",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " - Burning debris: anything in the open takes "
+            },
+            {
+              "type": "text",
+              "text": "1d6 fire",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " at the end of its turn for 2–3 rounds"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "After"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "after",
+          "label": "▶ after"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- Very quiet. If it burned: ash, small blackened things, a smell that won't leave their clothes. If not: the strings still turning, drifts of torn-down keepsakes underfoot."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "One real find — Investigation DC 15, only if they search the drifts:",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " a "
+            },
+            {
+              "type": "text",
+              "text": "Ring of Protection",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ", hanging on a thread like everything else. Otherwise no treasure."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Past the far side: the stair down. Switch to "
+            },
+            {
+              "type": "text",
+              "text": "'Eekso — The Ritual'",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": "."
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

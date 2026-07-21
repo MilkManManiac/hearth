@@ -82,6 +82,13 @@ session (see bottom) to turn the big ones into concrete specs before building.
   and every PC now uses their true identity.
 
 **Decisions / answers:**
+- [ ] **Better generic combat music (Wes, 2026-07-21):** the library's fight
+  tracks skew "super boss" epic (Secession Studios etc.) — there's not enough
+  good mid-weight, everyday-encounter combat music (skirmishes, ambushes,
+  scraps that aren't climaxes). Fix: add a Spotify "DND Hearth combat" playlist
+  of general battle tracks and/or pull CC0/CC-BY fills (Nakarada battle tags,
+  Blacis pack) and tag them `combat` (not `boss`) so scene palettes can grab
+  fight music that doesn't overpower a random mimic scrap.
 - [ ] **Cross-machine sound sync (2026-07-11):** git only carries notes/scenes — bulk
   audio is gitignored, so a second machine **cannot build real scenes** (hit live while
   demoing on the repo-only PC: the elor-rebirth snapshot has ZERO audio files; the ~2GB
