@@ -38,8 +38,19 @@ export interface DiscordChannelInfo {
   name: string
 }
 
-/** 48kHz stereo s16le — 1 second of audio, the backpressure ceiling. */
-const MAX_BUFFERED_BYTES = 48000 * 2 * 2
+/** 48kHz stereo s16le — one second of audio. */
+const BYTES_PER_SEC = 48000 * 2 * 2
+/**
+ * Jitter cushion: the feed is primed with this much silence so playback runs
+ * behind the renderer by the same amount. Without it the buffer sits at ~zero
+ * (chunks arrive exactly as fast as Discord drains them) and ANY renderer
+ * stall > one 20ms frame is an audible gap — throttling flags shrink stalls
+ * but can't eliminate them. 1.5s of delay is inaudible for music/ambience and
+ * acceptable for fired SFX cues.
+ */
+const CUSHION_BYTES = BYTES_PER_SEC * 1.5
+/** Backpressure ceiling: cushion + 1s of drift slack before we drop chunks. */
+const MAX_BUFFERED_BYTES = CUSHION_BYTES + BYTES_PER_SEC
 
 function readToken(): string | undefined {
   try {
@@ -323,6 +334,9 @@ export class DiscordBridge {
       const startFeed = (): void => {
         const pcm = new PassThrough({ highWaterMark: MAX_BUFFERED_BYTES })
         this.pcm = pcm
+        // Prime the jitter cushion (see CUSHION_BYTES). Re-primed on every
+        // watchdog restart too, so a starved-out feed comes back cushioned.
+        pcm.write(Buffer.alloc(CUSHION_BYTES))
         // Raw = s16le 48kHz stereo; prism-media opus-encodes via opusscript.
         player.play(createAudioResource(pcm, { inputType: StreamType.Raw }))
       }
