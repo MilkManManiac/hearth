@@ -127,6 +127,12 @@ export default function TopBar() {
           <span className="text-base drop-shadow-[0_0_8px_rgba(224,138,60,0.6)]">🔥</span>
           Hearth
         </span>
+        <span
+          className="text-[10px] text-hearth-muted/70"
+          title="Build stamp — when this copy of the app was packed. Check it after an update to confirm the shortcut launched the fresh build."
+        >
+          {__BUILD_STAMP__}
+        </span>
 
         {/* Build ↔ Run: authoring chrome vs. the clean at-the-table view. */}
         <div className="flex overflow-hidden rounded-full border border-hearth-border" role="group">

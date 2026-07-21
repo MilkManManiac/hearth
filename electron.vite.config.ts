@@ -1,6 +1,19 @@
 import { resolve } from 'path'
+import { readFileSync } from 'fs'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
+
+// Baked in at build time so the TopBar can show which build is running —
+// lets the DM confirm the desktop shortcut isn't launching a stale pack.
+const pkg = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'))
+const BUILD_STAMP = JSON.stringify(
+  `v${pkg.version} · ${new Date().toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  })}`
+)
 
 export default defineConfig({
   main: {
@@ -21,6 +34,7 @@ export default defineConfig({
   },
   renderer: {
     root: '.',
+    define: { __BUILD_STAMP__: BUILD_STAMP },
     build: {
       rollupOptions: {
         input: {
