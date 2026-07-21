@@ -103,6 +103,29 @@
       ]
     },
     {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "welcome",
+          "label": "▶ welcome"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "nox-campfire-small",
+          "label": "〜 nox-campfire-small",
+          "volume": 0.3,
+          "fadeInMs": 3000
+        }
+      ]
+    },
+    {
       "type": "heading",
       "level": 2,
       "content": [
@@ -332,7 +355,7 @@
         },
         {
           "type": "text",
-          "text": " fed him a potion, and you brought the thing down — and as it died, it half-shifted into something else and let out a roar so loud it literally burst some eardrums. Then you did what any normal group of adventurers would do: Cumb and "
+          "text": " fed him a potion, and you brought the thing down —during the fight, it half-shifted into something else and let out a roar so loud it literally burst some eardrums. Then you did what any normal group of adventurers would do: Cumb and "
         },
         {
           "type": "link",
@@ -350,9 +373,13 @@
         },
         {
           "type": "text",
-          "text": " and Varen cracked the skull open to look at the brain. Eddy's Divine Sense picked up something almost divine — but strange. Foreign. Then the body melted. The claw melted too. Sorry Felson, no hulk dinner. Felson did manage to catch some of the liquid in an empty potion bottle before the river washed the rest away, and he's still got it."
+          "text": " and Varen cracked the skull open to look at the brain. Eddy's Divine Sense picked up something almost divine — but strange. Foreign. Then the body melted. The claw melted too ruining Cumb and Felson's dinner plans. Felson did manage to catch some of the liquid in an empty potion bottle before the river washed the rest away, and he's still got it."
         }
       ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
     },
     {
       "type": "paragraph",
@@ -378,6 +405,10 @@
     },
     {
       "type": "paragraph",
+      "content": []
+    },
+    {
+      "type": "paragraph",
       "content": [
         {
           "type": "text",
@@ -393,6 +424,10 @@
           "text": "And then, from behind you: that same roar. Again. Closer."
         }
       ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
     },
     {
       "type": "paragraph",
@@ -429,27 +464,13 @@
       "content": [
         {
           "type": "text",
-          "text": "- You ran — downriver, no discussion, the roar somewhere behind you in the dark"
+          "text": "- You ran — towards the entrance to this castle"
         }
       ]
     },
     {
       "type": "paragraph",
-      "content": [
-        {
-          "type": "text",
-          "text": "- The tunnel got narrower, the water got faster and louder, and the spray in the air made everything cold and wet"
-        }
-      ]
-    },
-    {
-      "type": "paragraph",
-      "content": [
-        {
-          "type": "text",
-          "text": "- Then the cave opened up, and you saw where all this water has been going"
-        }
-      ]
+      "content": []
     },
     {
       "type": "heading",
@@ -501,7 +522,7 @@
       "content": [
         {
           "type": "text",
-          "text": "The river drops away in front of you, white and roaring, down into the dark. The sound fills the whole cave. You can feel it in the bridge under your feet — a bridge of old black stone, slick with spray, crossing right over the falls."
+          "text": "The river drops away in front of you, white and roaring, down into the dark underneath the structure in front of you. The sound fills the whole cave. You can feel it in the bridge under your feet — a bridge of old black stone, slick with spray, crossing right over the falls."
         }
       ]
     },
@@ -537,9 +558,13 @@
       "content": [
         {
           "type": "text",
-          "text": "Ahead of you, at the end of the bridge, a pair of huge doors sit open. Just a hand's width."
+          "text": "Ahead of you, at the end of the bridge, a pair of huge doors sit open. "
         }
       ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
     },
     {
       "type": "paragraph",
@@ -551,70 +576,8 @@
       ]
     },
     {
-      "type": "callout",
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "This is "
-            },
-            {
-              "type": "text",
-              "text": "Eekso",
-              "marks": [
-                {
-                  "type": "bold"
-                }
-              ]
-            },
-            {
-              "type": "text",
-              "text": "."
-            }
-          ]
-        },
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "- The roar does not follow them past the bridge. It's NOT part of Eekso — just another beast of the deep (maybe a young dragon, "
-            },
-            {
-              "type": "link",
-              "ref": "grill-queue"
-            },
-            {
-              "type": "text",
-              "text": "). It never comes inside. - If they inspect the doors: ancient Thundrak Dûrn hinges, but the "
-            },
-            {
-              "type": "text",
-              "text": "bar is new wood",
-              "marks": [
-                {
-                  "type": "bold"
-                }
-              ]
-            },
-            {
-              "type": "text",
-              "text": ". Someone maintains this door. - Through the doors → switch to "
-            },
-            {
-              "type": "text",
-              "text": "'Eekso — The Broken Foyer'",
-              "marks": [
-                {
-                  "type": "bold"
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "type": "paragraph",
+      "content": []
     }
   ]
 }
