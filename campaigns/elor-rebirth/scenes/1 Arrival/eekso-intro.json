@@ -28,6 +28,16 @@
       "label": "EEKSO",
       "file": "music/Denez Prigent, Lisa Gerrard - Gortoz A Ran - From 'Black Hawk Down'.mp3",
       "volume": 0.55
+    },
+    {
+      "id": "lib-chance-thomas-the-house-of-tom-bombadil",
+      "label": "The House of Tom Bombadil",
+      "file": "music/Chance Thomas - The House of Tom Bombadil.mp3"
+    },
+    {
+      "id": "lib-mordela-morana-the-elemental-orchard",
+      "label": "The Elemental Orchard",
+      "file": "music/Mordela Morana - The Elemental Orchard.mp3"
     }
   ],
   "ambience": [
@@ -92,6 +102,31 @@
     "crossfadeMs": 2500
   },
   "script": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "START RECORDING",
+          "marks": [
+            {
+              "type": "bold"
+            },
+            {
+              "type": "italic"
+            },
+            {
+              "type": "color",
+              "value": "danger"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": []
+    },
     {
       "type": "heading",
       "level": 1,
@@ -166,7 +201,7 @@
         },
         {
           "type": "text",
-          "text": "One lightning strike, one chance, one flame —",
+          "text": "One lightning strike, , one flame —",
           "marks": [
             {
               "type": "italic"
@@ -179,7 +214,7 @@
         },
         {
           "type": "text",
-          "text": "And a hundred years are never the same.",
+          "text": "And and an entire forest burnt.",
           "marks": [
             {
               "type": "italic"
@@ -255,7 +290,7 @@
         },
         {
           "type": "text",
-          "text": " Forever changed. Passed from one generation to the next, the tellers lying without ever knowing it. Most of the time, that's harmless. But sometimes the story walks a darker path — until one"
+          "text": " Forever changed. Passed from one generation to the next, the tellers lying without even knowing it. Most of the time, that's harmless. But sometimes the story walks a darker path — until one"
         },
         {
           "type": "text",
@@ -299,7 +334,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Welcome back adventurers, to the dark subterranean depths of Elor. Warning of ",
+          "text": "Welcome back adventurers, to the dark subterranean depths of Elor. Heads up on the next few sessions (potentially). Dungeon crawl. Before we dive in lets do a quick recap.",
           "marks": [
             {
               "type": "bold"
@@ -399,7 +434,7 @@
         },
         {
           "type": "text",
-          "text": " And outside, a broken slave collar."
+          "text": " And outside, a broken collar."
         }
       ]
     },
@@ -412,7 +447,7 @@
       "content": [
         {
           "type": "text",
-          "text": "Then you heard weird sounds in the dark — meows, moos, someone calling for help — and a weird colorful bird walked straight up to Eddy like it already knew him. And it stayed."
+          "text": "Then you heard weird sounds in the dark — meows, moos, someone calling for help — and a weird colorful bird walked straight up to Eddy. Eddy to a liking to it and seemed to want to keep it."
         }
       ]
     },
@@ -488,12 +523,12 @@
         {
           "type": "cue",
           "kind": "music",
-          "ref": "reveal",
-          "label": "▶ reveal"
+          "ref": "lib-mordela-morana-the-elemental-orchard",
+          "label": "The Elemental Orchard"
         },
         {
           "type": "text",
-          "text": " "
+          "text": "   "
         },
         {
           "type": "cue",
@@ -502,10 +537,6 @@
           "label": "〜 nox-stream",
           "volume": 0.4,
           "fadeInMs": 3000
-        },
-        {
-          "type": "text",
-          "text": " "
         },
         {
           "type": "cue",
