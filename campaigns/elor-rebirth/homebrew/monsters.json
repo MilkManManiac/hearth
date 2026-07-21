@@ -16,13 +16,13 @@
     "skills": { "perception": 4 },
     "senses": ["Tremorsense 60 ft.", "Blind beyond this radius"],
     "passivePerception": 14,
-    "vulnerabilities": "fire",
+    "vulnerabilities": "fire, slashing",
     "conditionImmunities": "blinded, charmed, deafened, frightened, prone",
     "cr": 7,
     "traits": [
       {
         "name": "The Garden Is the Monster",
-        "desc": "The garden's body is the entire grove — the walking trees, the vines, the pool at its heart. Its speed is 0, but its growth is everywhere: it can make attacks from any tree, root, or vine within the garden. It dies when its hit points are gone; the pool goes still and the growth sags where it stands."
+        "desc": "The garden's body is the entire grove — the walking trees, the vines, and the pool at its heart, which is not water at all but the garden's stomach: a basin of clear digestive fluid held in its own flesh. Its speed is 0, but its growth is everywhere: it can make attacks from any tree, root, or vine within the garden. It dies when its hit points are gone; the pool clouds, sinks away, and leaves a bare basin of grey flesh."
       },
       {
         "name": "The Garden Closes",
@@ -33,8 +33,8 @@
         "desc": "When the garden takes fire damage, it recoils: the closing wall does not advance at the start of its next turn, and until the end of that turn every creature it is grappling has advantage on checks made to escape."
       },
       {
-        "name": "The Pool Is the Mouth",
-        "desc": "The pool is not water. A creature that starts its turn in the pool takes 18 (4d8) acid damage and is restrained until it escapes (DC 14 Strength (Athletics) check). Anything reduced to 0 hit points in the pool is dissolved."
+        "name": "The Pool Is the Stomach",
+        "desc": "The pool is not water — it only looks like it, right up until you're in it. A creature in the pool is wrapped and held (Restrained; escape DC 14 Strength (Athletics) check), and at the start of each of its turns feeding spines rise out of the fluid and pierce it: 18 (4d8) Acid damage as the digestive fluid runs into the wounds. A creature reduced to 0 hit points in the pool is pulled under and dissolved."
       },
       {
         "name": "False Chorus",
@@ -49,7 +49,7 @@
       },
       {
         "name": "Grasping Bough",
-        "desc": "Melee Attack Roll: +7, reach 20 ft. 13 (2d8 + 4) Bludgeoning damage, and if the target is a Large or smaller creature it has the Grappled condition (escape DC 14).",
+        "desc": "Melee Attack Roll: +7, reach 20 ft. 13 (2d8 + 4) Bludgeoning damage, and if the target is a Large or smaller creature it is wrapped in coils of vine and root (Grappled, escape DC 14). A single attack that deals 10 or more Slashing damage to a grappling bough severs it, freeing the creature it holds — the damage still counts against the garden's hit points.",
         "type": "ACTION"
       },
       {
