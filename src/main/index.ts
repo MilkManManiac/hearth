@@ -74,7 +74,16 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 app.commandLine.appendSwitch('disable-renderer-backgrounding')
 app.commandLine.appendSwitch('disable-background-timer-throttling')
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
-app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
+// One combined disable-features switch (a second appendSwitch would overwrite):
+// - CalculateNativeWinOcclusion: covered-but-not-minimized windows count as hidden
+// - IntensiveWakeUpThrottling: after 5 MINUTES backgrounded, Chromium caps main-
+//   thread wake-ups hard — the "fine at first, stutters later" failure mode
+// - UseEcoQoSForBackgroundProcess: Windows 11 drops background renderers into
+//   EcoQoS "efficiency mode" (slow cores/clocks) underneath all the flags above
+app.commandLine.appendSwitch(
+  'disable-features',
+  'CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,UseEcoQoSForBackgroundProcess'
+)
 
 let mainWindow: BrowserWindow | null = null
 let presenterWindow: BrowserWindow | null = null
