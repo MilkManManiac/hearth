@@ -3,41 +3,825 @@
   "name": "Eekso — The Garden (Ambush)",
   "session": "session-26",
   "dmNotes": "SET-PIECE 1 — the flytrap. Structure: LURE → THRESHOLD → CLOSE → FIGHT. The music does the work: start on 'bloom' (genuinely beautiful, zero irony) and hold it longer than feels comfortable. The turn comes from the WORLD first — the plants move, the music follows a beat later.\n\nThreshold = the pool's edge. THE WATER ISN'T REAL — the pool is the thing's STOMACH: clear digestive fluid in a basin of its own flesh. It wraps you up, drags you in, and spines poke you full of holes while the fluid does the slow work. Weak to fire AND slashing (cut the coils). Escape through the sealing archway is a valid win.\n\nLETHALITY (Wes confirmed): the 0-HP-dissolves rule is REAL. No secret safety net — the counterplay is fire, blades, and getting them out in time. (The Revivify scroll in this room's loot insures the REST of the dungeon — it can't help anyone dissolved here: no body, no Revivify.)\n\nSTAT BLOCK: 📖 'The Garden of Eekso' (campaign homebrew, 🏠 in the compendium). CR 7 — under moderate budget on paper, the closing-perimeter mechanics make up the rest, and escape stays viable.",
-
   "music": [
-    { "id": "bloom", "label": "The garden (beautiful — play it straight)", "file": "music/Brombaer - Fireflies in the Overgrown Temple.mp3", "volume": 0.5, "default": true },
-    { "id": "wrong", "label": "It's wrong", "file": "music/Russell Shaw - Fae Tales- They Are Watching.mp3", "volume": 0.55 },
-    { "id": "close", "label": "The garden closes", "file": "music/Mordela Morana - Tree of Shadows.mp3", "volume": 0.6 },
-    { "id": "fight", "label": "Fight for the door", "file": "music/Secession Studios, Greg Dombrowski - A Moth to a Flame.mp3", "volume": 0.65 },
-    { "id": "after", "label": "Aftermath", "file": "music/Tony Anderson - Lune.mp3", "volume": 0.45 }
+    {
+      "id": "bloom",
+      "label": "The garden (beautiful — play it straight)",
+      "file": "music/Brombaer - Fireflies in the Overgrown Temple.mp3",
+      "volume": 0.5,
+      "default": true
+    },
+    {
+      "id": "wrong",
+      "label": "It's wrong",
+      "file": "music/Russell Shaw - Fae Tales- They Are Watching.mp3",
+      "volume": 0.55
+    },
+    {
+      "id": "close",
+      "label": "The garden closes",
+      "file": "music/Mordela Morana - Tree of Shadows.mp3",
+      "volume": 0.6
+    },
+    {
+      "id": "fight",
+      "label": "Fight for the door",
+      "file": "music/Secession Studios, Greg Dombrowski - A Moth to a Flame.mp3",
+      "volume": 0.65
+    },
+    {
+      "id": "after",
+      "label": "Aftermath",
+      "file": "music/Tony Anderson - Lune.mp3",
+      "volume": 0.45
+    }
   ],
-
   "ambience": [
-    { "file": "ambience/fap-forest-birds.ogg", "volume": 0.35 },
-    { "file": "ambience/nox-hot-spring.ogg", "volume": 0.3 },
-    { "file": "ambience/fap-forest-day.ogg", "volume": 0.25 },
-    { "file": "ambience/fap-cave-creepy.ogg", "volume": 0.3, "autoplay": false }
+    {
+      "file": "ambience/fap-forest-birds.ogg",
+      "volume": 0.35
+    },
+    {
+      "file": "ambience/nox-hot-spring.ogg",
+      "volume": 0.3
+    },
+    {
+      "file": "ambience/fap-forest-day.ogg",
+      "volume": 0.25
+    },
+    {
+      "file": "ambience/fap-cave-creepy.ogg",
+      "volume": 0.3,
+      "autoplay": false
+    }
   ],
-
   "sfx": [],
-
   "images": [],
-
-  "scriptText": "# The Garden\n\n{{music:bloom}} {{amb:fap-forest-birds|in=4s}}\n\nYou come around the rock and the fortress simply stops being a fortress.\n\nA garden grows here — a real one, walled in old stone, under a hundred feet of black rock. Trees you can't name lean over a pool so clear and blue it looks lit from underneath. Flowers in colours that have no business existing this far from the sun. The air is warm. Birds are singing somewhere in the branches.\n\nAfter everything behind you, it is the first thing in this place that looks *alive*.\n\n## The Wrongnesses\n\n> [!dm] Only if a player actively looks:\n>\n> - **Perception DC 15:** the birdsong doesn't move. Same calls, same places, on a loop.\n> - **Nature DC 15:** nothing here has ever *seeded* — no saplings, no dead leaves, no litter. This garden has never been young.\n> - **Investigation DC 17:** bones at the base of the trees, half-swallowed by root and moss. Not cleaned up — *grown over*.\n> - **Survival DC 13:** no insect noise. In a garden. None.\n> - **Nature DC 14 (at the pool):** no inlet, no outlet, nothing living in it — and touching it, the 'water' is faintly warm, slick, and *clings* for half a second before it lets go.\n>\n> If they clock it early and back out — **let them.** Escape/avoidance is a valid win.\n\n## The Threshold\n\n{{music:wrong}} {{amb:fap-cave-creepy|vol=30%|in=5s}}\n\n- **Trigger:** drinking, wading, or stepping past the pool's far edge\n\n- The birdsong stops — all of it, at once, mid-phrase\n\n- In the silence, every branch in the garden turns\n\n- If they're being *too* careful: a low branch bends down and **offers fruit** to whoever's closest\n\n## The Close\n\n{{music:close}}\n\nThe trees are moving. Not swaying — *walking*, dragging their roots out of the soil in long wet handfuls, closing the gaps between their trunks. The flowers turn to face you the way a crowd turns. Behind you, where the archway was, three trunks have already leaned together, and the vines are lacing them shut like fingers.\n\nAnd the whole garden takes one slow, wet, enormous breath.\n\n> [!dm] **Closing perimeter mechanics:**\n>\n> - Each round the wall of growth advances — the open floor shrinks\n> - Ground inside becomes difficult terrain as roots surface\n> - End your turn touching the wall → grabbed: **restrained, and pulled**\n> - The real question: **can they reach the archway before it seals?** Escape is a legitimate win; killing it is optional.\n>\n> 📖 **Stat block: 'The Garden of Eekso'** — campaign homebrew, 🏠 in the compendium.\n\n## Fight\n\n{{music:fight}}\n\n> [!dm]\n> - **Vulnerable to fire AND slashing** — a big cut severs a grappling bough outright\n> - Grappled creatures get reeled toward the pool. **The pool is the stomach** — held under, spine damage + acid. **What hits 0 HP in there dissolves — no body, no Revivify.**\n\n## After\n\n{{music:after}}\n\n- If they escaped: the garden is a garden again. Still. Warm. The pool perfectly clear, waiting for the next travellers.\n\n- If they killed it: the pool clouds grey, sinks away, and leaves a bare basin of dead flesh. The whole garden sags where it stands — and you can see it now for what it always was: one thing, wearing a garden.\n\n- Either way, the birds do not come back.\n\n> [!dm] **Loot (approved)** — in the root-mass, takes a few minutes of digging:\n> - **+1 Shield**\n> - **Scroll of Revivify**\n> - ~60 gp in mixed old coin",
-
   "ideas": [
-    { "id": "idea-birdsong-loop", "text": "The birdsong is a loop — same calls, same positions. Perception catches it before anything moves.", "done": false },
-    { "id": "idea-never-young", "text": "No saplings, no dead leaves, no seeds. The garden has never been young — it was made, not grown.", "done": false },
-    { "id": "idea-offered-fruit", "text": "If the party is too careful, a branch bends down and offers fruit to the nearest PC", "done": false },
-    { "id": "idea-second-lure", "text": "Badly wounded, it restarts the birdsong — sped up and wrong. Trying the lure again.", "done": false },
-    { "id": "idea-pool-mouth", "text": "Restrained creatures get dragged toward the pool. The pool is the mouth.", "done": false }
+    {
+      "id": "idea-birdsong-loop",
+      "text": "The birdsong is a loop — same calls, same positions. Perception catches it before anything moves.",
+      "done": false
+    },
+    {
+      "id": "idea-never-young",
+      "text": "No saplings, no dead leaves, no seeds. The garden has never been young — it was made, not grown.",
+      "done": false
+    },
+    {
+      "id": "idea-offered-fruit",
+      "text": "If the party is too careful, a branch bends down and offers fruit to the nearest PC",
+      "done": false
+    },
+    {
+      "id": "idea-second-lure",
+      "text": "Badly wounded, it restarts the birdsong — sped up and wrong. Trying the lure again.",
+      "done": false
+    },
+    {
+      "id": "idea-pool-mouth",
+      "text": "Restrained creatures get dragged toward the pool. The pool is the mouth.",
+      "done": false
+    }
   ],
-
   "entities": [
-    { "id": "ent-garden", "type": "monster", "name": "The Garden (lure-predator)", "note": "📖 homebrew 'The Garden of Eekso' (CR 7). Lure → threshold → encircle → constrict → digest. Vulnerable to fire AND slashing. Escape through the sealing archway is a valid win.", "status": "present", "used": false },
-    { "id": "ent-pool", "type": "hazard", "name": "The pool", "note": "Not water — the STOMACH. Clear digestive fluid in a basin of its own flesh. Holds you under, spines poke, acid in the wounds. What hits 0 HP dissolves.", "status": "present", "used": false },
-    { "id": "ent-bones", "type": "loot", "name": "Bones and gear in the root-mass", "note": "Decades of travellers. APPROVED LOOT: +1 Shield (the shield boss), Scroll of Revivify (bone scroll case), ~60 gp old coin.", "status": "present", "used": false }
+    {
+      "id": "ent-garden",
+      "type": "monster",
+      "name": "The Garden (lure-predator)",
+      "note": "📖 homebrew 'The Garden of Eekso' (CR 7). Lure → threshold → encircle → constrict → digest. Vulnerable to fire AND slashing. Escape through the sealing archway is a valid win.",
+      "status": "present",
+      "used": false
+    },
+    {
+      "id": "ent-pool",
+      "type": "hazard",
+      "name": "The pool",
+      "note": "Not water — the STOMACH. Clear digestive fluid in a basin of its own flesh. Holds you under, spines poke, acid in the wounds. What hits 0 HP dissolves.",
+      "status": "present",
+      "used": false
+    },
+    {
+      "id": "ent-bones",
+      "type": "loot",
+      "name": "Bones and gear in the root-mass",
+      "note": "Decades of travellers. APPROVED LOOT: +1 Shield (the shield boss), Scroll of Revivify (bone scroll case), ~60 gp old coin.",
+      "status": "present",
+      "used": false
+    }
   ],
-
-  "transition": { "crossfadeMs": 2500 }
+  "transition": {
+    "crossfadeMs": 2500
+  },
+  "script": [
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Garden"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "bloom",
+          "label": "▶ bloom"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "fap-forest-birds",
+          "label": "〜 fap-forest-birds",
+          "fadeInMs": 4000
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "You come around the rock and the fortress simply stops being a fortress."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "A garden grows here , walled in old stone, under a hundred feet of black rock.  Flowers in colours that have no business existing this far from the sun. The air is warm. Birds are singing somewhere in the branches."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "After everything behind you, it is the first thing in this place that looks "
+        },
+        {
+          "type": "text",
+          "text": "alive",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "."
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Wrongnesses"
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Only if a player actively looks:"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "- "
+            },
+            {
+              "type": "text",
+              "text": "Perception DC 15:",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " the birdsong doesn't move. Same calls, same places, on a loop. - "
+            },
+            {
+              "type": "text",
+              "text": "Nature DC 15:",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " nothing here has ever "
+            },
+            {
+              "type": "text",
+              "text": "seeded",
+              "marks": [
+                {
+                  "type": "italic"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " — no saplings, no dead leaves, no litter. This garden has never been young. - "
+            },
+            {
+              "type": "text",
+              "text": "Investigation DC 17:",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " bones at the base of the trees, half-swallowed by root and moss. Not cleaned up — "
+            },
+            {
+              "type": "text",
+              "text": "grown over",
+              "marks": [
+                {
+                  "type": "italic"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ". - "
+            },
+            {
+              "type": "text",
+              "text": "Survival DC 13:",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " no insect noise. In a garden. None. - "
+            },
+            {
+              "type": "text",
+              "text": "Nature DC 14 (at the pool):",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " no inlet, no outlet, nothing living in it — and touching it, the 'water' is faintly warm, slick, and "
+            },
+            {
+              "type": "text",
+              "text": "clings",
+              "marks": [
+                {
+                  "type": "italic"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " for half a second before it lets go."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "If they clock it early and back out — "
+            },
+            {
+              "type": "text",
+              "text": "let them.",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " Escape/avoidance is a valid win."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Threshold"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "wrong",
+          "label": "▶ wrong"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "cue",
+          "kind": "amb",
+          "ref": "fap-cave-creepy",
+          "label": "〜 fap-cave-creepy",
+          "volume": 0.3,
+          "fadeInMs": 5000
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- "
+        },
+        {
+          "type": "text",
+          "text": "Trigger:",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " approaching the water"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- The birdsong stops — all of it, at once, mid-phrase"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- In the silence, every branch in the garden turns"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- If they're being "
+        },
+        {
+          "type": "text",
+          "text": "too",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " careful: a low branch bends down and "
+        },
+        {
+          "type": "text",
+          "text": "offers fruit",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " to whoever's closest"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "The Close"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "close",
+          "label": "▶ close"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The trees are moving. Not swaying — "
+        },
+        {
+          "type": "text",
+          "text": "walking",
+          "marks": [
+            {
+              "type": "italic"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ", dragging their roots out of the soil in long wet handfuls, closing the gaps between their trunks. The flowers turn to face you the way a crowd turns. Behind you, where the archway was, three trunks have already leaned together, and the vines are lacing them shut like fingers."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "And the whole garden takes one slow, wet, enormous breath."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Closing perimeter mechanics:",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "- Each round the wall of growth advances — the open floor shrinks - Ground inside becomes difficult terrain as roots surface - End your turn touching the wall → grabbed: "
+            },
+            {
+              "type": "text",
+              "text": "restrained, and pulled",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " - The real question: "
+            },
+            {
+              "type": "text",
+              "text": "can they reach the archway before it seals?",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " Escape is a legitimate win; killing it is optional."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "📖 "
+            },
+            {
+              "type": "text",
+              "text": "Stat block: 'The Garden of Eekso'",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " — full block below under Fight (also 🏠 in the compendium)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "Fight"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "fight",
+          "label": "▶ fight"
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "THE GARDEN OF EEKSO — Gargantuan plant, CR 7", "marks": [{ "type": "bold" }] }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "AC 14 · HP 150 · Speed 0 (attacks from any tree/root/vine in the grove) · Tremorsense 60 ft, blind beyond · Init −1" }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "STR 19 (+4) · DEX 8 (−1) · CON 14 (+2) · INT 3 · WIS 12 · CHA 10 · Saves Str +7, Con +5 · " },
+            { "type": "text", "text": "Vulnerable fire & slashing", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": " · Immune: blinded, charmed, deafened, frightened, prone" }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Multiattack. ", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": "Two Grasping Boughs. Grappling doesn't limit its attack count — no shortage of limbs." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Grasping Bough. ", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": "+7 to hit, reach 20 ft. 13 (2d8+4) bludgeoning; Large or smaller → grappled (escape DC 14). A single hit dealing 10+ slashing severs the bough and frees its target (damage still counts)." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Reel (bonus action). ", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": "Every grappled creature is pulled 15 ft toward the pool." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "The Garden Closes. ", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": "Start of its turn: the wall advances 10 ft inward; inside is difficult terrain. End your turn within 5 ft of the wall → DC 14 Str save or grappled (DC 14) and pulled 10 ft poolward. The archway seals fully 3 rounds after the close begins — squeezing out costs 10 ft of movement." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "Fire-Shy. ", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": "Any fire damage → the wall doesn't advance on its next turn, and grappled creatures have advantage to escape until the end of that turn." }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "The Pool Is the Stomach. ", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": "In the pool: restrained (escape DC 14 Athletics); start of the creature's turn → 18 (4d8) acid from the feeding spines. " },
+            { "type": "text", "text": "0 HP in the pool = pulled under and dissolved.", "marks": [{ "type": "bold" }] }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "text": "False Chorus. ", "marks": [{ "type": "bold" }] },
+            { "type": "text", "text": "Below half HP the birdsong restarts, sped up and wrong: hearers DC 13 Wis save or disadvantage on their next attack roll." }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "- "
+            },
+            {
+              "type": "text",
+              "text": "Vulnerable to fire AND slashing",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " — a big cut severs a grappling bough outright - Grappled creatures get reeled toward the pool. "
+            },
+            {
+              "type": "text",
+              "text": "The pool is the stomach",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " — held under, spine damage + acid. "
+            },
+            {
+              "type": "text",
+              "text": "What hits 0 HP in there dissolves — no body, no Revivify.",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "After"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "cue",
+          "kind": "music",
+          "ref": "after",
+          "label": "▶ after"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- If they escaped: the garden is a garden again. Still. Warm. The pool perfectly clear, waiting for the next travellers."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- If they killed it: the pool clouds grey, sinks away, and leaves a bare basin of dead flesh. The whole garden sags where it stands — and you can see it now for what it always was: one thing, wearing a garden."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- Either way, the birds do not come back."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Loot (approved)",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " — in the root-mass, takes a few minutes of digging: - "
+            },
+            {
+              "type": "text",
+              "text": "+1 Shield",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " - "
+            },
+            {
+              "type": "text",
+              "text": "Scroll of Revivify",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": " - ~60 gp in mixed old coin"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
