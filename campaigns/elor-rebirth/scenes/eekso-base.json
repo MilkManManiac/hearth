@@ -1,0 +1,41 @@
+{
+  "id": "eekso-base",
+  "name": "Eekso — The Base",
+  "session": "session-26",
+  "dmNotes": "THE EXPLORE BED for the main floor — leave this running while they wander. Nothing here wants to kill them; the job of this scene is to sell 'many owners, long dead' and to point at the two exits: the garden (northeast, lure) and the stairwell (northwest, blood). The stairwell blood is the single most important clue on this floor: it goes DOWN, and it was never cleaned. Let them find it themselves. If they head for the garden, switch to 'The Garden'. If they take the stairs up, switch to 'The Top Floor'.",
+
+  "music": [
+    { "id": "wander", "label": "Wandering the halls", "file": "music/cave-exploration.ogg", "volume": 0.5, "default": true },
+    { "id": "ruin", "label": "What's left of it", "file": "music/ruined-town.ogg", "volume": 0.5 },
+    { "id": "moody", "label": "Quiet and wrong", "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody.mp3", "volume": 0.5 },
+    { "id": "blood", "label": "The stairwell", "file": "music/mp1-oliver-siimon-music-horror-ambience-d-minor-70-4-4.mp3", "volume": 0.55 }
+  ],
+
+  "ambience": [
+    { "file": "ambience/dungeon-cave.ogg", "volume": 0.4 },
+    { "file": "ambience/nox-cave-drips.ogg", "volume": 0.3 },
+    { "file": "ambience/fap-cave-dark.ogg", "volume": 0.25 },
+    { "file": "ambience/nox-stream.ogg", "volume": 0.25, "autoplay": false }
+  ],
+
+  "sfx": [],
+
+  "images": [],
+
+  "scriptText": "# The Base\n\nThe fortress opens up past the foyer, and it becomes obvious how much of this place was *lived in* — and how long ago that stopped.\n\nA pillared corridor runs the spine of the floor. Rooms hang off it in every direction, half of them repurposed at least twice. Somebody turned a guardroom into a pantry. Somebody else turned the pantry into a bunkroom, and then somebody stripped the bunks for the wood.\n\nIt is quiet in the specific way that only large stone rooms get quiet — every footstep you take comes back to you a half-second late.\n\n> [!dm] Deal these out as they explore. The through-line is **layers of occupation** — no single owner, no single era:\n> - A murder-hole in a ceiling, bricked shut from above\n> - Nails hammered into fine masonry to hang cookware\n> - Three separate latrine pits dug in three separate corners by three separate crews\n> - Graffiti in at least two alphabets, one of them dwarvish, one nobody can read\n> - A door hung backwards by someone who didn't care\n\n## The West Hall — Old Dining\n\nA long room off the west side, and it stinks faintly of nothing at all — everything that could rot in here rotted a very long time ago.\n\n- Trestle tables collapsed under their own weight, one still set for a meal\n- **Old campsites** — three or four, from different years, layered on top of each other\n- Somebody's boots, worn through, left neatly side by side\n- A dice cup and scattered bone dice, the pips worn smooth\n\n> [!dm] Travellers have been sheltering in this room for decades. **None of the camps show a departure** — no scattered gear, no dead fires kicked out. People stopped here, and then the room went quiet.\n>\n> The party has just come from a camp exactly like these. Let that land without comment.\n\n## Northeast — Something Green\n\n{{music:moody}} Down the eastern side of the floor, the air changes. It gets *warmer*, and it smells like water and green growing things, which is impossible this deep in the rock.\n\nThere is light coming from somewhere ahead. Not torchlight. Something softer and more even.\n\n> [!dm] This is the hook for **The Garden**. Do not oversell it — one sentence about the smell is more effective than three.\n>\n> Switch to the scene **'Eekso — The Garden'** when they commit to going in. Everything about it is designed to feel like relief.\n\n## Northwest — The Stairwell\n\n{{music:blood}} The northwest corner holds a stairwell — a proper one, wide, cut for moving supplies. It goes up, and it goes down.\n\nAnd on the landing, there is blood.\n\nNot a spatter. Not a struggle. A long, deliberate smear, dragged from the middle of the floor to the top step of the *downward* stair — and then continuing down, and down, out of the light.\n\nIt is old and it is black. And underneath it are other stains, older, in the same track. This has happened many times.\n\n> [!dm] The clue of the floor. Play it plain and let them draw the conclusion.\n>\n> - **Medicine / Survival DC 12:** the drag mark is *bodies*, plural, over a long stretch of time\n> - **Investigation DC 15:** the stone of the downward steps is worn smooth in a way the upward steps aren't. Everything in this fortress goes **down**.\n> - Nobody cleaned it. There was no reason to — nobody was coming.\n>\n> **Up** → 'Eekso — The Top Floor' (safer, clues, mimics)\n> **Down** → 'Eekso — The Pitfall Prison'",
+
+  "ideas": [
+    { "id": "idea-layers", "text": "Every room has been repurposed at least twice — the fortress reads like sediment, not architecture", "done": false },
+    { "id": "idea-no-departures", "text": "None of the old campsites show anyone packing up and leaving. They just stop.", "done": false },
+    { "id": "idea-worn-steps", "text": "The downward stairs are worn smooth; the upward stairs aren't. Everything in Eekso goes down.", "done": false },
+    { "id": "idea-warm-air", "text": "The garden announces itself as warmth and the smell of water before anyone sees a leaf", "done": false }
+  ],
+
+  "entities": [
+    { "id": "ent-stair-blood", "type": "clue", "name": "The dragged blood on the stairwell landing", "note": "Layered stains, many bodies, always downward. Never cleaned.", "status": "present", "used": false },
+    { "id": "ent-old-camps", "type": "prop", "name": "Layered travellers' camps", "note": "Decades of shelterers. No camp shows a departure.", "status": "present", "used": false },
+    { "id": "ent-garden-hook", "type": "hook", "name": "Warm air and green smell (east)", "note": "The lure. Leads to The Garden.", "status": "present", "used": false }
+  ],
+
+  "transition": { "crossfadeMs": 3000 }
+}

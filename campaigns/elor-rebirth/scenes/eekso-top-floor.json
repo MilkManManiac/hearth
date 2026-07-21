@@ -1,0 +1,45 @@
+{
+  "id": "eekso-top-floor",
+  "name": "Eekso — The Top Floor",
+  "session": "session-26",
+  "dmNotes": "THE SAFE(ISH) FLOOR — this is the exhale and the clue drop. Two jobs: (1) give them the journal that warns about what's below, so descending is a choice they make with their eyes open; (2) the mimic feast, which is the one real threat up here.\n\nThe umber hulk is BACKSTORY, not an encounter — it ate these tunnels out long ago and is gone. The broken walls should read as wrong before anyone explains them. If the party gets paranoid hunting a hulk that isn't here, that's free tension; let them sweep.\n\nThe captain's quarters are deliberately empty of treasure. Many owners, all stripped. Resist the urge to reward the search — the reward on this floor is INFORMATION.",
+
+  "music": [
+    { "id": "quiet", "label": "Quiet up here", "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody-2-e-minor-60-4-4.mp3", "volume": 0.45, "default": true },
+    { "id": "ruin", "label": "Somebody lived here", "file": "music/ruined-town.ogg", "volume": 0.5 },
+    { "id": "wrong", "label": "The broken walls", "file": "music/horror-atmosphere.ogg", "volume": 0.5 },
+    { "id": "safe", "label": "A safe corner", "file": "music/hearth-warmth.ogg", "volume": 0.4 },
+    { "id": "mimic", "label": "It's not food", "file": "music/battle-medieval.mp3", "volume": 0.65 }
+  ],
+
+  "ambience": [
+    { "file": "ambience/fap-cave-wind.ogg", "volume": 0.35 },
+    { "file": "ambience/nox-cave-deep.ogg", "volume": 0.3 },
+    { "file": "ambience/dungeon.ogg", "volume": 0.25 },
+    { "file": "ambience/nox-campfire-small.ogg", "volume": 0.35, "autoplay": false }
+  ],
+
+  "sfx": [],
+
+  "images": [],
+
+  "scriptText": "# The Top Floor\n\nThe stair comes out into open cave.\n\nThat is the first strange thing — this is the *top* of the fortress, the floor a commander would have taken for himself, and most of it isn't built at all. It's a vast rough cavern with a packed dirt floor, and the finished rooms cling to one corner of it like something left over.\n\nThe air is dry and moves a little. After the floors below, it almost feels clean.\n\n> [!dm] This floor is the party's breather. Let them slow down. Let them consider a rest.\n>\n> The threat here is exactly one thing (the mimics), and the payoff is exactly one thing (the journal). Everything else is texture and empty rooms.\n\n## The Dead Fountain\n\n{{music:ruin}} Where the built section starts, there's a small court that somebody once meant as a pleasant place.\n\nA round stone fountain sits at the middle of it, bone dry, its basin full of grey dust. Around it, in beds cut into the floor, are trees — long dead, bare, still standing because nothing up here has enough weather to knock them over.\n\nSomebody carried soil up here for these. Somebody watered them by hand.\n\n- The basin has a residue ring — it held water for years, then didn't\n- One of the dead trees has initials carved in it, weathered nearly smooth\n- A child's-height handprint in the old plaster of the wall, fired hard by time\n\n## The Broken Walls\n\n{{music:wrong}} Past the court, the walls stop making sense.\n\nThere are holes in them. Not doorways, not collapses — *holes*, roughly round, six feet across, punched clean through two feet of dressed stone. One wall has three in a row. The rubble lies inside the rooms, which means whatever made them came **through** from the cavern.\n\nAnd the edges are wrong. They aren't cracked or shattered. They're scooped — like the stone was taken out in bites.\n\n> [!dm] **This is an umber hulk's work, and it is LONG gone.** It ate these tunnels out of the rock generations ago and moved on.\n>\n> - **Investigation DC 13:** the breaks are old — dust has settled in them, and one has a dead tree root growing through it\n> - **Nature / Dungeoneering DC 15:** the cavern itself is a hulk-warren. Most of this floor's open space was *eaten*.\n> - The party fought a hulk two sessions ago. They will recognise this. **Let them get scared and sweep the room.** There is nothing to find. That's the gift.\n\n## The Captain's Quarters\n\nThrough the largest hole: what were once somebody's private rooms.\n\nA bed frame with no bed. A desk with its drawers pulled out and stacked neatly on the floor by looters who had plenty of time. A fireplace full of cold ash and, in it, the corner of a burnt ledger.\n\nEvery hook on the walls is empty. Every shelf is bare. Nothing valuable has survived here in a very long time, because a great many people have already looked.\n\n> [!dm] **Deliberately empty.** Many owners, all stripped. If they search hard, the reward is atmosphere, not loot:\n> - The burnt ledger's surviving corner lists supply counts. The numbers get smaller each month, then stop.\n> - Names scratched inside a cupboard door — a roster, crossed out one by one in different hands\n> - A good boot. Just the one.\n\n## The Campsite — The Journal\n\n{{music:safe}} {{amb:nox-campfire-small|vol=30%|in=3s}} Tucked in the southwest, behind a spur of rock that hides it from the open cave, there's a camp — and this one is *recent*.\n\nWeeks, not decades. A fire ring with charcoal still black. Bedding. A pack, still packed.\n\nWhoever made this was hiding, and was careful, and did not come back for their things.\n\n> [!dm] **THE CLUE DROP.** This is why the floor exists. Hand them the journal and let them read it aloud.\n>\n> Write it in the voice of a scared, practical person — a scavenger, not a scholar. The tiers, cut to taste:\n> - We came in for the fittings. Good stone, good iron, nobody home. Easy work.\n> - Don't walk on the rugs. Karst is gone. We heard him for a while. Then we didn't.\n> - There is something living down there and it does not eat what it takes. It *keeps* it.\n> - Do not follow the blood. The blood is going somewhere.\n> - Last entry, different hand, hurried: **It knows how many of us there are.**\n>\n> This is also the natural **long rest** spot if they want one. It is genuinely safe. Let them have it — they'll need it.\n\n## The Feast\n\n{{music:mimic}} East of the camp, past a hanging curtain that someone strung across a gap in the rock, there is a table.\n\nIt is laid for a meal. Roast fowl, bread, fruit, a jug — laid out neat and steaming, in a cave, a hundred miles from a kitchen, in a fortress where nothing has eaten in forty years.\n\nIt smells *wonderful*.\n\n> [!dm] **Two mimics.** The table and the food are the same creature — the 'table' and the 'roast' are one body each.\n>\n> - **Perception DC 16 / Arcana DC 14:** the steam rises but never disperses. The shadows under the table don't match the light.\n> - **Trigger:** touching the food, sitting, or reaching for the jug. If they hang back, the curtain behind them *stirs* — cut off the retreat.\n> - Adhesive grab. Whoever reaches first is stuck to a mouth.\n> - Nothing about this room is a puzzle. It's a bite for the greedy and a scare for everyone else.\n>\n> After: they can take real supplies from the mimics' hoard — coins and metal, the indigestible leavings of everyone who fell for it.",
+
+  "ideas": [
+    { "id": "idea-hand-watered", "text": "Someone hauled soil up here and hand-watered trees in a lightless cave — the most human thing in Eekso, and it's dead", "done": false },
+    { "id": "idea-bitten-stone", "text": "The wall holes are scooped, not shattered — the stone was taken out in bites", "done": false },
+    { "id": "idea-hulk-paranoia", "text": "Party fought an umber hulk two sessions ago; let them sweep for one that isn't here. Free tension.", "done": false },
+    { "id": "idea-roster", "text": "A roster scratched inside a cupboard door, names crossed out one at a time in different handwriting", "done": false },
+    { "id": "idea-knows-how-many", "text": "Journal's last line, different hand: 'It knows how many of us there are.'", "done": false },
+    { "id": "idea-steam", "text": "The mimic feast steams, but the steam never disperses", "done": false }
+  ],
+
+  "entities": [
+    { "id": "ent-journal", "type": "clue", "name": "The scavenger's journal", "note": "Weeks old. Warns about the rugs, the blood, and something below that KEEPS what it takes.", "status": "present", "used": false },
+    { "id": "ent-hulk-holes", "type": "prop", "name": "Umber hulk tunnels (old)", "note": "Backstory, not an encounter. It ate this floor out and left generations ago.", "status": "present", "used": false },
+    { "id": "ent-mimics", "type": "monster", "name": "Two mimics (the table and the roast)", "note": "Perception DC 16 / Arcana DC 14. Trigger on touching food or sitting.", "status": "present", "used": false },
+    { "id": "ent-rest", "type": "location", "name": "The hidden camp — safe long rest", "note": "Genuinely safe. Let them take it.", "status": "present", "used": false }
+  ],
+
+  "transition": { "crossfadeMs": 3000 }
+}

@@ -1,0 +1,43 @@
+{
+  "id": "eekso-garden",
+  "name": "Eekso — The Garden (Ambush)",
+  "session": "session-26",
+  "dmNotes": "SET-PIECE 1 — the flytrap. Structure is LURE → THRESHOLD → CLOSE → FIGHT, and the music does the work: start on 'bloom' (genuinely beautiful, no irony) and hold it far longer than feels comfortable. The turn should come from the WORLD, not the soundtrack — the plants move first, the music follows a beat later. That inversion is what makes it land.\n\nThe threshold is the pool's edge. Anything that drinks, touches the water, or steps past it triggers the close.\n\nSTAT BLOCK STILL OWED (Wes asked, not yet built): the lure-predator itself. Design intent on file — a plant ambusher that entices, then encircles with animated growth and constricts. Party is 4x lvl 6 + Cumb lvl 4; a high-difficulty single-monster fight is ~6750 XP but this one should sit under that (moderate, ~4500) since it is mid-crawl and they can still flee. Ask Claude for the block before you run it.",
+
+  "music": [
+    { "id": "bloom", "label": "The garden (beautiful — play it straight)", "file": "music/mp1-oliver-siimon-celestial-gardens-95.mp3", "volume": 0.5, "default": true },
+    { "id": "wrong", "label": "It's wrong", "file": "music/mp1-oliver-siimon-music-creepy-tension-cinematic-gp-f-minor-85-4-4.mp3", "volume": 0.55 },
+    { "id": "close", "label": "The garden closes", "file": "music/mp1-oliver-siimon-music-horror-intense-stalker-strings-c-minor-60-12-8.mp3", "volume": 0.6 },
+    { "id": "fight", "label": "Fight for the door", "file": "music/battle-rpg.ogg", "volume": 0.65 },
+    { "id": "after", "label": "Aftermath", "file": "music/somber-what-is-left.mp3", "volume": 0.45 }
+  ],
+
+  "ambience": [
+    { "file": "ambience/fap-forest-birds.ogg", "volume": 0.35 },
+    { "file": "ambience/nox-hot-spring.ogg", "volume": 0.3 },
+    { "file": "ambience/fap-forest-day.ogg", "volume": 0.25 },
+    { "file": "ambience/fap-cave-creepy.ogg", "volume": 0.3, "autoplay": false }
+  ],
+
+  "sfx": [],
+
+  "images": [],
+
+  "scriptText": "# The Garden\n\nYou come around the rock and the fortress simply stops being a fortress.\n\nA garden grows here — a real one, walled in old stone, open to nothing but a hundred feet of black rock overhead. Trees you cannot name lean over a pool of water so clear and so blue it looks lit from underneath. Flowers in colours that have no business existing this far from the sun.\n\nThe air is warm. Birds are singing somewhere in the branches.\n\nAfter everything behind you, it is the first thing in this place that looks *alive*.\n\n> [!dm] **Play this completely straight.** No ominous adjectives, no knowing pauses. The trap is that it is genuinely lovely and they are genuinely tired.\n>\n> Let them enjoy it. Let somebody suggest resting here. The longer the honeymoon, the better the turn.\n\n## The Small Wrongnesses\n\nGive these ONLY if a player actively looks. Never volunteer them.\n\n- **Perception DC 15:** the birdsong doesn't move. Same calls, same places, over and over.\n- **Nature DC 15:** nothing here should grow without sun. Nothing here has *seeded* — no saplings, no dead leaves, no litter on the ground. This garden has never been young.\n- **Investigation DC 17:** at the base of the trees, half-swallowed by root and moss, there are bones. Small ones and large ones. Nothing has been cleaned up. It has been *grown over*.\n- **Survival DC 13:** there is no insect noise. In a garden. None at all.\n\n> [!dm] If they clock it early and back out — **let them**. A party that outsmarts the flytrap has earned it, and the fortress has plenty of other teeth. Note it and move on; don't force the fight.\n\n## The Threshold\n\n{{music:wrong}} {{amb:fap-cave-creepy|vol=30%|in=5s}} The pool is the line.\n\nThe moment someone drinks from it, or wades in, or steps past its edge toward the deeper trees —\n\nthe birdsong stops.\n\nAll of it, at once, mid-phrase. And in the silence, every branch in the garden turns.\n\n> [!dm] **Trigger:** touching the water or crossing the pool's far edge. If they're being careful, the garden gets impatient — a low branch bends down and *offers* fruit to whoever's closest.\n\n## The Close\n\n{{music:close}} Read it slow.\n\nThe trees are moving. Not swaying — *walking*, dragging their roots out of the soil in long wet handfuls, closing the gaps between their trunks. The flowers turn to face you the way a crowd turns.\n\nBehind you, where the archway was, three trunks have already leaned together, and the vines are lacing them shut like fingers.\n\nAnd the whole garden is *breathing* — a slow, wet, enormous inhale that you feel in the floor.\n\n> [!dm] **The ring shrinks.** Run it as a closing perimeter, not a monster standing still:\n> - Each round, the wall of growth advances. The open floor gets smaller.\n> - The ground inside becomes difficult terrain as roots surface\n> - Anyone who ends their turn touching the wall gets grabbed — restrained, and pulled\n>\n> The fight's real question is **can they get back to the archway before it seals**. Escape is a legitimate win; killing the thing is optional.\n>\n> ⚑ **Stat block owed — get it from Claude before you run this.**\n\n## Fight\n\n{{music:fight}}\n\n> [!dm] Combat notes:\n> - **Fire** is the obvious answer and it should *work* — reward it, this is a plant\n> - Anything restrained is being drawn toward the pool. The pool is the mouth.\n> - Water in the pool is not water. Whatever's in it, it dissolves what goes under.\n> - When it's hurt badly, the birdsong starts again — the same loop, wrong and sped up. It's trying the lure a second time.\n\n## After\n\n{{music:after}}\n\nWhen it's over, the garden is a garden again. Still. Warm. The pool perfectly clear.\n\n- The bones under the roots are easier to see now that things have been torn up. Some are very old. Some are not.\n- Anything metal among them has survived: buckles, a shield boss, a signet\n- The birds do not come back\n\n> [!dm] Loot lives in the root-mass, not in a chest. If you want to hand them something, this is a clean place to do it — travellers' gear, decades of it.",
+
+  "ideas": [
+    { "id": "idea-birdsong-loop", "text": "The birdsong is a loop — same calls, same positions. Perception catches it before anything moves.", "done": false },
+    { "id": "idea-never-young", "text": "No saplings, no dead leaves, no seeds. The garden has never been young — it was made, not grown.", "done": false },
+    { "id": "idea-offered-fruit", "text": "If the party is too careful, a branch bends down and offers fruit to the nearest PC", "done": false },
+    { "id": "idea-second-lure", "text": "Badly wounded, it restarts the birdsong — sped up and wrong. It's trying the lure again.", "done": false },
+    { "id": "idea-pool-mouth", "text": "Restrained creatures get dragged toward the pool. The pool is the mouth.", "done": false }
+  ],
+
+  "entities": [
+    { "id": "ent-garden", "type": "monster", "name": "The Garden (lure-predator) ⚑ stat block owed", "note": "Plant ambusher: lure → threshold → encircle → constrict. Vulnerable to fire. Escape through the sealing archway is a valid win.", "status": "present", "used": false },
+    { "id": "ent-pool", "type": "hazard", "name": "The pool", "note": "Not water. Dissolves what goes under. The mouth.", "status": "present", "used": false },
+    { "id": "ent-bones", "type": "loot", "name": "Bones and gear in the root-mass", "note": "Decades of travellers. Metal survives — buckles, shield boss, signet.", "status": "present", "used": false }
+  ],
+
+  "transition": { "crossfadeMs": 2500 }
+}
