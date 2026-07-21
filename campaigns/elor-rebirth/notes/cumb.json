@@ -2,7 +2,7 @@
   "id": "cumb",
   "kind": "npc",
   "title": "Cumb",
-  "bodyText": "Goblin. Was *inside* the party's captured Bag of Holding; negotiated survival by organizing its contents while wearing a french maid outfit. Feed twice a day. Found the two S-marked bodies in the bag. Has some connection to **[[pc-trunks|Trunks]]**. Portrait: art/cumb.png (has a character sheet PDF in the import archive).\n\n# Threads\n[[thread-mr-spells]] · [[pc-trunks]]",
+  "bodyText": "Goblin. **Origin:** the Bag of Holding belonged to **[[thread-mr-spells|Mr. Spells]]** — goblins ambushed his little caravan/team, and the party found them obsessively stuffing loot into the bag. They killed the goblins, interrogated one, and had such a good time with them that Cumb got spawned into existence. He negotiated survival by organizing the bag's contents while wearing a french maid outfit. Feed twice a day. Found the two S-marked bodies in the bag.\n\n**Languages:** speaks Common but can't READ it; speaks and reads Goblin.\n\nA sneaky little boy. Really likes **[[pc-felson|Felson]]** and **[[pc-varen|Varen]]**. His only tie to [[pc-trunks|Trunks]]: both had connections to Mr. Spells. Portrait: art/cumb.png (character sheet PDF in the import archive).\n\n# Threads\n[[thread-mr-spells]] · [[pc-trunks]]",
   "tags": [
     "party-adjacent"
   ],
