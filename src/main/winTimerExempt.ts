@@ -30,12 +30,38 @@ const PS_SCRIPT = [
 ].join('; ')
 
 /**
+ * Hold a permanent 1ms timer-resolution request for this process, the classic
+ * Windows multimedia-app move (timeBeginPeriod). Diagnosed 2026-07-21: the
+ * SetProcessInformation exemption alone was not enough — it makes Windows
+ * HONOR our resolution requests while backgrounded, but Chromium releases its
+ * own request ~a minute after the window backgrounds, dropping the process to
+ * the coarse 15.6ms grid (measured: timerDrift 10-15ms) and shredding the
+ * 20ms voice packet cadence. So Hearth holds its own request for its whole
+ * lifetime. Never released: the OS cleans up at process exit, and this app
+ * mixes live audio — there is no idle state where coarse timers are wanted.
+ */
+function holdHighResolutionTimers(): void {
+  try {
+    // Lazy so a missing/broken native dep can never take down startup.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const koffi = require('koffi')
+    const winmm = koffi.load('winmm.dll')
+    const timeBeginPeriod = winmm.func('__stdcall', 'timeBeginPeriod', 'uint', ['uint'])
+    const rc = timeBeginPeriod(1)
+    console.log('[win-timer] timeBeginPeriod(1) ->', rc === 0 ? 'ok' : `error ${rc}`)
+  } catch (err) {
+    console.warn('[win-timer] timeBeginPeriod unavailable:', (err as Error).message)
+  }
+}
+
+/**
  * Fire-and-forget: exempt the given pid (default: this process) from Windows
  * background power/timer throttling. Logs the outcome; failure is non-fatal —
  * the app just stays at the OS default like before.
  */
 export function exemptFromTimerThrottling(pid: number = process.pid): void {
   if (process.platform !== 'win32') return
+  if (pid === process.pid) holdHighResolutionTimers()
   const script = PS_SCRIPT.replace('TARGET_PID', String(pid))
   execFile(
     'powershell.exe',
