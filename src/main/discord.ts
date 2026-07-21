@@ -2,6 +2,7 @@
 // channel. See DISCORD-BRIDGE.md for the architecture. EXPERIMENTAL until the
 // first end-to-end test with a real bot token.
 import { app, powerSaveBlocker } from 'electron'
+import { exemptFromTimerThrottling } from './winTimerExempt'
 import * as os from 'os'
 import * as path from 'path'
 import * as fsSync from 'fs'
@@ -196,6 +197,10 @@ export class DiscordBridge {
   private diag = new AudioDiagLog()
   private lastPushAt = 0
   private diagTimer: ReturnType<typeof setInterval> | null = null
+  /** Per-sample-window push stats (reset every diag tick). */
+  private pushCount = 0
+  private pushMaxGap = 0
+  private silentChunks = 0
   /** powerSaveBlocker id while in a voice channel — keeps Windows from
    *  suspending timers when Hearth is minimized (audible stutter otherwise). */
   private psbId: number | null = null
@@ -221,6 +226,17 @@ export class DiscordBridge {
       os.setPriority(process.pid, os.constants.priority.PRIORITY_ABOVE_NORMAL)
     } catch (err) {
       console.warn('[discord] could not raise process priority:', (err as Error).message)
+    }
+    // The AudioWorklet tap + chunk forwarding live in the RENDERER — a
+    // different pid that Windows EcoQoS-demotes when the window is minimized.
+    // The main-process exemption at startup never covered it; exempt every
+    // child (renderer/GPU/utility) too. Best effort, repeat-safe.
+    try {
+      for (const m of app.getAppMetrics()) {
+        if (m.pid !== process.pid) exemptFromTimerThrottling(m.pid)
+      }
+    } catch {
+      /* best effort */
     }
   }
 
@@ -449,17 +465,35 @@ export class DiscordBridge {
       // (288000 bytes). Draining toward 0 = the renderer isn't producing;
       // steady-but-stuttering = the fault is downstream (encode/dispatch/net).
       this.lastPushAt = 0
+      this.pushCount = 0
+      this.pushMaxGap = 0
+      this.silentChunks = 0
       if (this.diagTimer) clearInterval(this.diagTimer)
       this.diagTimer = setInterval(() => {
-        const st = this.player?.state.status ?? 'none'
-        // Timer-precision probe: a 20ms setTimeout should land within ~2ms.
-        // Win11 background timer coalescing shows up here as 10ms+ drift —
-        // the packet-pacing failure mode measured on 2026-07-21.
+        // Snapshot per-window push stats, then reset for the next window.
+        const pushes = this.pushCount
+        const maxGap = this.pushMaxGap
+        const silent = this.silentChunks
+        this.pushCount = 0
+        this.pushMaxGap = 0
+        this.silentChunks = 0
+        const st = this.player?.state as
+          | { status: string; missedFrames?: number; resource?: { playbackDuration?: number } }
+          | undefined
+        // missedFrames = dispatch ticks where no encoded packet was ready
+        // (starvation at the read end). playback = ms of audio actually sent;
+        // if it lags wall clock, frames are being skipped. buffer is the TRUE
+        // standing depth (readableLength — writableLength is ~always 0 on a
+        // PassThrough and told us nothing). silent counts 20ms input chunks
+        // that are pure silence: stutter present IN the input = renderer-side
+        // fault; clean input + gaps heard = downstream fault.
         const t0 = Date.now()
         setTimeout(() => {
           const drift = Date.now() - t0 - 20
           this.diag.line(
-            `buffer=${this.pcm?.writableLength ?? -1} player=${st} timerDrift=${drift}ms`
+            `buffer=${this.pcm?.readableLength ?? -1} player=${st?.status ?? 'none'} ` +
+              `missed=${st?.missedFrames ?? '-'} playback=${st?.resource?.playbackDuration ?? '-'}ms ` +
+              `pushes=${pushes} maxPushGap=${maxGap}ms silent=${silent} timerDrift=${drift}ms`
           )
         }, 20)
       }, 5000)
@@ -479,12 +513,28 @@ export class DiscordBridge {
     // Chunks should arrive every 20ms; a big inter-arrival gap means the
     // renderer→IPC side stalled (throttling), not the Discord side.
     const now = Date.now()
-    if (this.lastPushAt && now - this.lastPushAt > 150) {
-      this.diag.line(`push gap ${now - this.lastPushAt}ms (buffer=${pcm.writableLength})`)
+    if (this.lastPushAt) {
+      const gap = now - this.lastPushAt
+      if (gap > this.pushMaxGap) this.pushMaxGap = gap
+      if (gap > 150) this.diag.line(`push gap ${gap}ms (buffer=${pcm.readableLength})`)
     }
     this.lastPushAt = now
+    this.pushCount++
+    // Silence fingerprint (see the diag sampler): a strided scan for any
+    // sample above the noise floor. ~500 int16 reads per 20ms chunk — free.
+    const samples = new Int16Array(chunk)
+    let loud = false
+    for (let i = 0; i < samples.length; i += 4) {
+      const s = samples[i]
+      if (s > 64 || s < -64) {
+        loud = true
+        break
+      }
+    }
+    if (!loud) this.silentChunks++
     // Live audio: if Discord can't drain fast enough, drop instead of lagging.
-    if (pcm.writableLength > MAX_BUFFERED_BYTES) return
+    // (readableLength — the standing depth; writableLength never grows here.)
+    if (pcm.readableLength > MAX_BUFFERED_BYTES) return
     pcm.write(Buffer.from(chunk))
   }
 
