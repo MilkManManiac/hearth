@@ -3,6 +3,393 @@
   "kind": "session",
   "title": "Session 23 — Goodbyes",
   "date": "2025-04-05",
-  "bodyText": "**TL;DR: Goodbyes — the dwarven march ended in words not blades, daylight returned to Koviz as Kennarea honored the deal, and a dying G sent the party down the heaviest stream toward the pool.**\n\n# What happened\n- **[[pc-felson|Felson]] and [[cumb]] broke into [[filbert]]'s house** — a gold hoard and walls of motivational posters.\n- **[[ms-judy]] sent a warning via self-destructing owl.**\n- The Stonemason dwarves **marched on town** led by [[gilly]] and Ghruom — resolved with words, not blades; the party **deflected the patricide accusations** in a meeting with the dwarven leaders.\n- **The deal held: daylight returned to [[koviz]] — [[kennarea|Kennarea]] honoring her side now that [[root-darkpass|Root]] is gone.** Hope came back: warm breezes, light, life.\n- **[[giuseppe|G]] — sick and bedridden — gave his final advice for finding [[the-pool|the pool]]: \"Follow the water down. Follow the heaviest stream.\"**\n- The party said their goodbyes and set out down the underground river toward the source of everything.\n\n> [!dm] Party on the descent: **[[pc-eddy|Eddy]] (Pal 6), Felson (Monk 6), [[pc-varen|Varen]] (Wiz 6), Cumb (Rogue 4)**. [[pc-brolin|Brolin]], [[eira-cavernborn|Eira]], and [[michael-myconid]] are NOT on the S24 roster — where did they stay, and why? Record it.\n\n# Fired / left smoking\n- [x] The patricide accusations — deflected; the dwarven march resolved with words.\n- [x] Daylight returned to Koviz — Kennarea honoring her side of the deal.\n- [ ] Judy's warning (self-destructing owl) — what comes of it?\n- [ ] Where did Brolin, Eira, and Michael stay, and why? Record it.\n\n# Threads\n[[the-pool]] · [[koviz]] · [[kennarea]] · [[giuseppe]] · [[ms-judy]]",
-  "createdAt": "2026-07-08T05:26:19.400Z"
+  "createdAt": "2026-07-08T05:26:19.400Z",
+  "body": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "TL;DR: Goodbyes — the dwarven march ended in words not blades, daylight returned to Koviz as Kennarea honored the deal, and a dying G sent the party down the heaviest stream toward the pool.",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "What happened"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "- "
+        },
+        {
+          "type": "link",
+          "ref": "pc-felson",
+          "label": "Felson"
+        },
+        {
+          "type": "text",
+          "text": " and ",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "link",
+          "ref": "cumb"
+        },
+        {
+          "type": "text",
+          "text": " broke into ",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "link",
+          "ref": "filbert"
+        },
+        {
+          "type": "text",
+          "text": "'s house",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " — a gold hoard and walls of motivational posters. - "
+        },
+        {
+          "type": "link",
+          "ref": "ms-judy"
+        },
+        {
+          "type": "text",
+          "text": " sent a warning via self-destructing owl.",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " - The Stonemason dwarves "
+        },
+        {
+          "type": "text",
+          "text": "marched on town",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " led by "
+        },
+        {
+          "type": "link",
+          "ref": "gilly"
+        },
+        {
+          "type": "text",
+          "text": " and Ghruom — resolved with words, not blades; the party "
+        },
+        {
+          "type": "text",
+          "text": "deflected the patricide accusations",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " in a meeting with the dwarven leaders. - "
+        },
+        {
+          "type": "text",
+          "text": "The deal held: daylight returned to ",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "link",
+          "ref": "koviz"
+        },
+        {
+          "type": "text",
+          "text": " — ",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "link",
+          "ref": "kennarea",
+          "label": "Kennarea"
+        },
+        {
+          "type": "text",
+          "text": " honoring her side now that ",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "link",
+          "ref": "root-darkpass",
+          "label": "Root"
+        },
+        {
+          "type": "text",
+          "text": " is gone.",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " Hope came back: warm breezes, light, life. - "
+        },
+        {
+          "type": "link",
+          "ref": "giuseppe",
+          "label": "G"
+        },
+        {
+          "type": "text",
+          "text": " — sick and bedridden — gave his final advice for finding ",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "link",
+          "ref": "the-pool",
+          "label": "the pool"
+        },
+        {
+          "type": "text",
+          "text": ": \"Follow the water down. Follow the heaviest stream.\"",
+          "marks": [
+            {
+              "type": "bold"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " - The party said their goodbyes and set out down the underground river toward the source of everything."
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Party on the descent: "
+            },
+            {
+              "type": "link",
+              "ref": "pc-eddy",
+              "label": "Eddy"
+            },
+            {
+              "type": "text",
+              "text": " (Pal 6), Felson (Monk 6), ",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "link",
+              "ref": "pc-varen",
+              "label": "Varen"
+            },
+            {
+              "type": "text",
+              "text": " (Wiz 6), Cumb (Rogue 4)",
+              "marks": [
+                {
+                  "type": "bold"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "text": ". "
+            },
+            {
+              "type": "link",
+              "ref": "pc-brolin",
+              "label": "Brolin"
+            },
+            {
+              "type": "text",
+              "text": ", "
+            },
+            {
+              "type": "link",
+              "ref": "eira-cavernborn",
+              "label": "Eira"
+            },
+            {
+              "type": "text",
+              "text": ", and "
+            },
+            {
+              "type": "link",
+              "ref": "michael-myconid"
+            },
+            {
+              "type": "text",
+              "text": " are NOT on the S24 roster — where did they stay, and why? Record it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "Fired / left smoking"
+        }
+      ]
+    },
+    {
+      "type": "check",
+      "content": [
+        {
+          "type": "text",
+          "text": "The patricide accusations — deflected; the dwarven march resolved with words."
+        }
+      ],
+      "checked": true
+    },
+    {
+      "type": "check",
+      "content": [
+        {
+          "type": "text",
+          "text": "Daylight returned to Koviz — Kennarea honoring her side of the deal."
+        }
+      ],
+      "checked": true
+    },
+    {
+      "type": "check",
+      "content": [
+        {
+          "type": "text",
+          "text": "Judy's warning (self-destructing owl) — what comes of it?"
+        }
+      ]
+    },
+    {
+      "type": "check",
+      "content": [
+        {
+          "type": "text",
+          "text": "Where did Brolin, Eira, and Michael stay, and why? Record it."
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "level": 1,
+      "content": [
+        {
+          "type": "text",
+          "text": "Threads"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "link",
+          "ref": "the-pool"
+        },
+        {
+          "type": "text",
+          "text": " · "
+        },
+        {
+          "type": "link",
+          "ref": "koviz"
+        },
+        {
+          "type": "text",
+          "text": " · "
+        },
+        {
+          "type": "link",
+          "ref": "kennarea"
+        },
+        {
+          "type": "text",
+          "text": " · "
+        },
+        {
+          "type": "link",
+          "ref": "giuseppe"
+        },
+        {
+          "type": "text",
+          "text": " · "
+        },
+        {
+          "type": "link",
+          "ref": "ms-judy"
+        }
+      ]
+    }
+  ],
+  "updatedAt": "2026-07-15T20:58:39.546Z"
 }
