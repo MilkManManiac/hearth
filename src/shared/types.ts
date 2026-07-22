@@ -236,11 +236,25 @@ export interface LinkInline {
   label?: string
 }
 
-/** A run of text (with optional marks), an atomic cue, or a note link. */
+/**
+ * An atomic inline reference to a monster or trap stat block — renders as a
+ * chip that opens a live, rollable card (authored as `{{monster:key}}` /
+ * `{{trap:key}}`). `label` names this instance ("Mimic A") and keys its own
+ * HP pool, so two chips with different labels track HP separately.
+ */
+export interface StatRefInline {
+  type: 'statref'
+  kind: 'monster' | 'trap'
+  ref: string
+  label?: string
+}
+
+/** A run of text (with optional marks), an atomic cue, a note link, or a stat-block ref. */
 export type ScriptInline =
   | { type: 'text'; text: string; marks?: ScriptMark[] }
   | CueInline
   | LinkInline
+  | StatRefInline
 
 /** Block-level structure of the read-aloud doc. Callouts nest blocks. */
 export type ScriptBlock =

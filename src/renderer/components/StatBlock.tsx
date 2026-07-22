@@ -8,7 +8,8 @@ import {
   type Monster,
   type MonsterAction,
   type NamedEntry,
-  type Spell
+  type Spell,
+  type Trap
 } from '../lib/compendium'
 import { d20Expr, rollExpr } from '../../shared/dice'
 import { submitRoll, useRollStore, wireRollFeed } from '../lib/rollStore'
@@ -313,6 +314,73 @@ export function MonsterStatBlock({ m }: { m: Monster }) {
       })}
       {m.environments && (
         <p className="mt-2 text-[11px] text-hearth-muted/70">Environments: {m.environments.join(', ')}</p>
+      )}
+    </article>
+  )
+}
+
+/**
+ * Trap card: the at-a-glance lines a DM needs mid-scene — trigger, how it's
+ * spotted, how it's disarmed, the save, and rollable attack/damage. Player-side
+ * numbers (detection, disarm, save DCs) render as prominent text — the players
+ * roll those; the DM rolls the trap's attack and damage.
+ */
+export function TrapCard({ t }: { t: Trap }) {
+  useEffect(() => wireRollFeed(), [])
+  const dmgLabel = [t.damage, t.damageType].filter(Boolean).join(' ')
+  return (
+    <article className="text-sm">
+      <h3 className="font-display text-xl font-semibold text-amber-400">{t.name}</h3>
+      <p className="text-xs italic text-hearth-muted">Trap{t.severity ? ` · ${t.severity}` : ''}</p>
+      <Divider />
+      {t.trigger && <Line label="Trigger">{t.trigger}</Line>}
+      {t.detect && <Line label="Detect">{t.detect}</Line>}
+      {t.disarm && <Line label="Disarm">{t.disarm}</Line>}
+      {t.save && <Line label="Save">{t.save}</Line>}
+      {(t.attack != null || t.damage) && (
+        <Line label="Hit">
+          {t.attack != null && (
+            <>
+              {canDmRoll() ? (
+                <DmRollBtn
+                  label={t.attack >= 0 ? `+${t.attack}` : String(t.attack)}
+                  what={`${t.name} — attack`}
+                  expr={d20Expr(t.attack)}
+                  title={`Roll the trap's attack (1d20${t.attack >= 0 ? '+' : ''}${t.attack})`}
+                />
+              ) : t.attack >= 0 ? (
+                `+${t.attack}`
+              ) : (
+                t.attack
+              )}
+              {' to hit'}
+              {t.damage ? ', ' : ''}
+            </>
+          )}
+          {t.damage &&
+            (canDmRoll() ? (
+              <>
+                <DmRollBtn
+                  label={t.damage}
+                  what={`${t.name} — damage`}
+                  expr={t.damage.replace(/\s+/g, '')}
+                  title={`Roll ${t.damage} damage`}
+                />
+                {t.damageType ? ` ${t.damageType}` : ''}
+              </>
+            ) : (
+              dmgLabel
+            ))}
+        </Line>
+      )}
+      {t.effect && (
+        <>
+          <Divider />
+          <p className="my-1 text-[13px] leading-snug text-hearth-muted">
+            <span className="font-semibold italic text-hearth-text">Effect. </span>
+            <DiceText text={t.effect} rollAs={t.name} />
+          </p>
+        </>
       )}
     </article>
   )

@@ -12,8 +12,10 @@ import { setCheckedAt } from '../../shared/scriptCompile'
 import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_CHIP_HOVER, CUE_TEXT, cueDisplayLabel } from '../lib/cueMeta'
 import { blurNonTypingFocus, isTypingTarget } from '../lib/keys'
 import { pushRecent } from '../lib/prefs'
+import { useStatRefStore } from '../lib/statRef'
 import { engine, resolveAmbLayer, useStore } from '../store'
 import NoteLinkPill from './NoteLinkPill'
+import StatRefPill from './StatRefPill'
 import ScriptEditor, { type EnsureAsset } from './ScriptEditor'
 import SectionHeader from './SectionHeader'
 
@@ -94,6 +96,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
       const st = useStore.getState()
       if (st.libraryOpen || st.triage || st.discordOpen || st.switcherOpen || st.captureOpen || st.helpOpen || st.compendiumOpen || st.mapEditorOpen || st.mapsOpen || st.partyOpen)
         return // a modal owns the keyboard
+      if (useStatRefStore.getState().openCount > 0) return // an open stat card owns it too
       if (isTypingTarget(e.target)) return // typing is the one thing that outranks the timeline
       blurNonTypingFocus() // a clicked mute button / volume slider must not hold the keyboard
       e.preventDefault() // no page scroll, no re-firing a focused button
@@ -266,6 +269,11 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, i
   // it must not consume a teleprompter slot, so it stays out of ctx.i.
   if (node.type === 'link') {
     return <NoteLinkPill key={key} refId={node.ref} label={node.label} />
+  }
+  // Monster/trap stat ref: opens the rollable card. Like links, not a cue —
+  // it must not consume a teleprompter slot, so it stays out of ctx.i.
+  if (node.type === 'statref') {
+    return <StatRefPill key={key} kind={node.kind} refId={node.ref} label={node.label} />
   }
   // Teleprompter "next up" indicator: subtle ember ring + glow on the cue Space will fire.
   const idx = ctx.i++

@@ -30,6 +30,9 @@ function inlineToJSON(node: ScriptInline): JSONContent | null {
   if (node.type === 'link') {
     return { type: 'noteLink', attrs: { ref: node.ref, label: node.label ?? '' } }
   }
+  if (node.type === 'statref') {
+    return { type: 'statRef', attrs: { kind: node.kind, ref: node.ref, label: node.label ?? '' } }
+  }
   if (node.type === 'cue') {
     return {
       type: 'cue',
@@ -120,6 +123,16 @@ function inlineFromJSON(node: JSONContent): ScriptInline | null {
       fadeOutMs: num(a.fadeOutMs),
       until: a.until === 'section' ? 'section' : undefined
     }
+  }
+  if (node.type === 'statRef') {
+    const a = node.attrs ?? {}
+    const sr: ScriptInline = {
+      type: 'statref',
+      kind: a.kind === 'trap' ? 'trap' : 'monster',
+      ref: String(a.ref ?? '')
+    }
+    if (a.label) sr.label = String(a.label)
+    return sr
   }
   if (node.type === 'text') {
     const text = node.text ?? ''

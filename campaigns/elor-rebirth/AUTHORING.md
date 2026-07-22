@@ -96,6 +96,41 @@ In the app's script editor the same settings live behind the ⚙ on each amb chi
 
 Whitespace inside the braces is tolerated (`{{ sfx : shriek }}` works).
 
+**Stat-block refs** — drop a live monster or trap card into the script:
+
+- `{{monster:<key-or-name>}}` — a red **MON** chip; clicking it opens the full
+  rollable stat block (every attack/damage/save number rolls to the Game Log)
+  with an **HP tracker** (damage/heal, session memory). The ref is a compendium
+  key (`mimic`) or exact name — homebrew monsters from `homebrew/monsters.json`
+  work too (e.g. `{{monster:garden-of-eekso}}`).
+- `{{trap:<key>}}` — an amber **TRAP** chip; the card shows Trigger / Detect /
+  Disarm / Save lines plus rollable attack + damage. Traps are campaign-authored
+  in `homebrew/traps.json` (there is no SRD trap list):
+
+```json
+[
+  {
+    "key": "scything-blade",
+    "name": "Scything Blade",
+    "severity": "Dangerous, levels 1–4",
+    "trigger": "Stepping on the third stair",
+    "detect": "DC 15 Wisdom (Perception) — a thin seam in the wall",
+    "disarm": "DC 12 Dexterity (Sleight of Hand) to wedge the plate",
+    "attack": 7,
+    "damage": "2d8",
+    "damageType": "slashing",
+    "effect": "A blade sweeps across the stairs. On a hit the target also falls prone."
+  }
+]
+```
+
+All trap fields except `key`/`name` are optional; `save` (e.g. `"DC 15
+Dexterity, half damage on success"`) replaces `attack` for save-based traps.
+
+An optional `|label` names an **instance**: `{{monster:mimic|Mimic A}}` and
+`{{monster:mimic|Mimic B}}` are two chips with separate HP pools. Stat refs are
+not sound cues — the Space teleprompter skips over them.
+
 **Go-live & autoplay** — selecting a scene in the app is *silent* (the DM can
 prep while the previous atmosphere keeps playing). Hitting **▶ Go live** starts
 the default music track and every ambience layer except those marked

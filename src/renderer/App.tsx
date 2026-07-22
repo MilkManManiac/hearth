@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { isTypingTarget } from './lib/keys'
+import { useStatRefStore } from './lib/statRef'
 import { useStore } from './store'
 import ControlBoard from './components/ControlBoard'
 import PresenterView from './components/PresenterView'
@@ -31,6 +32,8 @@ function MainApp() {
       if (e.key !== 'Escape') return
       const s = useStore.getState()
       if (s.libraryOpen || s.triage || s.discordOpen || s.switcherOpen || s.captureOpen || s.helpOpen || s.compendiumOpen || s.mapEditorOpen || s.mapsOpen || s.partyOpen) return
+      // An open stat-block card owns Esc (close the card, don't kill the audio).
+      if (useStatRefStore.getState().openCount > 0) return
       const t = e.target as HTMLElement | null
       if (isTypingTarget(t)) {
         t?.blur()

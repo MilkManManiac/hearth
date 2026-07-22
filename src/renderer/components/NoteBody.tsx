@@ -8,6 +8,7 @@ import {
 } from '../../shared/types'
 import { cueDisplayLabel } from '../lib/cueMeta'
 import NoteLinkPill from './NoteLinkPill'
+import StatRefPill from './StatRefPill'
 
 /**
  * Read-only renderer for a note's ScriptDoc body. [[Links]] are live (plain
@@ -65,6 +66,9 @@ function renderInline(node: ScriptInline, key: number): ReactNode {
   }
   if (node.type === 'link') {
     return <NoteLinkPill key={key} refId={node.ref} label={node.label} />
+  }
+  if (node.type === 'statref') {
+    return <StatRefPill key={key} kind={node.kind} refId={node.ref} label={node.label} />
   }
   return (
     <span key={key} className="mx-0.5 rounded bg-hearth-panel2 px-1 text-xs text-hearth-muted">

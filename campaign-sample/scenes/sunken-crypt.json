@@ -234,6 +234,70 @@
           "label": "🔊 deep-monster-roar"
         }
       ]
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "content": [
+        {
+          "type": "text",
+          "text": "Fight"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "statref",
+          "kind": "monster",
+          "ref": "wight",
+          "label": "Barrow Wight"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "statref",
+          "kind": "monster",
+          "ref": "skeleton",
+          "label": "Skeleton A"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "statref",
+          "kind": "monster",
+          "ref": "skeleton",
+          "label": "Skeleton B"
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "statref",
+          "kind": "trap",
+          "ref": "flooding-altar"
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Click a chip for the live card: rollable attacks/damage/saves plus an HP tracker. Labeled chips (Skeleton A / B) keep separate HP pools."
+            }
+          ]
+        }
+      ]
     }
   ],
   "playlist": {

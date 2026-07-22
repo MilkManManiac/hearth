@@ -1,0 +1,26 @@
+[
+  {
+    "key": "flooding-altar",
+    "name": "Flooding Altar",
+    "severity": "Dangerous, levels 1–4",
+    "trigger": "Lifting the violet gem off the bone altar",
+    "detect": "DC 15 Wisdom (Perception) — the altar top sits a hair proud of its base, like a plate on a spring",
+    "disarm": "DC 12 Dexterity (Sleight of Hand) with thieves' tools to wedge the plate before the gem comes off",
+    "save": "DC 13 Strength, or be knocked prone by the surge",
+    "damage": "2d6",
+    "damageType": "bludgeoning",
+    "effect": "Sluice gates grind open and black water roars in. Every creature in the chamber makes the save; the water rises one step per round and after 3 rounds the whole floor is difficult terrain."
+  },
+  {
+    "key": "scything-blade",
+    "name": "Scything Blade",
+    "severity": "Dangerous, levels 1–4",
+    "trigger": "Stepping on the third stair",
+    "detect": "DC 15 Wisdom (Perception) — a thin vertical seam in the stairwell wall",
+    "disarm": "DC 12 Dexterity (Sleight of Hand) to jam the pressure plate",
+    "attack": 7,
+    "damage": "2d8",
+    "damageType": "slashing",
+    "effect": "A rusted blade sweeps across the stairs at knee height. On a hit the target also falls prone."
+  }
+]

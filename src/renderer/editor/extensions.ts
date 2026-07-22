@@ -5,6 +5,7 @@ import { scriptHighlightColor, scriptTextColor } from '../../shared/types'
 import CheckItem from './CheckItem'
 import CueChip from './CueChip'
 import NoteLinkChip from './NoteLinkChip'
+import StatRefChip from './StatRefChip'
 
 function numOrNull(v: string | null): number | null {
   if (v == null || v === '') return null
@@ -120,6 +121,74 @@ export const NoteLinkNode = Node.create({
 
   addNodeView() {
     return ReactNodeViewRenderer(NoteLinkChip)
+  }
+})
+
+/**
+ * Atomic inline monster/trap stat-block reference. Serializes to/from the
+ * ScriptDoc `statref` inline. Typing `{{monster:mimic}}` (optionally
+ * `{{monster:mimic|Mimic A}}`) in any editor converts to a chip on the
+ * closing braces — same authoring syntax the markdown compiler accepts.
+ */
+export const StatRefNode = Node.create({
+  name: 'statRef',
+  group: 'inline',
+  inline: true,
+  atom: true,
+  selectable: true,
+  draggable: true,
+
+  addAttributes() {
+    return {
+      kind: {
+        default: 'monster',
+        parseHTML: (el) => el.getAttribute('data-kind'),
+        renderHTML: (attrs) => ({ 'data-kind': attrs.kind })
+      },
+      ref: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-ref'),
+        renderHTML: (attrs) => ({ 'data-ref': attrs.ref })
+      },
+      label: {
+        default: '',
+        parseHTML: (el) => el.getAttribute('data-label'),
+        renderHTML: (attrs) => (attrs.label ? { 'data-label': attrs.label } : {})
+      }
+    }
+  },
+
+  parseHTML() {
+    return [{ tag: 'span[data-stat-ref]' }]
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      'span',
+      mergeAttributes(HTMLAttributes, { 'data-stat-ref': '' }),
+      String(HTMLAttributes['data-label'] || HTMLAttributes['data-ref'] || '')
+    ]
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(StatRefChip)
+  },
+
+  addInputRules() {
+    return [
+      {
+        find: /\{\{\s*(monster|trap)\s*:\s*([^}|]+?)\s*(?:\|\s*([^}]+?)\s*)?\}\}$/,
+        handler: ({ range, match, chain }) => {
+          chain()
+            .deleteRange(range)
+            .insertContent({
+              type: 'statRef',
+              attrs: { kind: match[1], ref: match[2], label: match[3] ?? '' }
+            })
+            .run()
+        }
+      }
+    ]
   }
 })
 
@@ -285,6 +354,7 @@ export function buildExtensions(opts: { cues?: boolean } = {}) {
     CalloutNode,
     CheckNode,
     NoteLinkNode,
+    StatRefNode,
     ...(opts.cues === false ? [] : [CueNode]),
     ScriptColorMark,
     ScriptHighlightMark

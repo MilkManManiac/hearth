@@ -41,6 +41,34 @@ export interface Monster {
   actions: MonsterAction[]
 }
 
+/**
+ * A trap card — homebrew-only (no SRD trap list), read from
+ * <campaign>/homebrew/traps.json. Free-text fields render with dice
+ * expressions clickable, so "4d10" in `damage`/`effect` rolls to the Game Log.
+ */
+export interface Trap {
+  key: string
+  name: string
+  /** e.g. "Nuisance, levels 5–10" or "Deadly" (2024 DMG severity language). */
+  severity?: string
+  /** What sets it off, e.g. "Stepping on the pressure plate". */
+  trigger?: string
+  /** How it's noticed, e.g. "DC 15 Wisdom (Perception) — scuffed flagstone". */
+  detect?: string
+  /** How it's defused, e.g. "DC 12 Dexterity (Sleight of Hand) with thieves' tools". */
+  disarm?: string
+  /** Save line, e.g. "DC 15 Dexterity, half damage on success". */
+  save?: string
+  /** Attack bonus for attack-roll traps (rendered as a rollable +N). */
+  attack?: number
+  /** Damage dice, e.g. "4d10" (rollable). */
+  damage?: string
+  damageType?: string
+  /** What happens — full effect text (dice inside are rollable too). */
+  effect?: string
+  homebrew?: boolean
+}
+
 export interface Spell {
   key: string
   name: string
@@ -163,6 +191,32 @@ export const loadKind = (kind: CompendiumKind): Promise<NamedEntry[]> =>
     ([base, hb]) => (hb.length ? [...base, ...hb] : base)
   )
 export const loadMonsters = () => loadKind('monster') as unknown as Promise<Monster[]>
+
+/**
+ * Traps live outside the SRD compendium kinds — homebrew-only, same
+ * homebrew-folder mechanics (asset:// in Electron, /homebrew/ on the portal,
+ * cached for the session).
+ */
+export function loadTraps(): Promise<Trap[]> {
+  const key = 'hb:traps.json'
+  if (!cache.has(key)) {
+    const url =
+      typeof window !== 'undefined' && (window as { hearth?: unknown }).hearth
+        ? 'asset:///homebrew/traps.json'
+        : '/homebrew/traps.json'
+    cache.set(
+      key,
+      fetch(url)
+        .then(async (r) => {
+          if (!r.ok) return []
+          const rows = (await r.json()) as Trap[]
+          return Array.isArray(rows) ? rows.map((t) => ({ ...t, homebrew: true })) : []
+        })
+        .catch(() => [])
+    )
+  }
+  return cache.get(key) as Promise<Trap[]>
+}
 export const loadSpells = () => loadKind('spell') as unknown as Promise<Spell[]>
 export const loadIndex = (): Promise<IndexEntry[]> =>
   Promise.all([

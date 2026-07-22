@@ -5,10 +5,11 @@ import type {
   ScriptBlock,
   ScriptDoc,
   ScriptInline,
-  ScriptMark
+  ScriptMark,
+  StatRefInline
 } from './types'
 
-const CUE_RE = /\{\{\s*(music|sfx|image|amb)\s*:\s*([^}]+?)\s*\}\}/g
+const CUE_RE = /\{\{\s*(music|sfx|image|amb|monster|trap)\s*:\s*([^}]+?)\s*\}\}/g
 
 const CUE_ICON: Record<CueKind, string> = {
   music: '▶',
@@ -59,6 +60,18 @@ function buildCue(kind: CueKind, raw: string): CueInline {
     else if (key === 'until' && val.trim() === 'section') cue.until = 'section'
   }
   return cue
+}
+
+/**
+ * Build a stat-block ref from the text between `{{monster:`/`{{trap:` and
+ * `}}`. An optional `|label` names the instance ("Mimic A") — it displays on
+ * the chip and keys a separate HP pool.
+ */
+function buildStatRef(kind: StatRefInline['kind'], raw: string): StatRefInline {
+  const [ref, label] = raw.split('|').map((s) => s.trim())
+  const node: StatRefInline = { type: 'statref', kind, ref }
+  if (label) node.label = label
+  return node
 }
 
 // ---------------------------------------------------------------------------
@@ -129,7 +142,8 @@ function parseInline(text: string): ScriptInline[] {
   CUE_RE.lastIndex = 0
   while ((m = CUE_RE.exec(text)) !== null) {
     if (m.index > last) out.push(...parseEmphasis(text.slice(last, m.index), []))
-    out.push(buildCue(m[1] as CueKind, m[2].trim()))
+    if (m[1] === 'monster' || m[1] === 'trap') out.push(buildStatRef(m[1], m[2].trim()))
+    else out.push(buildCue(m[1] as CueKind, m[2].trim()))
     last = m.index + m[0].length
   }
   if (last < text.length) out.push(...parseEmphasis(text.slice(last), []))

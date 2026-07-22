@@ -599,6 +599,15 @@
           "kind": "music",
           "ref": "fight",
           "label": "▶ fight"
+        },
+        {
+          "type": "text",
+          "text": "  "
+        },
+        {
+          "type": "statref",
+          "kind": "monster",
+          "ref": "garden-of-eekso"
         }
       ]
     },
