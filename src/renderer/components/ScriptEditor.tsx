@@ -17,6 +17,7 @@ import { normalizeScript } from '../../shared/scriptCompile'
 import { buildExtensions } from '../editor/extensions'
 import { docToTiptap, tiptapToDoc } from '../editor/mapping'
 import { insertCueAt, type CueAttrs } from '../editor/insert'
+import CueSuggest from '../editor/CueSuggest'
 import LinkSuggest from '../editor/LinkSuggest'
 import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_TEXT, fileStem, libSlug } from '../lib/cueMeta'
 import { useStore } from '../store'
@@ -343,9 +344,11 @@ export default function ScriptEditor({
         </BubbleMenu>
       )}
 
-      {/* [[ opens the same note autocomplete the notes editor has. */}
+      {/* [[ opens the note autocomplete; /word opens the sound palette. */}
       <LinkSuggest editor={editor}>
-        <EditorContent editor={editor} />
+        <CueSuggest editor={editor} onPick={onEnsureAsset}>
+          <EditorContent editor={editor} />
+        </CueSuggest>
       </LinkSuggest>
 
       {/* Cue tray: scene-first, full library one toggle away */}
