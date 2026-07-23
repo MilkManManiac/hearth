@@ -16,7 +16,7 @@ import {
   suggestedMaxHp,
   type AbilityKey
 } from '../lib/character'
-import { loadSpells, SPELL_LEVEL_LABEL, type ClassEntry, type NamedEntry, type Spell } from '../lib/compendium'
+import { loadKind, loadSpells, SPELL_LEVEL_LABEL, type ClassEntry, type NamedEntry, type Spell } from '../lib/compendium'
 import { fuzzyScore } from '../lib/fuzzy'
 import { pendingChoices } from '../lib/builder'
 import { expectedSpells } from '../lib/progression'
@@ -308,6 +308,8 @@ export default function CharacterSheet({
           </button>
         )}
       </div>
+
+      {(c.featKeys?.length ?? 0) > 0 && <FeatRow c={c} patch={patch} />}
 
       {/* Vitals */}
       <div className="flex flex-wrap items-center gap-3 rounded-md border border-hearth-border bg-hearth-panel2/40 px-3 py-2">
@@ -1175,6 +1177,63 @@ function SpellsBox({
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/**
+ * Chosen feats rendered as chips (audit P1: featKeys applied nothing and
+ * showed nowhere). Click a chip to unfold the feat's benefit text; ✕ removes
+ * a misclick. Data comes from feats.json + campaign homebrew.
+ */
+function FeatRow({ c, patch }: { c: Character; patch: (p: Partial<Character>) => void }) {
+  const [feats, setFeats] = useState<NamedEntry[]>([])
+  const [openKey, setOpenKey] = useState<string | null>(null)
+  useEffect(() => {
+    loadKind('feat').then(setFeats)
+  }, [])
+  const open = openKey ? feats.find((f) => f.key === openKey) : null
+  return (
+    <div className="rounded-md border border-hearth-border bg-hearth-panel2/40 px-3 py-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">Feats</span>
+        {(c.featKeys ?? []).map((key) => {
+          const f = feats.find((x) => x.key === key)
+          return (
+            <span
+              key={key}
+              className={`group/feat inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${
+                openKey === key
+                  ? 'border-hearth-gold bg-hearth-gold/15 text-hearth-gold'
+                  : 'border-hearth-border bg-hearth-panel text-hearth-text hover:border-hearth-gold/60'
+              }`}
+            >
+              <button onClick={() => setOpenKey(openKey === key ? null : key)} title="Show what this feat does">
+                {f?.homebrew ? '🏠 ' : ''}
+                {f?.name ?? key}
+              </button>
+              <button
+                onClick={() => patch({ featKeys: (c.featKeys ?? []).filter((x) => x !== key) })}
+                className="text-hearth-muted opacity-0 hover:text-red-400 group-hover/feat:opacity-100"
+                title="Remove this feat"
+              >
+                ×
+              </button>
+            </span>
+          )
+        })}
+      </div>
+      {open && (
+        <p className="mt-1 max-h-28 overflow-y-auto text-[11px] leading-snug text-hearth-muted">
+          {String(open.desc ?? '')}
+          {(open.benefits ?? []).map((b) => (
+            <span key={b.name} className="block">
+              <span className="font-semibold text-hearth-text">{b.name}. </span>
+              {b.desc}
+            </span>
+          ))}
+        </p>
+      )}
     </div>
   )
 }
