@@ -166,20 +166,31 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
     setCuePos(idx + 1)
   }
 
+  const keyHint = !editing && cueCount > 0 && (
+    <span
+      className="flex items-center gap-1.5 text-[11px] text-hearth-muted"
+      title="Teleprompter: the ember ring marks the next cue. Click any cue to jump the pointer there."
+    >
+      <Key>Space</Key> next · <Key>→</Key> skip · <Key>←</Key> back
+    </span>
+  )
+
   return (
     <section>
-      <SectionHeader icon="📖" title="Read-aloud">
-        {!editing && cueCount > 0 && (
-          <span className="flex items-center gap-1.5 text-[10px] text-hearth-muted/70" title="Teleprompter: the ember ring marks the next cue. Click any cue to jump the pointer there.">
-            <Key>Space</Key> next · <Key>→</Key> skip · <Key>←</Key> back
-          </span>
-        )}
-        {!editing && buildMode && (
-          <button onClick={() => setEditing(true)} className="text-xs text-hearth-muted hover:text-hearth-ember">
-            ✎ Edit
-          </button>
-        )}
-      </SectionHeader>
+      {/* Run mode strips the section chrome — the prose starts sooner; the
+          teleprompter hint rides quietly above the card's right edge. */}
+      {buildMode ? (
+        <SectionHeader icon="📖" title="Read-aloud">
+          {keyHint}
+          {!editing && (
+            <button onClick={() => setEditing(true)} className="text-xs text-hearth-muted hover:text-hearth-ember">
+              ✎ Edit
+            </button>
+          )}
+        </SectionHeader>
+      ) : (
+        keyHint && <div className="mx-auto mb-1 flex max-w-[70ch] justify-end">{keyHint}</div>
+      )}
 
       {editing ? (
         <ScriptEditor
@@ -288,8 +299,8 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, i
     <button
       key={key}
       onClick={() => fireCue(node, idx)}
-      className={`mx-1 inline-flex items-center gap-1.5 rounded border px-2 py-0.5 align-middle text-sm transition-colors ${CUE_CHIP_CLASS[node.kind]} ${CUE_CHIP_HOVER[node.kind]} ${
-        isNext ? 'ring-1 ring-hearth-ember/80 ring-offset-2 ring-offset-hearth-panel shadow-[0_0_10px_rgba(255,140,60,0.35)]' : ''
+      className={`mx-1 inline-flex items-center gap-1.5 rounded border px-2.5 py-0.5 align-middle text-[15px] transition-colors ${CUE_CHIP_CLASS[node.kind]} ${CUE_CHIP_HOVER[node.kind]} ${
+        isNext ? 'ring-2 ring-hearth-ember/80 ring-offset-2 ring-offset-hearth-panel shadow-[0_0_14px_rgba(255,140,60,0.45)]' : ''
       }`}
       title={`${node.kind}: ${node.ref}${ambLifecycleHint(node)}${isNext ? ' — next (Space)' : ''}`}
     >

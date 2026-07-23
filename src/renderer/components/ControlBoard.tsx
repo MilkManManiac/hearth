@@ -1,7 +1,15 @@
-import { useEffect, useState } from 'react'
-import { NOTE_KINDS, NOTE_KIND_ORDER, type Scene } from '../../shared/types'
+import { useEffect, useMemo, useState } from 'react'
+import {
+  NOTE_KINDS,
+  NOTE_KIND_ORDER,
+  type Scene,
+  type ScriptBlock,
+  type ScriptDoc
+} from '../../shared/types'
 import { setCheckedAt } from '../../shared/scriptCompile'
+import { prettyLabel } from '../../shared/paths'
 import { isTypingTarget } from '../lib/keys'
+import { openNoteLink } from '../lib/noteNav'
 import { useStore } from '../store'
 import { NoteNavButtons } from './NotePeek'
 import NoteBody from './NoteBody'
@@ -224,11 +232,21 @@ export default function ControlBoard() {
                   )}
                 </div>
                 <div className="mt-2 h-px w-full bg-gradient-to-r from-hearth-ember/50 via-hearth-border to-transparent" />
-                {scene.dmNotes && (
-                  <p className="mt-3 rounded border-l-2 border-hearth-emberdim/60 bg-hearth-panel/40 px-3 py-2 text-sm italic text-hearth-muted">
-                    {scene.dmNotes}
-                  </p>
-                )}
+                {scene.dmNotes &&
+                  (runMode ? (
+                    // Run mode: one quiet line, click to unfold — the prose
+                    // owns the screen, not the stage directions.
+                    <details className="mt-2 rounded border-l-2 border-hearth-emberdim/60 bg-hearth-panel/40 px-3 py-1.5">
+                      <summary className="cursor-pointer select-none text-xs text-hearth-muted hover:text-hearth-text">
+                        🕯 DM notes
+                      </summary>
+                      <p className="pb-1 pt-1.5 text-sm italic text-hearth-muted">{scene.dmNotes}</p>
+                    </details>
+                  ) : (
+                    <p className="mt-3 rounded border-l-2 border-hearth-emberdim/60 bg-hearth-panel/40 px-3 py-2 text-sm italic text-hearth-muted">
+                      {scene.dmNotes}
+                    </p>
+                  ))}
               </div>
               {/* Run mode: the script owns the screen — ALL sound control
                   lives in the Sound Console at the bottom. Build mode shows
@@ -371,18 +389,36 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
             </p>
           ))}
         {tab === 'log' && <GameLogPanel />}
-        {tab === 'notes' && <NotesPeek />}
+        {tab === 'notes' && <NotesPeek scene={scene} />}
       </div>
     </aside>
   )
 }
 
+/** Every distinct [[note]] ref in a scene's script, document order. */
+function sceneNoteRefs(script: ScriptDoc | undefined): string[] {
+  const out: string[] = []
+  const walk = (blocks: ScriptBlock[]): void => {
+    for (const b of blocks) {
+      if (b.type === 'callout') {
+        walk(b.content)
+        continue
+      }
+      for (const n of b.content) if (n.type === 'link' && !out.includes(n.ref)) out.push(n.ref)
+    }
+  }
+  walk(script ?? [])
+  return out
+}
+
 /**
  * The right panel's notes tab: pick any campaign note and read it beside the
  * script — Ctrl+K also lands notes here in run mode. Read-only on purpose;
- * editing happens on the full note page (or via Ctrl+J capture).
+ * editing happens on the full note page (or via Ctrl+J capture). The "in this
+ * scene" chips index every [[link]] the script mentions — the people/places of
+ * the current scene, one click, no hunting.
  */
-function NotesPeek() {
+function NotesPeek({ scene }: { scene: Scene | null }) {
   const notes = useStore((s) => s.campaign.notes)
   const currentNoteId = useStore((s) => s.currentNoteId)
   const selectNote = useStore((s) => s.selectNote)
@@ -390,6 +426,7 @@ function NotesPeek() {
   const updateNote = useStore((s) => s.updateNote)
   const buildMode = useStore((s) => s.uiMode === 'build')
   const note = notes.find((n) => n.id === currentNoteId) ?? null
+  const sceneRefs = useMemo(() => sceneNoteRefs(scene?.script), [scene])
 
   if (notes.length === 0) {
     return (
@@ -403,6 +440,33 @@ function NotesPeek() {
 
   return (
     <div className="space-y-3">
+      {sceneRefs.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="w-full text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+            In this scene
+          </span>
+          {sceneRefs.map((ref) => {
+            const target = notes.find((n) => n.id === ref)
+            return (
+              <button
+                key={ref}
+                onClick={() => void openNoteLink(ref)}
+                title={target ? target.title : `Create "${prettyLabel(ref)}"`}
+                className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${
+                  ref === currentNoteId
+                    ? 'border-hearth-ember bg-hearth-ember/15 text-hearth-ember'
+                    : 'border-hearth-border bg-hearth-panel2 text-hearth-muted hover:border-hearth-ember/60 hover:text-hearth-text'
+                }`}
+              >
+                {target && <span aria-hidden>{NOTE_KINDS[target.kind]?.icon}</span>}
+                <span className="max-w-[9rem] truncate">
+                  {target ? target.title : prettyLabel(ref)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
       <div className="flex items-center gap-2">
         <NoteNavButtons />
         <select

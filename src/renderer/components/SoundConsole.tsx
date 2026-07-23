@@ -892,7 +892,7 @@ export default function SoundConsole() {
       {/* PLAYLISTS — campaign-wide presets */}
       {presets.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <RowLabel title="Campaign-wide playlists — auto-advance, work in any scene">🎜 Lists</RowLabel>
+          <RowLabel title="Campaign-wide playlists — auto-advance, work in any scene">Lists</RowLabel>
           {presets.map((p) => {
             const active = p.id === activePresetId
             return (
