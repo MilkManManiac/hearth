@@ -25,6 +25,7 @@ import QuickSwitcher from './QuickSwitcher'
 import QuickCapture from './QuickCapture'
 import ShortcutsHelp from './ShortcutsHelp'
 import CompendiumPanel from './CompendiumPanel'
+import ScenePaletteRail from './ScenePaletteRail'
 
 /**
  * Width-adjustable side panel: drag the inner edge to resize; drag it small
@@ -267,10 +268,17 @@ export default function ControlBoard() {
   )
 }
 
-type Tab = 'images' | 'ideas' | 'cast' | 'fight' | 'log' | 'notes'
+type Tab = 'sounds' | 'images' | 'ideas' | 'cast' | 'fight' | 'log' | 'notes'
 
 function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => void }) {
-  const [tab, setTab] = useState<Tab>('images')
+  const runMode = useStore((s) => s.uiMode === 'run')
+  // Run-screen redesign: in run mode the rail opens on the scene's sound
+  // palette (the console below only shows what's SOUNDING); build mode keeps
+  // images first since the palettes are already on the main board.
+  const [tab, setTab] = useState<Tab>(runMode ? 'sounds' : 'images')
+  useEffect(() => {
+    setTab(runMode ? 'sounds' : 'images')
+  }, [runMode])
   const currentNoteId = useStore((s) => s.currentNoteId)
   const campaign = useStore((s) => s.campaign)
   const currentMapId = useStore((s) => s.currentMapId)
@@ -292,6 +300,7 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
   }, [currentNoteId])
 
   const tabs: { id: Tab; label: string }[] = [
+    { id: 'sounds', label: '🎚' },
     { id: 'images', label: 'Images' },
     { id: 'ideas', label: `Ideas${ideaCount ? ` ${ideaCount}` : ''}` },
     { id: 'cast', label: `Cast${castCount ? ` ${castCount}` : ''}` },
@@ -326,6 +335,7 @@ function RightPanel({ scene, onCollapse }: { scene: Scene; onCollapse: () => voi
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
+        {tab === 'sounds' && <ScenePaletteRail scene={scene} />}
         {tab === 'images' && <ImageStrip scene={scene} />}
         {tab === 'ideas' && <IdeasPanel scene={scene} />}
         {tab === 'cast' && <CastPanel scene={scene} />}

@@ -199,6 +199,40 @@ function QueueMenu({ queue }: { queue: QueueInfo }) {
   )
 }
 
+function fmtTime(s: number): string {
+  const m = Math.floor(s / 60)
+  return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+}
+
+/**
+ * Live position of the playing music track (elapsed / bar / total), polled off
+ * the engine — display only; seeking would need engine changes (frozen core).
+ */
+function MusicScrub() {
+  const [p, setP] = useState(() => engine.musicProgress())
+  useEffect(() => {
+    const t = setInterval(() => setP(engine.musicProgress()), 500)
+    return () => clearInterval(t)
+  }, [])
+  if (!p) return null
+  const pct = Math.min(100, (p.elapsed / p.duration) * 100)
+  return (
+    <span
+      className="flex items-center gap-1.5 text-[10px] tabular-nums text-hearth-muted"
+      title="Track position"
+    >
+      <span>{fmtTime(p.elapsed)}</span>
+      <span className="relative h-1 w-28 overflow-hidden rounded-full bg-hearth-border">
+        <span
+          className="absolute inset-y-0 left-0 rounded-full bg-hearth-ember"
+          style={{ width: `${pct}%` }}
+        />
+      </span>
+      <span>{fmtTime(p.duration)}</span>
+    </span>
+  )
+}
+
 /** A playing item: name + a small (deliberately imprecise) fader + kill. */
 function NowChip({
   kind,
@@ -330,9 +364,7 @@ export default function SoundConsole() {
   const currentSceneId = useStore((s) => s.currentSceneId)
   const runMode = useStore((s) => s.uiMode === 'run')
   const stopAll = useStore((s) => s.stopAll)
-  const switchMusic = useStore((s) => s.switchMusic)
   const playSfx = useStore((s) => s.playSfx)
-  const toggleAmbience = useStore((s) => s.toggleAmbience)
   const fireFavorite = useStore((s) => s.fireFavorite)
   const togglePresetPlaylist = useStore((s) => s.togglePresetPlaylist)
   const presetStep = useStore((s) => s.presetStep)
@@ -398,13 +430,11 @@ export default function SoundConsole() {
     ? { tracks: activePreset.files, current: presetPos, onJump: presetJump }
     : undefined
 
+  // Run-screen redesign: the armed scene's palette lives in the right rail's
+  // 🎚 tab now — this console only shows what's SOUNDING (+ playlists/staples).
   const hasNow =
     !!status.activeMusicId || status.ambienceFiles.length > 0 || status.loopingSfxIds.length > 0
-  const hasScene =
-    runMode &&
-    !!scene &&
-    ((scene.music?.length ?? 0) > 0 || (scene.ambience?.length ?? 0) > 0 || (scene.sfx?.length ?? 0) > 0)
-  if (!hasNow && !hasScene && presets.length === 0 && staples.length === 0) return null
+  if (!hasNow && presets.length === 0 && staples.length === 0) return null
 
   // NOW-row label/volume lookups can hit any scene — the sounding item may
   // belong to a scene that's no longer armed (exactly when showing it matters).
@@ -494,6 +524,7 @@ export default function SoundConsole() {
               stopTitle="Fade this track out"
             />
           )}
+          {musicLabel && <MusicScrub />}
           {status.ambienceFiles.map((file) => (
             <NowChip
               key={file}
@@ -546,76 +577,6 @@ export default function SoundConsole() {
           >
             ⏹ All
           </button>
-        </div>
-      )}
-
-      {/* SCENE — the armed scene's palette, one row per kind (Run mode). The
-          row label carries the kind, so chips skip their badge. */}
-      {hasScene && scene && (scene.music?.length ?? 0) > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <RowLabel title="This scene's music palette — tap to crossfade (one track at a time)">
-            ♪ Music
-          </RowLabel>
-          {(scene.music ?? []).map((t) => (
-            <FireChip
-              key={t.id}
-              kind="music"
-              badge={false}
-              label={t.label}
-              mood={moodOf(t.file)}
-              lit={status.activeMusicId === t.id}
-              onClick={() => {
-                switchMusic(t.id)
-                pushRecent(t.file)
-              }}
-              title={status.activeMusicId === t.id ? 'Playing' : `Crossfade to ${t.label}`}
-            />
-          ))}
-        </div>
-      )}
-      {hasScene && scene && (scene.ambience?.length ?? 0) > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <RowLabel title="This scene's ambience beds — tap to toggle, they layer freely">
-            〜 Beds
-          </RowLabel>
-          {(scene.ambience ?? []).map((a) => (
-            <FireChip
-              key={a.file}
-              kind="ambience"
-              badge={false}
-              label={stem(a.file)}
-              mood={moodOf(a.file)}
-              lit={status.ambienceFiles.includes(a.file)}
-              onClick={() => {
-                if (!status.ambienceFiles.includes(a.file)) pushRecent(a.file)
-                toggleAmbience(a.file)
-              }}
-              title={status.ambienceFiles.includes(a.file) ? 'Stop this bed' : 'Start this bed'}
-            />
-          ))}
-        </div>
-      )}
-      {hasScene && scene && (scene.sfx?.length ?? 0) > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <RowLabel title="This scene's sound effects — tap to fire; single-key hotkeys work while in run mode">
-            ⚡ SFX
-          </RowLabel>
-          {(scene.sfx ?? []).map((s) => (
-            <FireChip
-              key={s.id}
-              kind="sfx"
-              badge={false}
-              hotkey={s.hotkey}
-              label={s.label}
-              mood={moodOf(s.file)}
-              lit={status.loopingSfxIds.includes(s.id)}
-              onClick={() => {
-                playSfx(s.id)
-                pushRecent(s.file)
-              }}
-              title={s.loop ? 'Tap to start/stop this loop' : `Fire ${s.label}`}
-            />
-          ))}
         </div>
       )}
 

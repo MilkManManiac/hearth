@@ -19,10 +19,16 @@ import StatRefPill from './StatRefPill'
 import ScriptEditor, { type EnsureAsset } from './ScriptEditor'
 import SectionHeader from './SectionHeader'
 
+// Run-screen redesign (2026-07-23, PoC approved): h1/h2 render as big ember
+// section LANDMARKS with a fading rule — the beats a DM jumps between mid-read.
+// h3 stays a modest sub-label. First landmark hugs the top; later ones get
+// real air so each beat reads as its own block.
+const LANDMARK_CLASS =
+  'flex items-center gap-3.5 font-sans font-extrabold uppercase tracking-[0.12em] text-hearth-ember [&:not(:first-child)]:mt-14 mb-5'
 const HEADING_CLASS: Record<number, string> = {
-  1: 'mt-3 mb-1 text-2xl font-semibold text-hearth-text',
-  2: 'mt-3 mb-1 text-xl font-semibold text-hearth-text',
-  3: 'mt-2 mb-1 text-lg font-semibold text-hearth-muted'
+  1: `${LANDMARK_CLASS} text-[20px]`,
+  2: `${LANDMARK_CLASS} text-[17px]`,
+  3: 'mt-8 mb-2 text-[15px] font-sans font-bold uppercase tracking-[0.1em] text-hearth-muted'
 }
 
 export default function ScriptPanel({ scene }: { scene: Scene }) {
@@ -189,7 +195,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
           sound cues.
         </p>
       ) : (
-        <div className="rounded-md border border-hearth-border bg-hearth-panel/60 p-5 font-display text-[18px] leading-loose text-hearth-text shadow-card">
+        <div className="mx-auto max-w-[70ch] rounded-md border border-hearth-border bg-hearth-panel/60 px-8 py-7 font-display text-[18.5px] leading-[1.68] text-hearth-text shadow-card">
           {script.map((block, i) => renderBlock(block, i, fireAt, cueCtx, [i], toggleCheck))}
         </div>
       )}
@@ -312,8 +318,12 @@ function renderBlock(
     return (
       <div
         key={key}
-        className="script-callout my-2 rounded border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-3 py-1.5 text-[15px] text-hearth-muted"
+        className="script-callout my-5 rounded-r-md border-l-2 border-hearth-gold/60 bg-hearth-gold/5 px-4 py-2.5 text-[15.5px] leading-relaxed text-hearth-muted"
       >
+        {/* Labeled, not just tinted — "for YOUR eyes" must survive a 2am skim. */}
+        <span className="mb-1 block font-sans text-[10.5px] font-extrabold tracking-[0.14em] text-hearth-gold">
+          🕯 DM ONLY
+        </span>
         {block.content.map((b, i) => renderBlock(b, i, fireCue, ctx, [...path, i], onCheck))}
       </div>
     )
@@ -337,12 +347,33 @@ function renderBlock(
   }
   if (block.type === 'heading') {
     const cls = HEADING_CLASS[block.level]
-    if (block.level === 1) return <h1 key={key} className={cls}>{inlines}</h1>
-    if (block.level === 2) return <h2 key={key} className={cls}>{inlines}</h2>
+    // The fading ember rule after the words is what makes h1/h2 read as
+    // section landmarks; h3 is a plain sub-label.
+    const rule =
+      block.level < 3 ? (
+        <span
+          aria-hidden
+          className="h-px min-w-8 flex-1 bg-gradient-to-r from-hearth-ember/40 to-transparent"
+        />
+      ) : null
+    if (block.level === 1)
+      return (
+        <h1 key={key} className={cls}>
+          <span>{inlines}</span>
+          {rule}
+        </h1>
+      )
+    if (block.level === 2)
+      return (
+        <h2 key={key} className={cls}>
+          <span>{inlines}</span>
+          {rule}
+        </h2>
+      )
     return <h3 key={key} className={cls}>{inlines}</h3>
   }
   return (
-    <p key={key} className="my-1">
+    <p key={key} className="mb-[18px] last:mb-0">
       {inlines}
     </p>
   )
