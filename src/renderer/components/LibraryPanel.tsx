@@ -5,8 +5,10 @@ import {
   assetDisplayName,
   assetPrimaryCategory,
   CATEGORY_ORDER,
-  categoryMeta
+  categoryMeta,
+  LIBRARY_MOODS
 } from '../../shared/types'
+import { fuzzyScore } from '../lib/fuzzy'
 import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
 import { basename } from '../../shared/paths'
 import { useStore } from '../store'
@@ -47,6 +49,8 @@ export default function LibraryPanel() {
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
   const [category, setCategory] = useState<string | 'all'>('all')
+  const [heardFilter, setHeardFilter] = useState<'all' | 'heard' | 'unheard'>('all')
+  const [selected, setSelected] = useState<Set<string>>(new Set())
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const favorites = useFavorites()
   const favoriteSet = useMemo(() => new Set(favorites), [favorites])
@@ -55,7 +59,7 @@ export default function LibraryPanel() {
   // New filter/search → collapse the big groups again.
   useEffect(() => {
     setExpandedGroups(new Set())
-  }, [query, kind, category])
+  }, [query, kind, category, heardFilter])
 
   // Files already on the current scene (any bucket) — to show "in scene" state.
   const filesInScene = useMemo(() => {
@@ -94,18 +98,33 @@ export default function LibraryPanel() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return assets.filter((a) => {
+    const base = assets.filter((a) => {
       if (kind !== 'all' && a.kind !== kind) return false
+      if (heardFilter !== 'all' && (heardFilter === 'heard') !== !!a.heard) return false
       // Multi-category: the filter matches if ANY of the asset's categories hit.
       if (category !== 'all') {
         const cats = assetCategories(a)
         if (category === '' ? cats.length > 0 : !cats.includes(category)) return false
       }
-      if (!q) return true
-      const hay = `${a.name ?? ''} ${a.file} ${assetCategories(a).join(' ')} ${a.description ?? ''} ${a.tags.join(' ')}`.toLowerCase()
-      return hay.includes(q)
+      return true
     })
-  }, [assets, query, kind, category])
+    if (!q) return base
+    // Relevance-ranked, not substring-over-everything: name beats mood beats
+    // category beats tags; description/file are last-resort matches only.
+    const scored = base
+      .map((a) => {
+        let s = fuzzyScore(assetDisplayName(a), q) * 3
+        for (const m of a.moods ?? []) s = Math.max(s, fuzzyScore(m, q) * 2.5)
+        for (const c of assetCategories(a)) s = Math.max(s, fuzzyScore(c, q) * 2)
+        for (const t of a.tags) s = Math.max(s, fuzzyScore(t, q) * 1.5)
+        if (s === 0 && (a.description ?? '').toLowerCase().includes(q)) s = 40
+        if (s === 0 && a.file.toLowerCase().includes(q)) s = 20
+        return { a, s }
+      })
+      .filter((x) => x.s > 0)
+      .sort((x, y) => y.s - x.s || assetDisplayName(x.a).localeCompare(assetDisplayName(y.a)))
+    return scored.map((x) => x.a)
+  }, [assets, query, kind, category, heardFilter])
 
   // Group the filtered assets: Favorites, then Recent, then the category
   // groups. Trash-marked assets are pulled out into a final section.
@@ -115,6 +134,15 @@ export default function LibraryPanel() {
     const trashed = filtered.filter((a) => a.trash)
     const byName = (a: LibraryAsset, b: LibraryAsset) =>
       assetDisplayName(a).localeCompare(assetDisplayName(b))
+
+    // Searching: one relevance-ordered Results section (filtered is already
+    // score-sorted) instead of alphabetical category groups.
+    if (query.trim()) {
+      if (live.length > 0) sections.push({ key: 'results', icon: '🔎', label: 'Results', items: live })
+      if (trashed.length > 0)
+        sections.push({ key: 'trash', icon: '🚮', label: 'Marked as trash', items: trashed })
+      return sections
+    }
 
     const favSet = new Set(favorites)
     const favItems = live.filter((a) => favSet.has(a.file)).sort(byName)
@@ -159,7 +187,7 @@ export default function LibraryPanel() {
       })
     }
     return sections
-  }, [filtered, favorites, recents])
+  }, [filtered, query, favorites, recents])
 
   if (!open) return null
 
@@ -212,6 +240,16 @@ export default function LibraryPanel() {
                 {KIND_LABELS[k]}
               </FilterChip>
             ))}
+            <span aria-hidden className="mx-1 h-4 w-px bg-hearth-border" />
+            <FilterChip active={heardFilter === 'all'} onClick={() => setHeardFilter('all')}>
+              Heard + unheard
+            </FilterChip>
+            <FilterChip active={heardFilter === 'heard'} onClick={() => setHeardFilter('heard')}>
+              🎧 Heard
+            </FilterChip>
+            <FilterChip active={heardFilter === 'unheard'} onClick={() => setHeardFilter('unheard')}>
+              Unheard
+            </FilterChip>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             <FilterChip active={category === 'all'} onClick={() => setCategory('all')}>
@@ -238,6 +276,17 @@ export default function LibraryPanel() {
             </option>
           ))}
         </datalist>
+        <datalist id="hearth-moods">
+          {LIBRARY_MOODS.map((m) => (
+            <option key={m} value={m} />
+          ))}
+        </datalist>
+
+        {/* Bulk bar — appears once anything is ☑-selected. One library write
+            per action, whatever the selection size. */}
+        {selected.size > 0 && (
+          <BulkBar files={[...selected]} onClear={() => setSelected(new Set())} />
+        )}
 
         {/* List */}
         <div className="flex-1 overflow-y-auto px-4 py-3">
@@ -252,6 +301,27 @@ export default function LibraryPanel() {
               return (
                 <section key={key} className="mb-4">
                   <h3 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-hearth-muted">
+                    <button
+                      onClick={() => {
+                        setSelected((prev) => {
+                          const next = new Set(prev)
+                          const allIn = shown.every((a) => next.has(a.file))
+                          for (const a of shown) {
+                            if (allIn) next.delete(a.file)
+                            else next.add(a.file)
+                          }
+                          return next
+                        })
+                      }}
+                      title="Select / unselect everything shown in this group (for bulk edit)"
+                      className={`rounded border px-1 leading-tight transition-colors ${
+                        shown.length > 0 && shown.every((a) => selected.has(a.file))
+                          ? 'border-hearth-ember text-hearth-ember'
+                          : 'border-hearth-border text-hearth-muted/60 hover:text-hearth-ember'
+                      }`}
+                    >
+                      ☑
+                    </button>
                     <span>{icon}</span>
                     {label}
                     <span className="text-hearth-muted/60">{items.length}</span>
@@ -275,6 +345,15 @@ export default function LibraryPanel() {
                         inScene={filesInScene.has(a.file)}
                         canAdd={!!scene}
                         onAdd={() => addAssetToScene(a.file)}
+                        checked={selected.has(a.file)}
+                        onToggleSelect={() =>
+                          setSelected((prev) => {
+                            const next = new Set(prev)
+                            if (next.has(a.file)) next.delete(a.file)
+                            else next.add(a.file)
+                            return next
+                          })
+                        }
                       />
                     ))}
                   </ul>
@@ -322,29 +401,112 @@ function FilterChip({
 const inputCls =
   'rounded border border-hearth-border bg-hearth-bg px-2 py-1 text-xs text-hearth-text placeholder:text-hearth-muted focus:border-hearth-ember focus:outline-none'
 
+/**
+ * Bulk-edit bar for the current ☑ selection: set categories/moods, mark
+ * heard/unheard, trash/restore. Each action is ONE library.json write.
+ * The selection survives an action so several passes can stack (e.g. set
+ * category, then mark heard).
+ */
+function BulkBar({ files, onClear }: { files: string[]; onClear: () => void }) {
+  const updateLibraryAssets = useStore((s) => s.updateLibraryAssets)
+  const [cat, setCat] = useState('')
+  const [moods, setMoods] = useState('')
+
+  const btnCls =
+    'rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted transition-colors hover:border-hearth-ember hover:text-hearth-ember'
+  return (
+    <div className="flex flex-wrap items-center gap-2 border-b border-hearth-ember/40 bg-hearth-emberdim/15 px-4 py-2">
+      <span className="text-xs font-semibold text-hearth-ember">{files.length} selected</span>
+      <input
+        value={cat}
+        onChange={(e) => setCat(e.target.value)}
+        list="hearth-categories"
+        placeholder="categories…"
+        className={`${inputCls} w-36`}
+        title="Comma separated; applies to every selected sound"
+      />
+      <button
+        onClick={() => cat.trim() && void updateLibraryAssets(files, { category: cat })}
+        disabled={!cat.trim()}
+        className={`${btnCls} disabled:opacity-40`}
+      >
+        Set categories
+      </button>
+      <input
+        value={moods}
+        onChange={(e) => setMoods(e.target.value)}
+        list="hearth-moods"
+        placeholder="moods…"
+        className={`${inputCls} w-32`}
+        title="Comma separated; replaces moods on every selected sound"
+      />
+      <button
+        onClick={() =>
+          moods.trim() &&
+          void updateLibraryAssets(files, {
+            moods: moods.toLowerCase().split(/[,\s]+/).filter(Boolean)
+          })
+        }
+        disabled={!moods.trim()}
+        className={`${btnCls} disabled:opacity-40`}
+      >
+        Set moods
+      </button>
+      <span aria-hidden className="h-4 w-px bg-hearth-border" />
+      <button onClick={() => void updateLibraryAssets(files, { heard: true })} className={btnCls}>
+        🎧 Heard
+      </button>
+      <button onClick={() => void updateLibraryAssets(files, { heard: false })} className={btnCls}>
+        Unheard
+      </button>
+      <DangerButton
+        onConfirm={() => void updateLibraryAssets(files, { trash: true })}
+        title="Mark every selected sound as trash (soft — restorable)"
+        className={`${btnCls} hover:border-red-400 hover:text-red-300`}
+        armedLabel={`🚮 Really trash ${files.length}?`}
+      >
+        🚮 Trash
+      </DangerButton>
+      <button onClick={() => void updateLibraryAssets(files, { trash: false })} className={btnCls}>
+        ♻ Restore
+      </button>
+      <button onClick={onClear} className={`${btnCls} ml-auto`}>
+        ✕ Clear selection
+      </button>
+    </div>
+  )
+}
+
 function AssetRow({
   asset,
   fav,
   inScene,
   canAdd,
-  onAdd
+  onAdd,
+  checked,
+  onToggleSelect
 }: {
   asset: LibraryAsset
   fav: boolean
   inScene: boolean
   canAdd: boolean
   onAdd: () => void
+  checked: boolean
+  onToggleSelect: () => void
 }) {
   const playing = useStore((s) => s.previewingFile === asset.file)
   const previewAsset = useStore((s) => s.previewAsset)
   const updateLibraryAsset = useStore((s) => s.updateLibraryAsset)
   const deleteLibraryAsset = useStore((s) => s.deleteLibraryAsset)
 
-  // Inline metadata editor (rename / recategorize / retag / describe).
+  // Inline metadata editor (rename / recategorize / retag / moods / license).
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState('')
   const [cat, setCat] = useState('')
   const [tags, setTags] = useState('')
+  const [moods, setMoods] = useState('')
+  const [license, setLicense] = useState('')
+  const [source, setSource] = useState('')
   const [desc, setDesc] = useState('')
   const nameRef = useRef<HTMLInputElement>(null)
 
@@ -352,6 +514,9 @@ function AssetRow({
     setName(assetDisplayName(asset))
     setCat(assetCategories(asset).join(', '))
     setTags(asset.tags.join(', '))
+    setMoods((asset.moods ?? []).join(', '))
+    setLicense(asset.license ?? '')
+    setSource(asset.source ?? '')
     setDesc(asset.description ?? '')
     setEditing(true)
   }
@@ -365,6 +530,9 @@ function AssetRow({
       name,
       category: cat,
       description: desc,
+      license,
+      source,
+      moods: moods.toLowerCase().split(/[,\s]+/).filter(Boolean),
       tags: [...new Set(tags.toLowerCase().split(/[,\s]+/).filter(Boolean))]
     })
   }
@@ -376,6 +544,13 @@ function AssetRow({
       }`}
     >
       <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onToggleSelect}
+          title="Select for bulk edit"
+          className="flex-none accent-[#c96f2f]"
+        />
         <button
           onClick={() => previewAsset(asset.file)}
           title={playing ? 'Stop' : 'Audition'}
@@ -399,8 +574,16 @@ function AssetRow({
               </span>
             )}
           </div>
-          {asset.tags.length > 0 && (
-            <div className="truncate text-[11px] text-hearth-muted">{asset.tags.join(' · ')}</div>
+          {((asset.moods?.length ?? 0) > 0 || asset.tags.length > 0) && (
+            <div className="truncate text-[11px] text-hearth-muted">
+              {(asset.moods?.length ?? 0) > 0 && (
+                <span className="text-hearth-gold/80" title="Moods">
+                  {asset.moods!.join(' · ')}
+                  {asset.tags.length > 0 && '  ·  '}
+                </span>
+              )}
+              {asset.tags.join(' · ')}
+            </div>
           )}
           {asset.description && (
             <div className="truncate text-[11px] italic text-hearth-muted/80" title={asset.description}>
@@ -408,6 +591,19 @@ function AssetRow({
             </div>
           )}
         </div>
+        <button
+          onClick={() => void updateLibraryAsset(asset.file, { heard: !asset.heard })}
+          title={
+            asset.heard
+              ? 'Heard — auditioned by ear. Click to unmark.'
+              : 'Unheard — imported by filename, never auditioned. Click to mark as heard.'
+          }
+          className={`flex-none px-1 text-sm leading-none transition-colors ${
+            asset.heard ? 'text-hearth-gold' : 'text-hearth-muted/40 hover:text-hearth-gold'
+          }`}
+        >
+          🎧
+        </button>
         <button
           onClick={() => toggleFavorite(asset.file)}
           title={fav ? 'Remove from favorites' : 'Add to favorites'}
@@ -506,6 +702,15 @@ function AssetRow({
             title="One or more, comma separated — 'combat, tension, nature' files it under all three (first = main group + mood tag)"
           />
           <input
+            value={moods}
+            onChange={(e) => setMoods(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
+            list="hearth-moods"
+            placeholder="moods (tense, calm…)"
+            className={`${inputCls} w-36`}
+            title="Mood words, comma separated — the live-retrieval axis ('tense', 'calm', 'epic')"
+          />
+          <input
             value={tags}
             onChange={(e) => setTags(e.target.value)}
             onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
@@ -518,6 +723,22 @@ function AssetRow({
           >
             Save
           </button>
+          <input
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
+            placeholder="source"
+            className={`${inputCls} w-36`}
+            title="Where it came from (pack / site / 'youtube')"
+          />
+          <input
+            value={license}
+            onChange={(e) => setLicense(e.target.value)}
+            onKeyDown={(e) => e.key === 'Escape' && (e.stopPropagation(), setEditing(false))}
+            placeholder="license (CC0, private…)"
+            className={`${inputCls} w-44`}
+            title="License terms — 'private' = personal-table only, never redistributed"
+          />
           <GrowArea
             value={desc}
             onChange={setDesc}

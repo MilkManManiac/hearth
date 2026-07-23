@@ -29,6 +29,20 @@ export interface LibraryAsset {
   /** Free-text notes: what it sounds like, when to use it, source quirks. */
   description?: string
   /**
+   * Mood words (multi-value) — the axis a DM reaches for live: "tense",
+   * "calm", "epic". Suggested vocabulary in LIBRARY_MOODS; free-form values
+   * still work. Kept separate from `tags` (provenance/content words) so mood
+   * search stays clean.
+   */
+  moods?: string[]
+  /**
+   * Auditioned by ear. The bulk-import waves were filed by filename, not
+   * listening — absent/false marks the "never actually heard" pile so the
+   * browser can filter trusted sounds from blind imports. Triage keeps stamp
+   * it; the Library row has a quick toggle.
+   */
+  heard?: boolean
+  /**
    * Marked as junk: hidden from the cue tray and grouped under "Marked as
    * trash" in the Library, pending real deletion. A soft-delete staging flag.
    */
@@ -91,6 +105,26 @@ export const LIBRARY_CATEGORIES: Record<string, LibraryCategoryMeta> = {
 
 /** Category ids in recommended display order. */
 export const CATEGORY_ORDER = Object.keys(LIBRARY_CATEGORIES)
+
+/**
+ * Suggested mood vocabulary for `LibraryAsset.moods` (free-form values still
+ * work). Deliberately short — moods are for live retrieval, and a dozen words
+ * you remember beat fifty you don't. Refine with the DM before bulk-tagging.
+ */
+export const LIBRARY_MOODS = [
+  'calm',
+  'tense',
+  'eerie',
+  'epic',
+  'dark',
+  'somber',
+  'hopeful',
+  'festive',
+  'mysterious',
+  'heroic',
+  'playful',
+  'triumphant'
+]
 
 /** Display metadata for any category id, with a fallback for unknown/absent ones. */
 export function categoryMeta(id: string | undefined): LibraryCategoryMeta {

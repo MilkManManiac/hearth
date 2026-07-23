@@ -19,7 +19,10 @@ export type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus }
 
 /** Editable slice of a library entry (file/kind stay fixed). */
 export type LibraryAssetPatch = Partial<
-  Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash' | 'description'>
+  Pick<
+    LibraryAsset,
+    'name' | 'category' | 'tags' | 'moods' | 'heard' | 'license' | 'source' | 'trash' | 'description'
+  >
 >
 
 export interface PresenterPayload {
@@ -130,6 +133,8 @@ const api = {
   }): Promise<CampaignState> => ipcRenderer.invoke('party:transfer-coins', req),
   updateLibraryAsset: (file: string, patch: LibraryAssetPatch): Promise<CampaignState> =>
     ipcRenderer.invoke('library:update', file, patch),
+  updateLibraryAssets: (files: string[], patch: LibraryAssetPatch): Promise<CampaignState> =>
+    ipcRenderer.invoke('library:bulk-update', files, patch),
   deleteLibraryAsset: (file: string): Promise<CampaignState> =>
     ipcRenderer.invoke('library:delete', file),
   savePlaylistPresets: (presets: PlaylistPreset[]): Promise<CampaignState> =>

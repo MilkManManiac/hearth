@@ -19,7 +19,7 @@ import type {
   Scene,
   SceneImage
 } from '../shared/types'
-import type { TriageKeepRequest, TriageScan } from '../preload/index'
+import type { LibraryAssetPatch, TriageKeepRequest, TriageScan } from '../preload/index'
 import { compileScriptText, normalizeScript } from '../shared/scriptCompile'
 import {
   addCoins,
@@ -1069,17 +1069,10 @@ export class CampaignManager {
   }
 
   /**
-   * Patch a library entry (display name / category / tags / trash flag),
-   * keyed by its campaign-relative file path. Empty-string name/category
-   * clear the field; the file on disk is untouched.
+   * Apply one metadata patch to one asset in place. Empty-string name/
+   * category/license/source clear the field; the file on disk is untouched.
    */
-  async updateLibraryAsset(
-    file: string,
-    patch: Partial<Pick<LibraryAsset, 'name' | 'category' | 'tags' | 'trash' | 'description'>>
-  ): Promise<CampaignState> {
-    const lib = await this.loadLibrary([])
-    const asset = lib.assets.find((a) => a.file === file)
-    if (!asset) throw new Error(`asset "${file}" not in library.json`)
+  private applyAssetPatch(asset: LibraryAsset, patch: LibraryAssetPatch): void {
     if (patch.name !== undefined) {
       if (patch.name.trim()) asset.name = patch.name.trim()
       else delete asset.name
@@ -1103,12 +1096,58 @@ export class CampaignManager {
       else delete asset.description
     }
     if (patch.tags !== undefined) asset.tags = patch.tags
+    if (patch.moods !== undefined) {
+      const moods = [...new Set(patch.moods.map((m) => m.trim().toLowerCase()).filter(Boolean))]
+      if (moods.length > 0) asset.moods = moods
+      else delete asset.moods
+    }
+    if (patch.heard !== undefined) {
+      if (patch.heard) asset.heard = true
+      else delete asset.heard
+    }
+    if (patch.license !== undefined) {
+      if (patch.license.trim()) asset.license = patch.license.trim()
+      else delete asset.license
+    }
+    if (patch.source !== undefined) {
+      if (patch.source.trim()) asset.source = patch.source.trim()
+      else delete asset.source
+    }
     if (patch.trash !== undefined) {
       if (patch.trash) asset.trash = true
       else delete asset.trash
     }
+  }
+
+  /**
+   * Patch a library entry (display name / categories / tags / moods / heard /
+   * license / source / trash), keyed by its campaign-relative file path.
+   */
+  async updateLibraryAsset(file: string, patch: LibraryAssetPatch): Promise<CampaignState> {
+    return this.updateLibraryAssets([file], patch)
+  }
+
+  /**
+   * Bulk-patch many entries in ONE library.json write (the 2,000-asset
+   * library rewrites wholesale on every save — one write per row would grind).
+   * Unknown files are reported, not fatal, so a stale selection can't abort
+   * the rest of the batch.
+   */
+  async updateLibraryAssets(files: string[], patch: LibraryAssetPatch): Promise<CampaignState> {
+    const lib = await this.loadLibrary([])
+    const byFile = new Map(lib.assets.map((a) => [a.file, a]))
+    const missing: string[] = []
+    for (const file of files) {
+      const asset = byFile.get(file)
+      if (asset) this.applyAssetPatch(asset, patch)
+      else missing.push(file)
+    }
+    if (missing.length === files.length) {
+      throw new Error(`asset${files.length > 1 ? 's' : ''} not in library.json: ${missing.join(', ')}`)
+    }
     await writeJsonAtomic(path.join(this.campaignPath, 'library.json'), lib)
     this.markWrite()
+    if (missing.length > 0) console.warn(`library bulk update skipped unknown files: ${missing.join(', ')}`)
     return this.load()
   }
 
@@ -1302,7 +1341,8 @@ export class CampaignManager {
     await fs.mkdir(destDir, { recursive: true })
     const base = await this.copyUnique(src, destDir, stem, ext)
     const lib = await this.loadLibrary([])
-    const asset: LibraryAsset = { file: `${req.kind}/${base}`, kind: req.kind, tags: req.tags }
+    // Triage keeps are auditioned by definition (K after listening).
+    const asset: LibraryAsset = { file: `${req.kind}/${base}`, kind: req.kind, tags: req.tags, heard: true }
     if (req.category) asset.category = req.category
     if (req.source) asset.source = req.source
     if (req.license) asset.license = req.license

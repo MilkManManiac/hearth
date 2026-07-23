@@ -151,6 +151,7 @@ interface AppState {
   addAssetToScene: (file: string) => void
   /** Edit a library entry (rename / recategorize / retag / trash-flag). */
   updateLibraryAsset: (file: string, patch: LibraryAssetPatch) => Promise<void>
+  updateLibraryAssets: (files: string[], patch: LibraryAssetPatch) => Promise<void>
   /** Delete an asset for real: file → recycle bin, entry dropped. Blocked while scenes use it. */
   deleteLibraryAsset: (file: string) => Promise<void>
   /** Batch-delete everything marked as trash (scene-referenced items are skipped). */
@@ -578,6 +579,16 @@ export const useStore = create<AppState>((set, get) => ({
       get().setCampaign(state)
     } catch (err) {
       get().pushToast(`Library update failed: ${(err as Error).message}`, 'error')
+    }
+  },
+
+  updateLibraryAssets: async (files, patch) => {
+    try {
+      const state = await window.hearth.updateLibraryAssets(files, patch)
+      get().setCampaign(state)
+      get().pushToast(`Updated ${files.length} sounds`, 'info')
+    } catch (err) {
+      get().pushToast(`Library bulk update failed: ${(err as Error).message}`, 'error')
     }
   },
 

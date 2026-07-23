@@ -343,6 +343,11 @@ function registerIpc(): void {
     broadcast('campaign:changed', state)
     return state
   })
+  ipcMain.handle('library:bulk-update', async (_e, files: string[], patch: Partial<LibraryAsset>) => {
+    const state = await campaign.updateLibraryAssets(files, patch)
+    broadcast('campaign:changed', state)
+    return state
+  })
   ipcMain.handle('library:delete', async (_e, file: string) => {
     const state = await campaign.deleteLibraryAsset(file)
     broadcast('campaign:changed', state)
