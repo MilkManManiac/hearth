@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { NOTE_KINDS } from '../../shared/types'
+import { placeCard, type CardPlacement } from '../lib/floatPlacement'
 import { openNoteLink } from '../lib/noteNav'
 import { useStore } from '../store'
 import NoteBody from './NoteBody'
@@ -10,11 +11,7 @@ const CARD_H = 320
 const OPEN_DELAY_MS = 400 // intent delay (Wikipedia uses 650; our notes are sparser + lookups urgent)
 const CLOSE_GRACE_MS = 300 // time to travel from link into the card
 
-interface PeekPos {
-  left: number
-  top: number
-  above: boolean
-}
+type PeekPos = CardPlacement
 
 /**
  * Hover-peek for note links (the Wikipedia/Obsidian page-preview pattern):
@@ -40,9 +37,8 @@ export function useNotePeek(refId: string) {
     window.clearTimeout(openT.current)
     openT.current = window.setTimeout(() => {
       const r = el.getBoundingClientRect()
-      const left = Math.min(Math.max(8, r.left), window.innerWidth - CARD_W - 8)
-      const above = r.bottom + CARD_H + 12 > window.innerHeight && r.top > CARD_H + 12
-      setPos({ left, top: above ? r.top - 6 : r.bottom + 6, above })
+      // Dock-aware placement: never open into (or under) the sound console.
+      setPos(placeCard(r, CARD_W, CARD_H))
     }, OPEN_DELAY_MS)
   }
 
@@ -127,7 +123,7 @@ function PeekCard({
         left: pos.left,
         top: pos.top,
         width: CARD_W,
-        maxHeight: CARD_H,
+        maxHeight: pos.maxHeight,
         transform: pos.above ? 'translateY(-100%)' : undefined
       }}
     >

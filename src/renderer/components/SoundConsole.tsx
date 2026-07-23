@@ -446,6 +446,7 @@ export default function SoundConsole() {
       <button
         onClick={toggleConsole}
         title="Expand the sound console"
+        data-bottom-dock
         className="flex w-full items-center gap-2 border-t-2 border-hearth-ember/30 bg-hearth-panel px-4 py-1 text-left text-[11px] text-hearth-muted transition-colors hover:text-hearth-ember"
       >
         🎛 Sound console
@@ -461,7 +462,10 @@ export default function SoundConsole() {
   }
 
   return (
-    <div className="relative max-h-56 space-y-1.5 overflow-y-auto border-t-2 border-hearth-ember/30 bg-hearth-panel px-4 py-2 shadow-[0_-4px_16px_rgba(0,0,0,0.35)]">
+    <div
+      data-bottom-dock
+      className="relative max-h-56 space-y-1.5 overflow-y-auto border-t-2 border-hearth-ember/30 bg-hearth-panel px-4 py-2 shadow-[0_-4px_16px_rgba(0,0,0,0.35)]"
+    >
       <button
         onClick={toggleConsole}
         title="Minimize the sound console"

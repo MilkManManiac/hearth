@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import type { StatRefInline } from '../../shared/types'
 import { loadMonsters, loadTraps, type Monster, type Trap } from '../lib/compendium'
 import { CUE_BADGE_CLASS } from '../lib/cueMeta'
+import { placeCard, type CardPlacement } from '../lib/floatPlacement'
 import {
   hpKey,
   STAT_CHIP_CLASS,
@@ -52,7 +53,7 @@ export default function StatRefPill({
   refId: string
   label?: string
 }) {
-  const [anchor, setAnchor] = useState<{ left: number; top: number; above: boolean } | null>(null)
+  const [anchor, setAnchor] = useState<CardPlacement | null>(null)
   const btnRef = useRef<HTMLButtonElement | null>(null)
   const data = useStatData(kind, refId)
   const sceneId = useStore((s) => s.currentSceneId)
@@ -70,10 +71,8 @@ export default function StatRefPill({
     }
     const r = btnRef.current?.getBoundingClientRect()
     if (!r) return
-    const left = Math.min(Math.max(8, r.left), window.innerWidth - CARD_W - 8)
-    // Open downward unless the chip sits in the lower half of the window.
-    const above = r.bottom > window.innerHeight * 0.55
-    setAnchor({ left, top: above ? r.top - 6 : r.bottom + 6, above })
+    // Dock-aware placement: never open into (or under) the sound console.
+    setAnchor(placeCard(r, CARD_W, 560))
   }
 
   return (
@@ -134,7 +133,7 @@ function StatCard({
   display: string
   data: Monster | Trap | null | undefined
   pool: string
-  anchor: { left: number; top: number; above: boolean }
+  anchor: CardPlacement
   cur: number | undefined
   onClose: () => void
 }) {
@@ -179,7 +178,7 @@ function StatCard({
         left: anchor.left,
         top: anchor.top,
         width: CARD_W,
-        maxHeight: Math.min(560, window.innerHeight - 24),
+        maxHeight: anchor.maxHeight,
         transform: anchor.above ? 'translateY(-100%)' : undefined
       }}
     >

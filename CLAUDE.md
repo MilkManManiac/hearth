@@ -9,7 +9,7 @@ Desktop app to help a DM run D&D over Discord: pre-build scenes (music + ambient
 
 Core workflow: the DM describes a scene in plain language and a Claude session authors the scene JSON — suggesting tracks/sounds from the tagged asset library (`campaign/library.json`), placing `{{sfx:...}}`/`{{music:...}}`/`{{image:...}}`/`{{amb:...}}` cues inside the read-aloud script. Scenes hold *palettes* (multiple music tracks / sounds the DM taps when it feels right), not auto-playlists. The app hot-reloads scene AND note files from disk. Schema + authoring conventions live in each campaign's `AUTHORING.md` — **when the DM asks you to build a scene or notes, follow that file.**
 
-**Read `GAMEPLAN.md`** for architecture/stack/data-model rationale, **`SURFACES-PLAN.md`** for the locked project structure (🔥 Hearth console · ⚔ Table · 🛡 Party · 🪨 Ember — one engine, many windows; milestones M1–M5), and **`AUDIT-2026-07-10.md`** for the punch list.
+**Read `GAMEPLAN.md`** for architecture/stack/data-model rationale, **`SURFACES-PLAN.md`** for the locked project structure (🔥 Hearth console · ⚔ Table · 🛡 Party · 🪨 Ember — one engine, many windows; milestones M1–M5), and **`AUDIT-2026-07-23.md`** for the punch list.
 
 Key decisions already made (don't relitigate without new evidence):
 - Electron + **electron-vite** + React + TypeScript + Tailwind + Zustand
@@ -65,7 +65,7 @@ The Electron binary downloads on first install; if `node_modules/electron/dist/e
 - **Phase 2 (Discord bridge): built**; status docs contradict each other on how tested it is (DISCORD-BRIDGE.md header says first live voice test passed; its checklist and DEPLOY.md say untested) — **ask the DM before relying on it**. The Chronicler (per-speaker session recorder) rides on it.
 - **Phase 3 (images to players beyond the presenter window) + Phase 4 (D&D Beyond dashboard): not started** — keep-or-kill decision pending (AUDIT).
 - **Packaging: Windows portable + unpacked builds work** (DEPLOY.md); mac not set up.
-- Known bugs & priorities: **AUDIT-2026-07-10.md** is the punch list.
+- Known bugs & priorities: **AUDIT-2026-07-23.md** is the punch list (supersedes AUDIT-2026-07-10.md).
 
 ## Sound library rules
 Tier A (CC0/CC-BY) sources only for anything committed/bundled — see SOUND-SOURCES.md; per-file credits in campaign-sample/CREDITS.md (CC-BY requires the attribution line). YouTube/Spotify rips = `license: private`, never committed. Bulk audio stays gitignored.
