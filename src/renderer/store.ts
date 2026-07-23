@@ -139,6 +139,14 @@ interface AppState {
   /** Id of the preset currently driving music, or null. */
   activePresetId: string | null
   presetPos: number
+  /** Shuffle mode for preset playback (persisted; applies to any active preset). */
+  presetShuffle: boolean
+  /**
+   * Play order for the active preset: positions index into this, and it holds
+   * file indexes — a shuffled permutation, or identity when shuffle is off.
+   */
+  presetOrder: number[]
+  togglePresetShuffle: () => void
   savePlaylistPreset: (name: string, files: string[]) => Promise<void>
   deletePlaylistPreset: (id: string) => Promise<void>
   /** Start a preset from the top (or stop it if it's the active one). */
@@ -307,6 +315,27 @@ export function resolveAmbLayer(scene: Scene | null, ref: string) {
   return layers.find((a) => a.file === ref) ?? layers.find((a) => assetStem(a.file).toLowerCase() === stem)
 }
 
+const identityOrder = (n: number): number[] => Array.from({ length: n }, (_, i) => i)
+
+/** Fisher-Yates permutation of 0..n-1; `firstIdx` (if given) is moved to the front. */
+function shuffledOrder(n: number, firstIdx?: number): number[] {
+  const order = identityOrder(n)
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[order[i], order[j]] = [order[j], order[i]]
+  }
+  if (firstIdx !== undefined) {
+    const at = order.indexOf(firstIdx)
+    if (at > 0) [order[0], order[at]] = [order[at], order[0]]
+  }
+  return order
+}
+
+/** The active preset's play order, healed to identity if it's gone stale. */
+function presetOrderOf(st: AppState, len: number): number[] {
+  return st.presetOrder.length === len ? st.presetOrder : identityOrder(len)
+}
+
 /** Start the preset-playlist track at `pos` (wrapping), wiring auto-advance. */
 function playPresetTrack(get: () => AppState, pos: number): void {
   const st = get()
@@ -316,7 +345,8 @@ function playPresetTrack(get: () => AppState, pos: number): void {
     return
   }
   const len = preset.files.length
-  const file = preset.files[((pos % len) + len) % len]
+  const order = presetOrderOf(st, len)
+  const file = preset.files[order[((pos % len) + len) % len]]
   const asset = st.campaign.library.assets.find((a) => a.file === file)
   // Same-track wrap: switchMusic no-ops on an identical id, so force a restart.
   if (engine.status().activeMusicId === file) engine.stopMusic(DEFAULT_CROSSFADE_MS)
@@ -366,6 +396,8 @@ export const useStore = create<AppState>((set, get) => ({
   uiMode: (localStorage.getItem('hearth:uiMode') as 'build' | 'run') ?? 'build',
   activePresetId: null,
   presetPos: 0,
+  presetShuffle: localStorage.getItem('hearth:presetShuffle') === '1',
+  presetOrder: [],
   playlistOrder: [],
   playlistPos: 0,
 
@@ -516,8 +548,32 @@ export const useStore = create<AppState>((set, get) => ({
       engine.stopMusic()
       return
     }
-    set({ activePresetId: id, presetPos: 0 })
+    const preset = get().campaign.library.playlists?.find((p) => p.id === id)
+    const len = preset?.files.length ?? 0
+    const order = get().presetShuffle ? shuffledOrder(len) : identityOrder(len)
+    set({ activePresetId: id, presetPos: 0, presetOrder: order })
     playPresetTrack(get, 0)
+  },
+
+  togglePresetShuffle: () => {
+    const on = !get().presetShuffle
+    localStorage.setItem('hearth:presetShuffle', on ? '1' : '0')
+    const st = get()
+    const preset = st.campaign.library.playlists?.find((p) => p.id === st.activePresetId)
+    const len = preset?.files.length ?? 0
+    if (!preset || len === 0) {
+      set({ presetShuffle: on })
+      return
+    }
+    // Re-deal around the sounding track — it keeps playing, only what comes
+    // NEXT changes. Shuffle on: current track leads a fresh permutation.
+    // Shuffle off: back to disc order, resuming from the track's real spot.
+    const curFileIdx = presetOrderOf(st, len)[((st.presetPos % len) + len) % len]
+    set(
+      on
+        ? { presetShuffle: true, presetOrder: shuffledOrder(len, curFileIdx), presetPos: 0 }
+        : { presetShuffle: false, presetOrder: identityOrder(len), presetPos: curFileIdx }
+    )
   },
 
   presetStep: (dir) => {
@@ -530,6 +586,16 @@ export const useStore = create<AppState>((set, get) => ({
       return
     }
     const next = (((st.presetPos + dir) % len) + len) % len
+    // Wrapping forward in shuffle mode re-deals the deck (no repeat of the
+    // just-played closer as the new opener).
+    if (st.presetShuffle && dir === 1 && next === 0 && len > 1) {
+      const lastIdx = presetOrderOf(st, len)[len - 1]
+      const order = shuffledOrder(len)
+      if (order[0] === lastIdx) [order[0], order[len - 1]] = [order[len - 1], order[0]]
+      set({ presetOrder: order, presetPos: 0 })
+      playPresetTrack(get, 0)
+      return
+    }
     set({ presetPos: next })
     playPresetTrack(get, next)
   },
@@ -543,7 +609,10 @@ export const useStore = create<AppState>((set, get) => ({
       set({ activePresetId: null })
       return
     }
-    const target = ((pos % len) + len) % len
+    // `pos` is a FILE index (the ☰ menu lists files in disc order) — find
+    // where the current play order visits it.
+    const fileIdx = ((pos % len) + len) % len
+    const target = Math.max(0, presetOrderOf(st, len).indexOf(fileIdx))
     set({ presetPos: target })
     playPresetTrack(get, target)
   },

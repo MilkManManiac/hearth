@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import {
   assetCategories,
@@ -8,6 +8,7 @@ import {
   type LibraryAsset,
   type PlaylistPreset
 } from '../../shared/types'
+import { fuzzyScore } from '../lib/fuzzy'
 import { isTypingTarget } from '../lib/keys'
 import { pushRecent, useFavorites } from '../lib/prefs'
 import { engine, useStore } from '../store'
@@ -199,6 +200,243 @@ function QueueMenu({ queue }: { queue: QueueInfo }) {
   )
 }
 
+const VIBE_RESULT_CAP = 14
+const VIBE_KIND_ORDER: Record<AssetKind, number> = { music: 0, ambience: 1, sfx: 2 }
+
+/**
+ * 🔥 Vibe — sounds on the fly, for when the table goes off-script (it always
+ * does). One box: type any word (mood, song name, "rain") for ranked matches,
+ * or focus it empty to browse the library's vibes (moods + categories) as
+ * chips. Clicking a result fires it through the same path as staples — music
+ * crossfades, beds toggle/layer, SFX one-shot — and the list STAYS OPEN so a
+ * bed + track can be layered in two clicks.
+ */
+function QuickFire() {
+  const assets = useStore((s) => s.campaign.library.assets)
+  const status = useStore((s) => s.status)
+  const fireFavorite = useStore((s) => s.fireFavorite)
+  const [q, setQ] = useState('')
+  const [vibe, setVibe] = useState<string | null>(null)
+  const [open, setOpen] = useState(false)
+  const [sel, setSel] = useState(0)
+  const wrapRef = useRef<HTMLDivElement | null>(null)
+  const boxRef = useRef<HTMLDivElement | null>(null)
+  const [pos, setPos] = useState<{ left: number; bottom: number } | null>(null)
+
+  const query = q.trim().toLowerCase()
+
+  // Vibe chips: every mood/category actually present on non-trash assets,
+  // busiest first — the browse surface IS the categorization, so sorting the
+  // library directly improves this menu.
+  const vibes = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const a of assets) {
+      if (a.trash) continue
+      for (const m of a.moods ?? []) counts.set(m, (counts.get(m) ?? 0) + 1)
+      for (const c of assetCategories(a)) counts.set(c, (counts.get(c) ?? 0) + 1)
+    }
+    return [...counts.entries()].sort((x, y) => y[1] - x[1]).slice(0, 18)
+  }, [assets])
+
+  const results = useMemo(() => {
+    const live = assets.filter((a) => !a.trash)
+    if (query.length >= 2) {
+      // Same relevance shape as the Library browser: name > mood > category >
+      // tag, with a nudge for auditioned (🎧) sounds — trusted picks surface first.
+      const scored = live
+        .map((a) => {
+          const name = assetDisplayName(a).toLowerCase()
+          let s = fuzzyScore(name, query) * 3
+          for (const m of a.moods ?? []) s = Math.max(s, fuzzyScore(m, query) * 2.5)
+          for (const c of assetCategories(a)) s = Math.max(s, fuzzyScore(c, query) * 2)
+          for (const t of a.tags) s = Math.max(s, fuzzyScore(t, query) * 1.5)
+          if (s === 0 && a.file.toLowerCase().includes(query)) s = 20
+          return { a, s: s > 0 ? s + (a.heard ? 5 : 0) : 0 }
+        })
+        .filter((x) => x.s > 0)
+      scored.sort((x, y) => y.s - x.s)
+      return scored.map((x) => x.a)
+    }
+    if (vibe) {
+      return live
+        .filter((a) => (a.moods ?? []).includes(vibe) || assetCategories(a).includes(vibe))
+        .sort(
+          (a, b) =>
+            VIBE_KIND_ORDER[a.kind] - VIBE_KIND_ORDER[b.kind] ||
+            Number(!!b.heard) - Number(!!a.heard) ||
+            assetDisplayName(a).localeCompare(assetDisplayName(b))
+        )
+    }
+    return []
+  }, [assets, query, vibe])
+
+  const shown = results.slice(0, VIBE_RESULT_CAP)
+
+  const place = () => {
+    const r = wrapRef.current?.getBoundingClientRect()
+    if (r) setPos({ left: r.left, bottom: window.innerHeight - r.top + 6 })
+  }
+  useEffect(() => {
+    if (!open) return
+    place()
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node
+      if (wrapRef.current?.contains(t) || boxRef.current?.contains(t)) return
+      setOpen(false)
+    }
+    const onScrollOrResize = () => place()
+    document.addEventListener('pointerdown', onDown)
+    window.addEventListener('resize', onScrollOrResize)
+    window.addEventListener('scroll', onScrollOrResize, true)
+    return () => {
+      document.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('resize', onScrollOrResize)
+      window.removeEventListener('scroll', onScrollOrResize, true)
+    }
+  }, [open])
+
+  useEffect(() => setSel(0), [query, vibe])
+
+  const fire = (a: LibraryAsset) => {
+    fireFavorite(a.file)
+    pushRecent(a.file)
+  }
+
+  const litOf = (a: LibraryAsset) =>
+    (a.kind === 'music' && status.activeMusicId === a.file) ||
+    (a.kind === 'ambience' && status.ambienceFiles.includes(a.file))
+
+  const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setOpen(false)
+      e.currentTarget.blur()
+      return
+    }
+    if (!open) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setSel((s) => Math.min(s + 1, Math.max(shown.length - 1, 0)))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setSel((s) => Math.max(s - 1, 0))
+    } else if (e.key === 'Enter' && shown[sel]) {
+      e.preventDefault()
+      fire(shown[sel])
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <RowLabel title="Vibes on the fly — search any sound, or browse by mood/category, and fire it instantly. Music crossfades, beds layer, SFX one-shot; the list stays open for layering.">
+        🔥 Vibe
+      </RowLabel>
+      <div ref={wrapRef}>
+        <input
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={onKey}
+          placeholder="mood, song, sound… Enter plays it"
+          className="w-64 rounded-full border border-hearth-border bg-hearth-panel2 px-3 py-1 text-sm text-hearth-text placeholder:text-hearth-muted/60 focus:border-hearth-ember/60 focus:outline-none"
+        />
+      </div>
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={boxRef}
+            style={{ position: 'fixed', left: pos.left, bottom: pos.bottom }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="z-50 flex max-h-80 w-[26rem] flex-col overflow-y-auto rounded-md border border-hearth-border bg-hearth-panel2 p-2 shadow-2xl"
+          >
+            {query.length < 2 && !vibe && (
+              <>
+                <div className="px-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+                  Browse a vibe
+                </div>
+                <div className="flex flex-wrap gap-1.5 px-1 pb-1">
+                  {vibes.length === 0 && (
+                    <span className="text-xs text-hearth-muted">
+                      No moods/categories tagged yet — sort sounds in 📚 Library and they show up
+                      here.
+                    </span>
+                  )}
+                  {vibes.map(([v, n]) => (
+                    <button
+                      key={v}
+                      onClick={() => setVibe(v)}
+                      className="rounded-full border border-hearth-border bg-hearth-panel px-2 py-0.5 text-xs text-hearth-muted transition-colors hover:border-hearth-ember/60 hover:text-hearth-text"
+                    >
+                      {v} <span className="text-hearth-muted/60">{n}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+            {(query.length >= 2 || vibe) && (
+              <>
+                {vibe && query.length < 2 && (
+                  <div className="flex items-center gap-2 px-1 pb-1.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-gold">
+                      {vibe}
+                    </span>
+                    <button
+                      onClick={() => setVibe(null)}
+                      className="text-[10px] text-hearth-muted hover:text-hearth-text"
+                    >
+                      ✕ all vibes
+                    </button>
+                  </div>
+                )}
+                {shown.length === 0 && (
+                  <div className="px-1 py-2 text-xs text-hearth-muted">
+                    No match — try another word, or tag more sounds in 📚 Library.
+                  </div>
+                )}
+                {shown.map((a, i) => {
+                  const lit = litOf(a)
+                  return (
+                    <button
+                      key={a.file}
+                      onClick={() => fire(a)}
+                      className={`flex items-center gap-2 rounded px-1.5 py-1 text-left text-xs transition-colors ${
+                        i === sel ? 'bg-hearth-ember/15' : 'hover:bg-hearth-ember/10'
+                      } ${lit ? 'text-hearth-ember' : 'text-hearth-text'}`}
+                      title={lit ? 'Sounding — click to stop' : a.file}
+                    >
+                      <KindBadge kind={a.kind} />
+                      <span className="min-w-0 flex-1 truncate">{assetDisplayName(a)}</span>
+                      {(a.moods?.length ?? 0) > 0 && (
+                        <span className="max-w-[8rem] truncate text-[10px] lowercase text-hearth-muted">
+                          {(a.moods ?? []).slice(0, 2).join(' · ')}
+                        </span>
+                      )}
+                      {a.heard && (
+                        <span title="Auditioned" aria-hidden className="text-[10px]">
+                          🎧
+                        </span>
+                      )}
+                      {lit && <span aria-hidden>⏹</span>}
+                    </button>
+                  )
+                })}
+                {results.length > shown.length && (
+                  <div className="px-1.5 pt-1 text-[10px] text-hearth-muted">
+                    +{results.length - shown.length} more — keep typing to narrow
+                  </div>
+                )}
+              </>
+            )}
+          </div>,
+          document.body
+        )}
+    </div>
+  )
+}
+
 function fmtTime(s: number): string {
   const m = Math.floor(s / 60)
   return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`
@@ -370,6 +608,9 @@ export default function SoundConsole() {
   const presetStep = useStore((s) => s.presetStep)
   const presetJump = useStore((s) => s.presetJump)
   const presetPos = useStore((s) => s.presetPos)
+  const presetOrder = useStore((s) => s.presetOrder)
+  const presetShuffle = useStore((s) => s.presetShuffle)
+  const togglePresetShuffle = useStore((s) => s.togglePresetShuffle)
   const playlistStep = useStore((s) => s.playlistStep)
   const deletePlaylistPreset = useStore((s) => s.deletePlaylistPreset)
   const activePresetId = useStore((s) => s.activePresetId)
@@ -426,15 +667,23 @@ export default function SoundConsole() {
   // When a campaign preset is driving music, expose its full track list so the
   // Now chip's ☰ menu can jump straight to any song.
   const activePreset = presets.find((p) => p.id === activePresetId)
+  // The ☰ menu lists files in disc order; with shuffle on, presetPos walks the
+  // shuffled order, so map it back to the file index for the ▶ highlight.
+  const currentFileIdx =
+    activePreset && presetOrder.length === activePreset.files.length
+      ? presetOrder[presetPos]
+      : presetPos
   const musicQueue: QueueInfo | undefined = activePreset
-    ? { tracks: activePreset.files, current: presetPos, onJump: presetJump }
+    ? { tracks: activePreset.files, current: currentFileIdx, onJump: presetJump }
     : undefined
 
   // Run-screen redesign: the armed scene's palette lives in the right rail's
   // 🎚 tab now — this console only shows what's SOUNDING (+ playlists/staples).
   const hasNow =
     !!status.activeMusicId || status.ambienceFiles.length > 0 || status.loopingSfxIds.length > 0
-  if (!hasNow && presets.length === 0 && staples.length === 0) return null
+  // Any library at all keeps the console alive — the 🔥 Vibe box must be
+  // reachable even in silence (that's exactly when you need a sound fast).
+  if (!hasNow && presets.length === 0 && staples.length === 0 && assets.length === 0) return null
 
   // NOW-row label/volume lookups can hit any scene — the sounding item may
   // belong to a scene that's no longer armed (exactly when showing it matters).
@@ -580,6 +829,9 @@ export default function SoundConsole() {
         </div>
       )}
 
+      {/* 🔥 VIBE — search/browse ANY library sound and fire it, mid-anything */}
+      {assets.length > 0 && <QuickFire />}
+
       {/* PLAYLISTS — campaign-wide presets */}
       {presets.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
@@ -607,6 +859,15 @@ export default function SoundConsole() {
                 {active && (
                   <button onClick={() => presetStep(1)} title="Next track" className="px-0.5 hover:text-hearth-gold">
                     ⏭
+                  </button>
+                )}
+                {active && (
+                  <button
+                    onClick={togglePresetShuffle}
+                    title={presetShuffle ? 'Shuffle ON — click for disc order' : 'Shuffle this playlist'}
+                    className={`px-0.5 ${presetShuffle ? 'text-hearth-gold' : 'opacity-50 hover:opacity-100 hover:text-hearth-gold'}`}
+                  >
+                    🔀
                   </button>
                 )}
                 {buildMode && !active && (
