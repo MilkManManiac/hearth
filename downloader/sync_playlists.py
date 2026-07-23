@@ -275,8 +275,10 @@ def auto_row(url: str, name: str):
     low = name.lower()
     # A playlist named for sounds rather than songs isn't music — route it to
     # the right folder/kind instead of dumping loops into the music palette.
+    # Any spelling counts — Wes's "Ambiance" playlist is beds, not songs.
     kind = "sfx" if "sfx" in low or "sound effect" in low else \
-        "ambience" if "ambient sound" in low or "ambience" in low else "music"
+        "ambience" if any(w in low for w in ("ambient", "ambience", "ambiance", "atmosphere")) \
+        else "music"
     cat = next((c for words, c in AUTO_CATS if any(w in low for w in words)), "misc")
     if kind != "music":
         cat = "places" if kind == "ambience" else "objects"
