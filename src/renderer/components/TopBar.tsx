@@ -3,36 +3,6 @@ import { engine, useStore } from '../store'
 import TriagePanel from './TriagePanel'
 import DiscordPanel from './DiscordPanel'
 
-function Slider({
-  label,
-  value,
-  defaultValue,
-  onChange
-}: {
-  label: string
-  value: number
-  defaultValue: number
-  onChange: (v: number) => void
-}) {
-  return (
-    <label className="flex items-center gap-2 text-xs text-hearth-muted">
-      <span className="w-14 text-right">{label}</span>
-      <input
-        type="range"
-        min={0}
-        max={1}
-        step={0.01}
-        value={value}
-        title={`${label} ${Math.round(value * 100)}% — double-click to reset`}
-        onDoubleClick={() => onChange(defaultValue)}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-28"
-      />
-      <span className="w-8 tabular-nums text-hearth-muted/70">{Math.round(value * 100)}%</span>
-    </label>
-  )
-}
-
 function Btn({
   onClick,
   children,
@@ -212,18 +182,9 @@ export default function TopBar() {
         </button>
       </div>
 
-      <div className="ml-auto flex flex-col gap-1">
-        <div className="flex gap-4">
-          <Slider label="Master" value={status.masterVolume} defaultValue={0.9} onChange={(v) => engine.setMasterVolume(v)} />
-          <Slider label="Music" value={status.musicVolume} defaultValue={1} onChange={(v) => engine.setMusicVolume(v)} />
-        </div>
-        <div className="flex gap-4">
-          <Slider label="Ambience" value={status.ambienceVolume} defaultValue={1} onChange={(v) => engine.setAmbienceVolume(v)} />
-          <Slider label="SFX" value={status.sfxVolume} defaultValue={1} onChange={(v) => engine.setSfxVolume(v)} />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2">
+      {/* The bus mixer lives in the Sound Console now (audit: "TopBar overload"
+          + co-locate mixing with the sounds it mixes). */}
+      <div className="ml-auto flex items-center gap-2">
         <button
           onClick={openDiscord}
           title={

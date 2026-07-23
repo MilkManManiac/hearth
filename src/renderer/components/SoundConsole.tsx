@@ -454,6 +454,37 @@ function QuickFire() {
   )
 }
 
+/** A bus fader for the console's Mix row (moved here from the TopBar). */
+function BusSlider({
+  label,
+  value,
+  defaultValue,
+  onChange
+}: {
+  label: string
+  value: number
+  defaultValue: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <label className="flex items-center gap-1.5 text-[10px] text-hearth-muted">
+      <span className="font-semibold uppercase tracking-wider">{label}</span>
+      <input
+        type="range"
+        min={0}
+        max={1}
+        step={0.01}
+        value={value}
+        title={`${label} ${Math.round(value * 100)}% — double-click to reset`}
+        onDoubleClick={() => onChange(defaultValue)}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-24"
+      />
+      <span className="w-7 tabular-nums text-hearth-muted/70">{Math.round(value * 100)}%</span>
+    </label>
+  )
+}
+
 function fmtTime(s: number): string {
   const m = Math.floor(s / 60)
   return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`
@@ -981,6 +1012,17 @@ export default function SoundConsole() {
             })}
         </div>
       )}
+
+      {/* MIX — the four volume buses, co-located with what they mix */}
+      <div className="flex flex-wrap items-center gap-4">
+        <RowLabel title="The volume buses — everything routes through Master; double-click a fader to reset">
+          Mix
+        </RowLabel>
+        <BusSlider label="Master" value={status.masterVolume} defaultValue={0.9} onChange={(v) => engine.setMasterVolume(v)} />
+        <BusSlider label="Music" value={status.musicVolume} defaultValue={1} onChange={(v) => engine.setMusicVolume(v)} />
+        <BusSlider label="Amb" value={status.ambienceVolume} defaultValue={1} onChange={(v) => engine.setAmbienceVolume(v)} />
+        <BusSlider label="SFX" value={status.sfxVolume} defaultValue={1} onChange={(v) => engine.setSfxVolume(v)} />
+      </div>
     </div>
   )
 }
