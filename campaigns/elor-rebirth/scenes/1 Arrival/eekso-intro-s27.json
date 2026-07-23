@@ -1,0 +1,72 @@
+{
+  "id": "eekso-intro-s27",
+  "name": "Eekso — Session Open (S27)",
+  "session": "session-27",
+  "dmNotes": "THE OPENER for 2026-07-30. Order: omen → welcome → recap → where we're at → drop back into initiative (Varen's turn, two mimics). The omen is about FALSE IDOLS — a carving that never asked for anything, and the demands people invented for it, escalating from candles to blood. It ENACTS the foyer: the last line ('they smashed the quiet ones instead') IS the statue room they walked through — three gods smashed, Torm untouched. Never point it out; see if anyone looks back at the foyer with new eyes. Ties to impostor-Torm (Ch 2) without saying a word of it. After the fight: STEER THEM TO THE SCAVENGER'S CAMP — the journal ('It knows how many of us there are') is unfired and it's their warning before going down. Felsen's blood in the drains and the garden fight stay in pocket.",
+  "music": [
+    {
+      "id": "welcome",
+      "label": "Welcome to the table",
+      "file": "music/Alisa Marie - Star of the County Down.mp3",
+      "volume": 0.45,
+      "default": true
+    },
+    {
+      "id": "omen",
+      "label": "The Omen",
+      "file": "music/Michael Ghelfi, Filip Melvan - Tick-Tock Goes The Broken Clock.mp3",
+      "volume": 0.4
+    },
+    {
+      "id": "recap",
+      "label": "Previously, on...",
+      "file": "music/Michael Ghelfi, Filip Melvan - The Forbidden Book.mp3",
+      "volume": 0.5
+    },
+    {
+      "id": "fight",
+      "label": "The table stands up",
+      "file": "music/Michael Ghelfi, Filip Melvan - Into the Fray.mp3",
+      "volume": 0.6
+    }
+  ],
+  "ambience": [
+    {
+      "file": "ambience/nox-campfire-small.ogg",
+      "volume": 0.37
+    },
+    {
+      "file": "ambience/Michael Ghelfi - Haunted Castle.mp3",
+      "volume": 0.3,
+      "autoplay": false
+    }
+  ],
+  "sfx": [],
+  "images": [],
+  "ideas": [
+    {
+      "id": "idea-foyer-callback",
+      "text": "If anyone connects the omen to the foyer statues, let them sit with it — confirm nothing",
+      "done": false
+    },
+    {
+      "id": "idea-journal-steer",
+      "text": "Post-fight: the mimics' corner of the hall has drag-marks toward the scavenger's hidden camp (journal steer)",
+      "done": false
+    }
+  ],
+  "entities": [
+    {
+      "id": "ent-mimics",
+      "type": "monster",
+      "name": "The feast (two mimics)",
+      "note": "Table + the 'roast'. Party is hurt, no long rest, low slots. Table runs lethal — don't soften.",
+      "status": "present",
+      "used": false
+    }
+  ],
+  "transition": {
+    "crossfadeMs": 4000
+  },
+  "scriptText": "**START RECORDING**\n\n# Session Open\n\n{{music:welcome}} {{amb:nox-campfire-small|vol=30%|in=3s}}\n\n## The Omen\n\n{{music:omen}}\n\n*They carved him kind. They carved him tall.*\n*A face to catch you when you fall.*\n*He asked for nothing but a flame —*\n*a candle, cheap, to keep his name.*\n\n*The candles burned. The seasons turned.*\n*Then someone said the carving yearned*\n*for more than wax and morning prayer.*\n*Who told them that? No one was there.*\n\n*First it was coin. Then it was bread.*\n*Then something warm. Then something red.*\n*They gave, and gave, and called it good.*\n*He never told them that they should.*\n\n*And if a true god came to claim*\n*the face that's wearing out his name —*\n*well. Stone is stone. The stone stayed fed.*\n*They smashed the quiet ones instead.*\n\n> [!dm] Read it flat and unhurried. Do NOT glance at anyone on the last couplet. The foyer did the work already.\n\n## Welcome back adventurers — to the deep dark of Elor, and a dinner you really should not have touched. Quick recap, then we're straight back into it.\n\n## The Recap\n\n{{music:recap}}\n\nLast session you got through the gates of Eekso ahead of the roar and dropped the bar behind you. And the first thing this place showed you was a room of gods: four statues. Three of them smashed to rubble by somebody who meant it. One left standing without a scratch — Torm.\n\nYou went exploring, and Eekso kept being wrong in small ways. A door you never opened, with wood chimes knocking behind it in air that doesn't move. An elvish sign that just says **DON'T EAT**. A wall that somebody built in a hurry out of furniture, with an opening behind it you still haven't checked.\n\nThe floor of one corridor turned out not to be a floor. Felsen found the spikes at the bottom the hard way, and his blood ran down through the drains into the dark and was gone.\n\nYou found the garden. A knight's statue standing down in the pool, bile bubbling up around it, rock bent around the tree like the rock came second. You watched that statue dangle there like bait, and Cumb said the smartest thing anyone said all night: *\"we're getting fished.\"* You walked away. Probably wise. It's still there, though.\n\nAnd then — the feast hall. A long table, stacked with hot fresh food, three hundred feet underground in a dead fortress. You knew. You all knew. You poked it anyway.\n\nThe table stood up.\n\n## Where We're At\n\n- Two mimics: {{monster:mimic|The Table}} {{monster:mimic|The Roast}}\n- You're hurt, you haven't long rested, and the spell slots are thin\n- Initiative is already rolled — we ended on it\n\n> [!dm] Loose threads THEY flagged: the opening behind the improvised wall, the stairs down, the don't-eat sign. After the fight, drag-marks near the mimics' corner steer to the scavenger's camp → the journal.\n\n## Back In\n\n{{music:fight}} {{amb:nox-campfire-small}} {{amb:Michael Ghelfi - Haunted Castle|vol=30%|in=2s}}\n\nThe feast hall. The smell of bread that was never baked. The table between you unfolds — legs where legs should not be, a tongue like a wet grey rope — and behind it the roast opens too, all teeth.\n\nVaren. You're up.\n"
+}
