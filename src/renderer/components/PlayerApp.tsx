@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CampaignMap, Character, PartyStash, RollEvent } from '../../shared/types'
+import type { CampaignMap, Character, PartyStash, RollEvent, TokenDecor } from '../../shared/types'
 import { loadKind, type ClassEntry, type NamedEntry } from '../lib/compendium'
+import { portalKey } from '../lib/asset'
 import CharacterSheet from './CharacterSheet'
 import StashBox from './StashBox'
 import { RollFeed } from './GameLog'
-import { PresenterMap, playerTableView, usePings } from './MapEditor'
+import { PresenterMap, usePings } from './MapEditor'
 import { EntryArticle, SpellCard } from './StatBlock'
 import type { Spell } from '../lib/compendium'
 import { loadSpells } from '../lib/compendium'
@@ -13,10 +14,44 @@ import { loadSpells } from '../lib/compendium'
 // Electron). Talks to Hearth over HTTP: GET the roster, POST character saves,
 // SSE to hear about changes from the DM/other players. Same CharacterSheet
 // component the DM uses — one sheet, two doors.
+//
+// AUTH (P0): every request carries the campaign key from the DM's link
+// (?key=..., remembered in localStorage); mutations of a character also carry
+// its CLAIM token — minted by the server the first time this browser picks
+// that character. See playerServer.ts for the server side.
+
+/** This browser's claim tokens, characterId → token. */
+function claimsMap(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem('hearth:claims') ?? '{}') as Record<string, string>
+  } catch {
+    return {}
+  }
+}
+
+function saveClaimToken(id: string, token: string): void {
+  const m = claimsMap()
+  m[id] = token
+  localStorage.setItem('hearth:claims', JSON.stringify(m))
+}
+
+/** Headers for portal requests: key always, claim when mutating a character. */
+function authHeaders(characterId?: string | null): Record<string, string> {
+  const h: Record<string, string> = { 'Content-Type': 'application/json', 'x-hearth-key': portalKey() }
+  const t = characterId ? claimsMap()[characterId] : undefined
+  if (t) h['x-hearth-claim'] = t
+  return h
+}
+
+class ApiError extends Error {
+  constructor(msg: string, public status: number) {
+    super(msg)
+  }
+}
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(url, init)
-  if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`)
+  const r = await fetch(url, { ...init, headers: { ...authHeaders(), ...(init?.headers ?? {}) } })
+  if (!r.ok) throw new ApiError(`${url}: HTTP ${r.status}`, r.status)
   return r.json()
 }
 
@@ -29,11 +64,12 @@ function NewCharacterRow({ onCreated, onError }: { onCreated: (id: string) => vo
     if (!clean || busy) return
     setBusy(true)
     try {
-      const r = await api<{ characterId: string }>('/api/character-create', {
+      const r = await api<{ characterId: string; token?: string }>('/api/character-create', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: clean })
       })
+      // The server minted our claim with the character — this browser owns it.
+      if (r.token) saveClaimToken(r.characterId, r.token)
       onCreated(r.characterId)
     } catch (e) {
       onError((e as Error).message)
@@ -71,9 +107,18 @@ export default function PlayerApp() {
   const [spellCard, setSpellCard] = useState<Spell | null>(null)
   const [speciesCard, setSpeciesCard] = useState<NamedEntry | null>(null)
   const [error, setError] = useState<string | null>(null)
-  // Ember Table view (M2): live-follows the DM's live map.
+  // Ember Table view (M2): live-follows the DM's live map. HP rings /
+  // conditions / initiative arrive PRE-COMPUTED from the server (P0: the raw
+  // encounter never reaches this browser).
   const [view, setView] = useState<'sheet' | 'table'>('sheet')
   const [liveMap, setLiveMap] = useState<CampaignMap | null>(null)
+  const [tableView, setTableView] = useState<{
+    decor: Record<string, TokenDecor>
+    initiative?: { names: string[]; turn: number }
+  }>({ decor: {} })
+  // 401 = the link is missing its ?key= — ask for the door code.
+  const [needKey, setNeedKey] = useState(false)
+  const [keyInput, setKeyInput] = useState('')
   // Ember E2: drag-your-token is the default; 📍/📏 are explicit modes so a
   // stray phone tap never pings the whole table by accident.
   const [tableMode, setTableMode] = useState<'move' | 'ping' | 'ruler'>('move')
@@ -100,15 +145,23 @@ export default function PlayerApp() {
     addRoll(roll)
     void fetch('/api/roll', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(roll)
     }).catch(() => undefined)
   }
 
-  const refetch = () => {
-    void api<{ map: CampaignMap | null }>('/api/table')
-      .then((t) => setLiveMap(t.map))
+  const fetchTable = () =>
+    api<{ map: CampaignMap | null; decor?: Record<string, TokenDecor>; initiative?: { names: string[]; turn: number } }>(
+      '/api/table'
+    )
+      .then((t) => {
+        setLiveMap(t.map)
+        setTableView({ decor: t.decor ?? {}, initiative: t.initiative })
+      })
       .catch(() => undefined)
+
+  const refetch = () => {
+    void fetchTable()
     void api<PartyStash>('/api/party').then(setParty).catch(() => undefined)
     return api<Character[]>('/api/characters')
       .then((cs) => {
@@ -118,14 +171,20 @@ export default function PlayerApp() {
   }
 
   useEffect(() => {
-    void api<Character[]>('/api/characters').then(setCharacters).catch((e) => setError((e as Error).message))
-    void api<{ map: CampaignMap | null }>('/api/table').then((t) => setLiveMap(t.map)).catch(() => undefined)
+    void api<Character[]>('/api/characters')
+      .then(setCharacters)
+      .catch((e) => {
+        if (e instanceof ApiError && e.status === 401) setNeedKey(true)
+        else setError((e as Error).message)
+      })
+    void fetchTable()
     void api<PartyStash>('/api/party').then(setParty).catch(() => undefined)
     loadKind('class').then((r) => setClasses(r as unknown as ClassEntry[]))
     loadKind('species').then(setSpecies)
     loadKind('background').then(setBackgrounds)
     void api<RollEvent[]>('/api/rolls').then(setRolls).catch(() => undefined)
-    const es = new EventSource('/api/events')
+    // EventSource can't set headers — the key rides the query string.
+    const es = new EventSource(`/api/events?key=${portalKey()}`)
     es.onmessage = () => void refetch()
     es.addEventListener('roll', (e) => {
       try {
@@ -149,6 +208,27 @@ export default function PlayerApp() {
 
   const selected = characters?.find((c) => c.id === selectedId) ?? null
 
+  // Picking a character CLAIMS it: the server hands this browser the token
+  // (or refuses if another device got there first).
+  const pickCharacter = async (id: string) => {
+    try {
+      const r = await api<{ token?: string }>('/api/claim', {
+        method: 'POST',
+        body: JSON.stringify({ characterId: id, token: claimsMap()[id] })
+      })
+      if (r.token) saveClaimToken(id, r.token)
+      setSelectedId(id)
+      localStorage.setItem('hearth:myCharacter', id)
+      setError(null)
+    } catch (e) {
+      setError(
+        e instanceof ApiError && e.status === 403
+          ? 'That character is claimed on another device — ask the DM to hit ⟲ claims.'
+          : (e as Error).message
+      )
+    }
+  }
+
   const patch = (p: Partial<Character>) => {
     if (!selected) return
     lastEdit.current = Date.now()
@@ -156,9 +236,13 @@ export default function PlayerApp() {
     setCharacters((cs) => (cs ?? []).map((c) => (c.id === selected.id ? updated : c)))
     void fetch(`/api/character/${selected.id}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(selected.id),
       body: JSON.stringify(updated)
-    }).catch((e) => setError((e as Error).message))
+    })
+      .then((r) => {
+        if (r.status === 403) setError('This character is claimed on another device — ask the DM to hit ⟲ claims.')
+      })
+      .catch((e) => setError((e as Error).message))
   }
 
   // Ember E2 (M5): my token on the live map — the only one I may drag.
@@ -170,7 +254,7 @@ export default function PlayerApp() {
     setLiveMap((m) => (m ? { ...m, tokens: (m.tokens ?? []).map((t) => (t.id === tokenId ? { ...t, x, y } : t)) } : m))
     void fetch('/api/table/move-token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(selectedId),
       body: JSON.stringify({ tokenId, characterId: selectedId, x, y })
     })
       .then((r) => {
@@ -188,7 +272,7 @@ export default function PlayerApp() {
     addPing(ping)
     void fetch('/api/table/ping', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders(),
       body: JSON.stringify(ping)
     }).catch(() => undefined)
   }
@@ -226,28 +310,23 @@ export default function PlayerApp() {
       {view === 'table' && (
         <div className="fixed inset-0 z-30 bg-black">
           {liveMap && liveMap.image ? (
-            (() => {
-              const pv = playerTableView(liveMap, characters ?? [])
-              return (
-                <PresenterMap
-                  file={liveMap.image}
-                  strokes={liveMap.strokes}
-                  zones={liveMap.zones}
-                  tokens={liveMap.tokens}
-                  grid={liveMap.grid}
-                  overlays={liveMap.overlays}
-                  decor={pv.decor}
-                  initiative={pv.initiative}
-                  pings={pings}
-                  interact={{
-                    myCharacterId: selectedId,
-                    mode: tableMode,
-                    onMoveToken: moveMyToken,
-                    onPing: sendPing
-                  }}
-                />
-              )
-            })()
+            <PresenterMap
+              file={liveMap.image}
+              strokes={liveMap.strokes}
+              zones={liveMap.zones}
+              tokens={liveMap.tokens}
+              grid={liveMap.grid}
+              overlays={liveMap.overlays}
+              decor={tableView.decor}
+              initiative={tableView.initiative}
+              pings={pings}
+              interact={{
+                myCharacterId: selectedId,
+                mode: tableMode,
+                onMoveToken: moveMyToken,
+                onPing: sendPing
+              }}
+            />
           ) : (
             <div className="flex h-full items-center justify-center text-sm text-white/30">
               The table is dark — waiting for the DM to go live…
@@ -298,7 +377,33 @@ export default function PlayerApp() {
           </p>
         )}
 
-        {!characters ? (
+        {needKey ? (
+          <div className="mx-auto mt-12 max-w-sm text-center">
+            <div className="mb-3 text-4xl">🗝</div>
+            <h2 className="mb-1 font-display text-xl font-semibold text-hearth-text">This hearth has a door code</h2>
+            <p className="mb-4 text-sm text-hearth-muted">
+              Open the FULL link the DM sent (it ends in <code>?key=…</code>), or paste the code here.
+            </p>
+            <div className="flex gap-2">
+              <input
+                value={keyInput}
+                onChange={(e) => setKeyInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && keyInput.trim()) window.location.href = `/?key=${keyInput.trim()}`
+                }}
+                placeholder="door code"
+                className="min-w-0 flex-1 rounded border border-hearth-border bg-hearth-bg px-2 py-1.5 text-center font-mono text-sm text-hearth-text focus:border-hearth-ember focus:outline-none"
+              />
+              <button
+                onClick={() => keyInput.trim() && (window.location.href = `/?key=${keyInput.trim()}`)}
+                disabled={!keyInput.trim()}
+                className="rounded border border-hearth-ember bg-hearth-ember/15 px-3 py-1.5 text-sm text-hearth-ember hover:bg-hearth-ember/30 disabled:opacity-40"
+              >
+                Enter
+              </button>
+            </div>
+          </div>
+        ) : !characters ? (
           <p className="text-sm text-hearth-muted">Reaching the hearth…</p>
         ) : !selected ? (
           <>
@@ -307,10 +412,7 @@ export default function PlayerApp() {
               {characters.map((c) => (
                 <button
                   key={c.id}
-                  onClick={() => {
-                    setSelectedId(c.id)
-                    localStorage.setItem('hearth:myCharacter', c.id)
-                  }}
+                  onClick={() => void pickCharacter(c.id)}
                   className="rounded-md border border-hearth-border bg-hearth-panel px-3 py-2 text-left transition-colors hover:border-hearth-ember"
                 >
                   <div className="text-base font-semibold text-hearth-text">{c.name}</div>
@@ -349,7 +451,7 @@ export default function PlayerApp() {
               onStashItem: (itemId) =>
                 void fetch('/api/party/transfer-item', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: authHeaders(selected.id),
                   body: JSON.stringify({ itemId, from: selected.id, to: 'stash', who: selected.name })
                 }).then(() => refetch())
             }}
@@ -390,13 +492,13 @@ export default function PlayerApp() {
                   onTake: (item, qty) =>
                     void fetch('/api/party/transfer-item', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: authHeaders(selected.id),
                       body: JSON.stringify({ itemId: item.id, from: 'stash', to: selected.id, qty, who: selected.name })
                     }).then(() => refetch()),
                   onCoins: (direction, coin, amount) =>
                     void fetch('/api/party/transfer-coins', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: authHeaders(selected.id),
                       body: JSON.stringify({
                         from: direction === 'take' ? 'stash' : selected.id,
                         to: direction === 'take' ? selected.id : 'stash',

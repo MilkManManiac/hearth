@@ -149,6 +149,8 @@ const api = {
   /** Player portal (C5): players open their character in a browser. */
   portalStatus: (): Promise<{ running: boolean; url: string }> => ipcRenderer.invoke('portal:status'),
   portalToggle: (): Promise<{ running: boolean; url: string }> => ipcRenderer.invoke('portal:toggle'),
+  /** Clear all per-character claim tokens (player lost their device). */
+  portalResetClaims: (): Promise<{ running: boolean; url: string }> => ipcRenderer.invoke('portal:reset-claims'),
   /** Game Log (D1): send a roll to the campaign hub / read the session log. */
   sendRoll: (roll: RollEvent): Promise<void> => ipcRenderer.invoke('roll:send', roll),
   getRollLog: (): Promise<RollEvent[]> => ipcRenderer.invoke('roll:log'),

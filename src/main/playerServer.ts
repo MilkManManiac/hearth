@@ -1,16 +1,28 @@
+import crypto from 'crypto'
 import http from 'http'
 import os from 'os'
 import * as path from 'path'
 import { promises as fs } from 'fs'
 import type { CampaignMap, Character, PartyStash, RollEvent } from '../shared/types'
 import type { CoinKey } from '../shared/inventory'
+import { sanitizePlayerMap } from '../shared/mapView'
 
 // ONESTOP-PLAN C5 — the player portal: Hearth hosts a small HTTP server so
 // each PLAYER opens their character in any browser (phone/laptop) — build,
 // level up, swap spells, manage inventory — and every save lands in the
 // campaign's characters/*.json, which the DM's app is already watching.
 // LAN by default; remote groups reach it through a tunnel (the group is on
-// Discord anyway). No auth — it's a table of friends, not the internet.
+// Discord anyway).
+//
+// AUTH (AUDIT P0, added 2026-07-23) — two layers, both stored in
+// <campaign>/portal-auth.json (never committed; .gitignore'd):
+//  1. A campaign KEY baked into the player link (?key=...) — every /api,
+//     /asset and /homebrew request must carry it (query param or
+//     x-hearth-key header). Prerequisite for any tunnel/remote route.
+//  2. Per-character CLAIM tokens: the first browser to claim a character gets
+//     a token (localStorage); every mutation of that character requires it.
+//     Lost phone? The DM's ⟲ reset button clears all claims.
+// Plus: same-origin check + a light per-IP rate limit on mutating POSTs.
 
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -79,15 +91,82 @@ function lanIp(): string {
   return 'localhost'
 }
 
+interface PortalAuth {
+  key: string
+  /** characterId → the claim token of the browser that owns it. */
+  claims: Record<string, string>
+}
+
 export class PlayerPortal {
   private server: http.Server | null = null
   private port = 3789
   private sseClients = new Set<http.ServerResponse>()
+  private auth: PortalAuth | null = null
+  private authDir = ''
+  /** Per-IP timestamps of recent mutating POSTs (sliding-window rate limit). */
+  private postTimes = new Map<string, number[]>()
 
   constructor(private deps: PortalDeps) {}
 
   status(): PortalStatus {
-    return { running: !!this.server, url: `http://${lanIp()}:${this.port}` }
+    const key = this.auth?.key
+    return {
+      running: !!this.server,
+      url: `http://${lanIp()}:${this.port}/${key ? `?key=${key}` : ''}`
+    }
+  }
+
+  private authFile(): string {
+    return path.join(this.deps.campaignDir(), 'portal-auth.json')
+  }
+
+  /** Load (or mint) the campaign's portal auth; re-loads on campaign switch. */
+  private async loadAuth(): Promise<PortalAuth> {
+    const dir = this.deps.campaignDir()
+    if (this.auth && this.authDir === dir) return this.auth
+    let auth: PortalAuth | null = null
+    try {
+      const raw = JSON.parse(await fs.readFile(this.authFile(), 'utf8')) as Partial<PortalAuth>
+      if (typeof raw.key === 'string' && raw.key.length >= 6) {
+        auth = { key: raw.key, claims: raw.claims && typeof raw.claims === 'object' ? raw.claims : {} }
+      }
+    } catch {
+      /* first run for this campaign */
+    }
+    if (!auth) {
+      auth = { key: crypto.randomBytes(4).toString('hex'), claims: {} }
+      await fs.writeFile(this.authFile(), JSON.stringify(auth, null, 2))
+    }
+    this.auth = auth
+    this.authDir = dir
+    return auth
+  }
+
+  private async saveAuth(): Promise<void> {
+    if (this.auth) await fs.writeFile(this.authFile(), JSON.stringify(this.auth, null, 2))
+  }
+
+  /** DM action: clear every claim (player lost their phone / new browser). */
+  async resetClaims(): Promise<void> {
+    const auth = await this.loadAuth()
+    auth.claims = {}
+    await this.saveAuth()
+  }
+
+  /** True if this request carries the claim token for `characterId`. */
+  private claimOk(auth: PortalAuth, req: http.IncomingMessage, characterId: string): boolean {
+    const token = auth.claims[characterId]
+    return !!token && req.headers['x-hearth-claim'] === token
+  }
+
+  /** Sliding-window POST limiter: 40 per 10s per IP is generous for dice. */
+  private allowPost(ip: string): boolean {
+    const now = Date.now()
+    const times = (this.postTimes.get(ip) ?? []).filter((t) => now - t < 10_000)
+    if (times.length >= 40) return false
+    times.push(now)
+    this.postTimes.set(ip, times)
+    return true
   }
 
   /** Tell connected players the campaign changed (they refetch). */
@@ -141,6 +220,7 @@ export class PlayerPortal {
 
   async start(): Promise<PortalStatus> {
     if (this.server) return this.status()
+    await this.loadAuth() // the shared link needs the key before anyone asks
     const server = http.createServer((req, res) => void this.handle(req, res))
     await new Promise<void>((resolve, reject) => {
       server.once('error', reject)
@@ -151,13 +231,63 @@ export class PlayerPortal {
   }
 
   private async handle(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
-    const url = (req.url ?? '/').split(/[?#]/)[0]
+    const rawUrl = req.url ?? '/'
+    const url = rawUrl.split(/[?#]/)[0]
+    const params = new URLSearchParams(rawUrl.split('?')[1] ?? '')
     try {
+      // ---- auth & abuse gates -------------------------------------------
+      const auth = await this.loadAuth()
+      const guarded = url.startsWith('/api/') || url.startsWith('/asset/') || url.startsWith('/homebrew/')
+      if (guarded) {
+        const provided = params.get('key') ?? req.headers['x-hearth-key']
+        if (provided !== auth.key) {
+          return this.json(res, { error: 'portal key required — use the full link from the DM' }, 401)
+        }
+      }
+      if (req.method === 'POST') {
+        // CSRF guard: a browser POST from another site carries its Origin.
+        const origin = req.headers.origin
+        if (origin) {
+          let host = ''
+          try {
+            host = new URL(origin).host
+          } catch {
+            /* malformed origin → reject below */
+          }
+          if (host !== req.headers.host) return this.json(res, { error: 'cross-origin refused' }, 403)
+        }
+        if (!this.allowPost(req.socket.remoteAddress ?? '?')) {
+          return this.json(res, { error: 'slow down' }, 429)
+        }
+      }
+
       if (url === '/api/characters' && req.method === 'GET') {
         return this.json(res, await this.deps.getCharacters())
       }
+      // Claim a character: first browser in gets the token; the same browser
+      // re-claims freely (it sends its token back); anyone else is refused.
+      if (url === '/api/claim' && req.method === 'POST') {
+        const r = JSON.parse(await readBody(req)) as { characterId?: string; token?: string }
+        const id = String(r.characterId ?? '').slice(0, 60)
+        if (!id) return this.json(res, { error: 'characterId required' }, 400)
+        if (!(await this.deps.getCharacters()).some((c) => c.id === id)) {
+          return this.json(res, { error: 'not found' }, 404)
+        }
+        const existing = auth.claims[id]
+        if (!existing) {
+          const token = crypto.randomBytes(12).toString('hex')
+          auth.claims[id] = token
+          await this.saveAuth()
+          return this.json(res, { ok: true, token })
+        }
+        if (r.token === existing) return this.json(res, { ok: true, token: existing })
+        return this.json(res, { error: 'claimed on another device — ask the DM to reset player access' }, 403)
+      }
       const save = url.match(/^\/api\/character\/([a-z0-9-]+)$/)
       if (save && req.method === 'POST') {
+        if (!this.claimOk(auth, req, save[1])) {
+          return this.json(res, { error: 'not your character — claim it first' }, 403)
+        }
         const body = await readBody(req)
         const incoming = JSON.parse(body) as Character
         const current = (await this.deps.getCharacters()).find((c) => c.id === save[1])
@@ -171,7 +301,11 @@ export class PlayerPortal {
         const clean = String(name ?? '').trim().slice(0, 60)
         if (!clean) return this.json(res, { error: 'name required' }, 400)
         const result = await this.deps.createCharacter(clean)
-        return this.json(res, { ok: true, characterId: result.characterId })
+        // The creator owns their creation — claim minted in the same breath.
+        const token = crypto.randomBytes(12).toString('hex')
+        auth.claims[result.characterId] = token
+        await this.saveAuth()
+        return this.json(res, { ok: true, characterId: result.characterId, token })
       }
       if (url === '/api/rolls' && req.method === 'GET') {
         return this.json(res, this.deps.getRolls())
@@ -218,9 +352,13 @@ export class PlayerPortal {
         req.on('close', () => this.sseClients.delete(res))
         return
       }
-      // Ember Table view (M2): the live map, rendered client-side.
+      // Ember Table view (M2): the live map — filtered SERVER-SIDE (P0):
+      // hidden tokens, the encounter (enemy HP), and monster refs never leave
+      // this process; HP rings/conditions/initiative ship pre-computed.
       if (url === '/api/table' && req.method === 'GET') {
-        return this.json(res, { map: await this.deps.getLiveMap() })
+        const raw = await this.deps.getLiveMap()
+        if (!raw) return this.json(res, { map: null })
+        return this.json(res, sanitizePlayerMap(raw, await this.deps.getCharacters()))
       }
       // Ember E2: a player moved their OWN token on the live map. The server
       // enforces the only rule that matters — the token must belong to the
@@ -234,6 +372,9 @@ export class PlayerPortal {
           !Number.isFinite(r.y)
         ) {
           return this.json(res, { error: 'bad move' }, 400)
+        }
+        if (!this.claimOk(auth, req, r.characterId)) {
+          return this.json(res, { error: 'not your character — claim it first' }, 403)
         }
         const result = await this.deps.moveToken({
           tokenId: r.tokenId.slice(0, 60),
@@ -279,6 +420,11 @@ export class PlayerPortal {
         if (typeof r.itemId !== 'string' || typeof r.from !== 'string' || typeof r.to !== 'string') {
           return this.json(res, { error: 'bad transfer' }, 400)
         }
+        // The character end of a stash move must be YOUR character.
+        const itemChar = r.from === 'stash' ? r.to : r.from
+        if (!this.claimOk(auth, req, itemChar.slice(0, 60))) {
+          return this.json(res, { error: 'not your character — claim it first' }, 403)
+        }
         await this.deps.transferItem({
           itemId: r.itemId.slice(0, 60),
           from: r.from.slice(0, 60),
@@ -304,6 +450,10 @@ export class PlayerPortal {
           typeof r.amount !== 'number'
         ) {
           return this.json(res, { error: 'bad transfer' }, 400)
+        }
+        const coinChar = r.from === 'stash' ? r.to : r.from
+        if (!this.claimOk(auth, req, coinChar.slice(0, 60))) {
+          return this.json(res, { error: 'not your character — claim it first' }, 403)
         }
         await this.deps.transferCoins({
           from: r.from.slice(0, 60),

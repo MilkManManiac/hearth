@@ -44,5 +44,11 @@ campaigns/*/blocklist.json
 # Spotify API creds for downloader/sync_playlists.py playlist discovery
 downloader/spotify_sync.json
 
+# Player-portal auth (campaign key + per-character claim tokens) — secrets,
+# minted per machine by playerServer.ts, never committed
+portal-auth.json
+campaign-sample/portal-auth.json
+campaigns/*/portal-auth.json
+
 # Python bytecode (downloader tooling)
 __pycache__/

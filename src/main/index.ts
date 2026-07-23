@@ -338,6 +338,12 @@ function registerIpc(): void {
     // DM's windows see them; the watcher also covers this, belt-and-braces.
     return status
   })
+  // A player lost their phone / cleared their browser: clear every claim so
+  // characters can be re-picked (the key in the link stays the same).
+  ipcMain.handle('portal:reset-claims', async () => {
+    await portal.resetClaims()
+    return portal.status()
+  })
   ipcMain.handle('library:update', async (_e, file: string, patch: Partial<LibraryAsset>) => {
     const state = await campaign.updateLibraryAsset(file, patch)
     broadcast('campaign:changed', state)

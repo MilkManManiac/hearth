@@ -245,16 +245,29 @@ export default function PartyPanel({ windowed = false }: { windowed?: boolean })
             🌐 Player portal {portal?.running ? 'ON' : 'OFF'}
           </button>
           {portal?.running && (
-            <button
-              onClick={() => {
-                void navigator.clipboard.writeText(portal.url)
-                pushToast(`Copied ${portal.url} — send it to your players`, 'info')
-              }}
-              className="rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-text hover:border-hearth-ember"
-              title="Copy the player link"
-            >
-              {portal.url} ⧉
-            </button>
+            <>
+              <button
+                onClick={() => {
+                  void navigator.clipboard.writeText(portal.url)
+                  pushToast(`Copied ${portal.url} — send it to your players`, 'info')
+                }}
+                className="rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-text hover:border-hearth-ember"
+                title="Copy the player link — the ?key= part is the door code, send the WHOLE link"
+              >
+                {portal.url} ⧉
+              </button>
+              <button
+                onClick={() => {
+                  void window.hearth.portalResetClaims().then(() => {
+                    pushToast('Player claims reset — everyone re-picks their character on their own device', 'info')
+                  })
+                }}
+                className="rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:border-hearth-gold hover:text-hearth-gold"
+                title="A player lost their phone or cleared their browser? Reset ownership so characters can be claimed again. The link stays the same."
+              >
+                ⟲ claims
+              </button>
+            </>
           )}
           <button
             onClick={close}

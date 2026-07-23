@@ -2,6 +2,8 @@
 // scripts/build-compendium.mjs emits into public/compendium/. CC-BY-4.0 —
 // attribution in meta.json + LICENSE-SRD.md + the panel footer.
 
+import { portalKey } from './asset'
+
 export interface MonsterAction {
   name: string
   desc: string
@@ -171,7 +173,7 @@ async function fetchHomebrew(kind: CompendiumKind): Promise<NamedEntry[]> {
     const url =
       typeof window !== 'undefined' && (window as { hearth?: unknown }).hearth
         ? `asset:///homebrew/${file}`
-        : `/homebrew/${file}`
+        : `/homebrew/${file}?key=${portalKey()}`
     cache.set(
       key,
       fetch(url)
@@ -203,7 +205,7 @@ export function loadTraps(): Promise<Trap[]> {
     const url =
       typeof window !== 'undefined' && (window as { hearth?: unknown }).hearth
         ? 'asset:///homebrew/traps.json'
-        : '/homebrew/traps.json'
+        : `/homebrew/traps.json?key=${portalKey()}`
     cache.set(
       key,
       fetch(url)

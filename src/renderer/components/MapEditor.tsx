@@ -3,6 +3,7 @@ import { Arc, Circle, Group, Image as KImage, Layer, Line, Rect, Stage, Text, We
 import type Konva from 'konva'
 import useImage from 'use-image'
 import type { CampaignMap, Combatant, FogStroke, FogZone, MapOverlay, MapToken, TokenDecor } from '../../shared/types'
+import { playerTableView } from '../../shared/mapView'
 import { assetUrl } from '../lib/asset'
 import { effectiveAc } from '../../shared/inventory'
 import { loadMonsters, type Monster } from '../lib/compendium'
@@ -619,44 +620,9 @@ const SIZE_CELLS: Record<string, number> = {
   gargantuan: 1.9
 }
 
-/**
- * What players may see of a map right now (M1 live-follow): PC-only HP rings
- * (enemy HP stays the DM's secret), condition tags on visible tokens, and the
- * initiative strip. Shared by the presenter, the one-shot send, and Ember (M2).
- */
-export function playerTableView(
-  map: CampaignMap,
-  characters: { id: string; hp: number; maxHp: number }[]
-): { decor: Record<string, TokenDecor>; initiative?: { names: string[]; turn: number } } {
-  const tokens = map.tokens ?? []
-  const enc = map.encounter
-  const decor: Record<string, TokenDecor> = {}
-  for (const tk of tokens) {
-    if (tk.hidden) continue
-    const d: TokenDecor = {}
-    if (tk.characterId) {
-      const ch = characters.find((x) => x.id === tk.characterId)
-      if (ch && ch.maxHp > 0) d.hpFrac = ch.hp / ch.maxHp
-    }
-    const cb =
-      enc?.combatants.find((x) => x.id === tk.combatantId) ??
-      (tk.characterId ? enc?.combatants.find((x) => x.characterId === tk.characterId) : undefined)
-    const conds = cb?.conditions?.map((x) => x.name) ?? []
-    if (conds.length) d.conds = conds
-    if (d.hpFrac != null || d.conds) decor[tk.id] = d
-  }
-  let initiative: { names: string[]; turn: number } | undefined
-  if (enc && enc.turn >= 0 && enc.combatants.length > 0) {
-    const ordered = [...enc.combatants].sort((a, b) => (b.initiative ?? -99) - (a.initiative ?? -99))
-    const active = ordered[Math.min(enc.turn, ordered.length - 1)]
-    const visible = ordered.filter((cb) => {
-      const tk = tokens.find((t) => t.combatantId === cb.id || (cb.characterId && t.characterId === cb.characterId))
-      return !tk?.hidden
-    })
-    initiative = { names: visible.map((cb) => cb.name), turn: visible.findIndex((cb) => cb.id === active?.id) }
-  }
-  return { decor, initiative }
-}
+// What players may see of a map right now — moved to shared/mapView.ts so the
+// portal server filters with the SAME code (re-exported for existing callers).
+export { playerTableView }
 
 /** Full-screen DM fog/zone/token editor over a library map (SURFACES-PLAN ⚔ Table). */
 export default function MapEditor({ map, onClose }: { map: CampaignMap; onClose: () => void }) {
