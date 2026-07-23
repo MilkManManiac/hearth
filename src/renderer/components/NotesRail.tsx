@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NOTE_KINDS, NOTE_KIND_ORDER } from '../../shared/types'
+import { fuzzyScore } from '../lib/fuzzy'
 import { useStore } from '../store'
 
 /**
@@ -44,12 +45,22 @@ export default function NotesRail({ onCollapse }: { onCollapse?: () => void }) {
   const createNote = useStore((s) => s.createNote)
   const buildMode = useStore((s) => s.uiMode === 'build')
   const [pickingKind, setPickingKind] = useState(false)
+  const [query, setQuery] = useState('')
 
-  const groups = NOTE_KIND_ORDER.map((kind) => ({
-    kind,
-    meta: NOTE_KINDS[kind],
-    items: notes.filter((n) => n.kind === kind)
-  })).filter((g) => g.items.length > 0)
+  // Filter-as-you-type over titles (91 notes is past scrolling distance).
+  // Group order stays put; within a group, best matches float up.
+  const q = query.trim().toLowerCase()
+  const groups = NOTE_KIND_ORDER.map((kind) => {
+    let items = notes.filter((n) => n.kind === kind)
+    if (q) {
+      items = items
+        .map((n) => ({ n, score: fuzzyScore(n.title, q) }))
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map((x) => x.n)
+    }
+    return { kind, meta: NOTE_KINDS[kind], items }
+  }).filter((g) => g.items.length > 0)
 
   return (
     <aside className="flex w-full flex-col border-r border-hearth-border bg-hearth-panel">
@@ -66,7 +77,38 @@ export default function NotesRail({ onCollapse }: { onCollapse?: () => void }) {
         )}
       </div>
 
+      {notes.length > 0 && (
+        <div className="relative px-2 pb-1.5">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape' && query) {
+                e.stopPropagation()
+                setQuery('')
+              }
+            }}
+            placeholder="Filter notes…"
+            className="w-full rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 pr-6 text-xs text-hearth-text placeholder:text-hearth-muted/60 focus:border-hearth-ember/60 focus:outline-none"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              title="Clear filter"
+              className="absolute right-3.5 top-1/2 -translate-y-[60%] text-xs text-hearth-muted hover:text-hearth-text"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto">
+        {q && groups.length === 0 && (
+          <p className="px-3 py-2 text-xs text-hearth-muted">
+            No titles match "{query}" — Ctrl+K searches inside note bodies too.
+          </p>
+        )}
         {notes.length === 0 && (
           <p className="px-3 py-2 text-xs text-hearth-muted">
             Your campaign's knowledge base: sessions, NPCs, locations, plot threads. Everything

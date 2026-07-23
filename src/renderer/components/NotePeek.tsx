@@ -111,11 +111,14 @@ function PeekCard({
   onLeave: () => void
   onClose: () => void
 }) {
+  const rootRef = useRef<HTMLDivElement>(null)
   const note = useStore((s) => s.campaign.notes.find((n) => n.id === refId))
+  const pinPeek = useStore((s) => s.pinPeek)
   if (!note) return null
   const meta = NOTE_KINDS[note.kind] ?? NOTE_KINDS.note
   return (
     <div
+      ref={rootRef}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       className="fixed z-50 flex flex-col overflow-hidden rounded-lg border border-hearth-border bg-hearth-panel shadow-2xl"
@@ -134,6 +137,18 @@ function PeekCard({
         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-hearth-text">{note.title}</span>
         <button
           onClick={() => {
+            // Freeze the card where it currently sits — the pin should not jump.
+            const r = rootRef.current?.getBoundingClientRect()
+            pinPeek(refId, r?.left ?? pos.left, r?.top ?? pos.top)
+            onClose()
+          }}
+          className="flex-none rounded border border-hearth-border px-1.5 py-0.5 text-[10px] text-hearth-muted transition-colors hover:border-hearth-gold hover:text-hearth-gold"
+          title="Pin this card — it stays put (and draggable) while you keep working"
+        >
+          📌 Pin
+        </button>
+        <button
+          onClick={() => {
             onClose()
             void openNoteLink(refId)
           }}
@@ -141,6 +156,93 @@ function PeekCard({
           title="Open the full note"
         >
           Open →
+        </button>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
+        <NoteBody doc={note.body ?? []} />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The pinned-card layer: hover peeks promoted via 📌 render here as
+ * persistent draggable cards (drag by the header). Rendered ONCE at the board
+ * root — cards are position:fixed so they float over everything but modals.
+ */
+export function PinnedPeeks() {
+  const pinned = useStore((s) => s.pinnedPeeks)
+  if (pinned.length === 0) return null
+  return (
+    <>
+      {pinned.map((p) => (
+        <PinnedCard key={p.refId} refId={p.refId} x={p.x} y={p.y} />
+      ))}
+    </>
+  )
+}
+
+function PinnedCard({ refId, x, y }: { refId: string; x: number; y: number }) {
+  const note = useStore((s) => s.campaign.notes.find((n) => n.id === refId))
+  const unpinPeek = useStore((s) => s.unpinPeek)
+  const movePinnedPeek = useStore((s) => s.movePinnedPeek)
+  const drag = useRef<{ dx: number; dy: number } | null>(null)
+
+  // The note was deleted out from under the pin — let the card go with it.
+  useEffect(() => {
+    if (!note) unpinPeek(refId)
+  }, [note, refId, unpinPeek])
+  if (!note) return null
+  const meta = NOTE_KINDS[note.kind] ?? NOTE_KINDS.note
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    // Header is the drag handle; buttons inside it still click normally.
+    if ((e.target as HTMLElement).closest('button')) return
+    drag.current = { dx: e.clientX - x, dy: e.clientY - y }
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+  }
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!drag.current) return
+    const nx = Math.min(Math.max(0, e.clientX - drag.current.dx), window.innerWidth - 60)
+    const ny = Math.min(Math.max(0, e.clientY - drag.current.dy), window.innerHeight - 40)
+    movePinnedPeek(refId, nx, ny)
+  }
+  const onPointerUp = () => {
+    drag.current = null
+  }
+
+  return (
+    <div
+      className="fixed z-40 flex flex-col overflow-hidden rounded-lg border border-hearth-gold/50 bg-hearth-panel shadow-2xl"
+      style={{ left: x, top: y, width: CARD_W, maxHeight: CARD_H }}
+    >
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        className="flex flex-none cursor-grab select-none items-center gap-2 border-b border-hearth-border bg-hearth-panel2/60 px-3 py-1.5 active:cursor-grabbing"
+        title="Drag to move"
+      >
+        <span aria-hidden className="text-sm">
+          {meta.icon}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-hearth-text">{note.title}</span>
+        <button
+          onClick={() => {
+            unpinPeek(refId)
+            void openNoteLink(refId)
+          }}
+          className="flex-none rounded border border-hearth-border px-1.5 py-0.5 text-[10px] text-hearth-muted transition-colors hover:border-hearth-gold hover:text-hearth-gold"
+          title="Open the full note"
+        >
+          Open →
+        </button>
+        <button
+          onClick={() => unpinPeek(refId)}
+          className="flex-none rounded border border-hearth-border px-1.5 py-0.5 text-[10px] text-hearth-muted transition-colors hover:border-hearth-ember hover:text-hearth-ember"
+          title="Unpin — close this card"
+        >
+          ✕
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">

@@ -274,6 +274,15 @@ interface AppState {
   noteForward: string[]
   goNoteBack: () => void
   goNoteForward: () => void
+  /**
+   * Pinned peek cards (AUDIT P1): a hover peek promoted to a persistent
+   * draggable card — glance at an NPC while the script and cast stay put.
+   * Capped at 3; this is glance space, not a second notes surface.
+   */
+  pinnedPeeks: { refId: string; x: number; y: number }[]
+  pinPeek: (refId: string, x: number, y: number) => void
+  unpinPeek: (refId: string) => void
+  movePinnedPeek: (refId: string, x: number, y: number) => void
   setLeftTab: (tab: 'scenes' | 'notes') => void
   updateNote: (noteId: string, mutate: (n: CampaignNote) => CampaignNote) => Promise<void>
   createNote: (kind: NoteKind, title: string) => Promise<void>
@@ -1281,6 +1290,19 @@ export const useStore = create<AppState>((set, get) => ({
 
   noteBack: [],
   noteForward: [],
+
+  pinnedPeeks: [],
+  pinPeek: (refId, x, y) =>
+    set((s) => {
+      if (s.pinnedPeeks.some((p) => p.refId === refId)) return {}
+      return { pinnedPeeks: [...s.pinnedPeeks, { refId, x, y }].slice(-3) }
+    }),
+  unpinPeek: (refId) =>
+    set((s) => ({ pinnedPeeks: s.pinnedPeeks.filter((p) => p.refId !== refId) })),
+  movePinnedPeek: (refId, x, y) =>
+    set((s) => ({
+      pinnedPeeks: s.pinnedPeeks.map((p) => (p.refId === refId ? { ...p, x, y } : p))
+    })),
 
   goNoteBack: () =>
     set((s) => {

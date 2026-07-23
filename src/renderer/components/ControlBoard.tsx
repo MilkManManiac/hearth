@@ -11,7 +11,7 @@ import { prettyLabel } from '../../shared/paths'
 import { isTypingTarget } from '../lib/keys'
 import { openNoteLink } from '../lib/noteNav'
 import { useStore } from '../store'
-import { NoteNavButtons } from './NotePeek'
+import { NoteNavButtons, PinnedPeeks, useNotePeek } from './NotePeek'
 import NoteBody from './NoteBody'
 import TopBar from './TopBar'
 import SceneList from './SceneList'
@@ -281,6 +281,7 @@ export default function ControlBoard() {
       <CompendiumPanel />
       <MapsPanel />
       <ShortcutsHelp />
+      <PinnedPeeks />
       <Toasts />
     </div>
   )
@@ -412,6 +413,34 @@ function sceneNoteRefs(script: ScriptDoc | undefined): string[] {
 }
 
 /**
+ * One "in this scene" chip: click navigates (or creates), hover peeks —
+ * a component (not inline JSX) because useNotePeek is a hook.
+ */
+function SceneRefChip({ refId, active }: { refId: string; active: boolean }) {
+  const target = useStore((s) => s.campaign.notes.find((n) => n.id === refId))
+  const peek = useNotePeek(refId)
+  return (
+    <>
+      <button
+        onClick={() => void openNoteLink(refId)}
+        onMouseEnter={target ? peek.onMouseEnter : undefined}
+        onMouseLeave={target ? peek.onMouseLeave : undefined}
+        title={target ? target.title : `Create "${prettyLabel(refId)}"`}
+        className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${
+          active
+            ? 'border-hearth-ember bg-hearth-ember/15 text-hearth-ember'
+            : 'border-hearth-border bg-hearth-panel2 text-hearth-muted hover:border-hearth-ember/60 hover:text-hearth-text'
+        }`}
+      >
+        {target && <span aria-hidden>{NOTE_KINDS[target.kind]?.icon}</span>}
+        <span className="max-w-[9rem] truncate">{target ? target.title : prettyLabel(refId)}</span>
+      </button>
+      {peek.card}
+    </>
+  )
+}
+
+/**
  * The right panel's notes tab: pick any campaign note and read it beside the
  * script — Ctrl+K also lands notes here in run mode. Read-only on purpose;
  * editing happens on the full note page (or via Ctrl+J capture). The "in this
@@ -427,6 +456,20 @@ function NotesPeek({ scene }: { scene: Scene | null }) {
   const buildMode = useStore((s) => s.uiMode === 'build')
   const note = notes.find((n) => n.id === currentNoteId) ?? null
   const sceneRefs = useMemo(() => sceneNoteRefs(scene?.script), [scene])
+  // Last ~5 notes you actually visited (the invisible back-stack, surfaced).
+  const noteBack = useStore((s) => s.noteBack)
+  const recent = useMemo(() => {
+    const seen = new Set<string>()
+    const out: string[] = []
+    for (let i = noteBack.length - 1; i >= 0 && out.length < 5; i--) {
+      const id = noteBack[i]
+      if (id === currentNoteId || seen.has(id)) continue
+      if (!notes.some((n) => n.id === id)) continue
+      seen.add(id)
+      out.push(id)
+    }
+    return out
+  }, [noteBack, currentNoteId, notes])
 
   if (notes.length === 0) {
     return (
@@ -445,23 +488,28 @@ function NotesPeek({ scene }: { scene: Scene | null }) {
           <span className="w-full text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
             In this scene
           </span>
-          {sceneRefs.map((ref) => {
-            const target = notes.find((n) => n.id === ref)
+          {sceneRefs.map((ref) => (
+            <SceneRefChip key={ref} refId={ref} active={ref === currentNoteId} />
+          ))}
+        </div>
+      )}
+      {recent.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="w-full text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+            Recent
+          </span>
+          {recent.map((id) => {
+            const target = notes.find((n) => n.id === id)
+            if (!target) return null
             return (
               <button
-                key={ref}
-                onClick={() => void openNoteLink(ref)}
-                title={target ? target.title : `Create "${prettyLabel(ref)}"`}
-                className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${
-                  ref === currentNoteId
-                    ? 'border-hearth-ember bg-hearth-ember/15 text-hearth-ember'
-                    : 'border-hearth-border bg-hearth-panel2 text-hearth-muted hover:border-hearth-ember/60 hover:text-hearth-text'
-                }`}
+                key={id}
+                onClick={() => selectNote(id)}
+                title={target.title}
+                className="flex items-center gap-1 rounded-full border border-hearth-border bg-hearth-panel2 px-2 py-0.5 text-xs text-hearth-muted transition-colors hover:border-hearth-ember/60 hover:text-hearth-text"
               >
-                {target && <span aria-hidden>{NOTE_KINDS[target.kind]?.icon}</span>}
-                <span className="max-w-[9rem] truncate">
-                  {target ? target.title : prettyLabel(ref)}
-                </span>
+                <span aria-hidden>{NOTE_KINDS[target.kind]?.icon}</span>
+                <span className="max-w-[9rem] truncate">{target.title}</span>
               </button>
             )
           })}
