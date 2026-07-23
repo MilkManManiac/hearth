@@ -56,7 +56,7 @@ function inlinesToJSON(content: ScriptInline[]): JSONContent[] {
   return content.map(inlineToJSON).filter((n): n is JSONContent => n !== null)
 }
 
-function blockToJSON(block: ScriptBlock): JSONContent {
+function blockToJSON(block: Exclude<ScriptBlock, { type: 'bullet' }>): JSONContent {
   switch (block.type) {
     case 'paragraph': {
       const content = inlinesToJSON(block.content)
@@ -68,7 +68,7 @@ function blockToJSON(block: ScriptBlock): JSONContent {
       return content.length ? { ...base, content } : base
     }
     case 'callout':
-      return { type: 'callout', content: block.content.map(blockToJSON) }
+      return { type: 'callout', content: blocksToJSON(block.content) }
     case 'check': {
       const content = inlinesToJSON(block.content)
       const base = { type: 'check', attrs: { checked: !!block.checked } }
@@ -77,9 +77,41 @@ function blockToJSON(block: ScriptBlock): JSONContent {
   }
 }
 
+/**
+ * Blocks → TipTap, re-grouping consecutive flat `bullet` blocks into the
+ * bulletList/orderedList structure ProseMirror's schema requires.
+ */
+function blocksToJSON(blocks: ScriptBlock[]): JSONContent[] {
+  const out: JSONContent[] = []
+  let run: { ordered: boolean; items: JSONContent[] } | null = null
+  const flush = (): void => {
+    if (run) out.push({ type: run.ordered ? 'orderedList' : 'bulletList', content: run.items })
+    run = null
+  }
+  for (const b of blocks) {
+    if (b.type === 'bullet') {
+      const ordered = !!b.ordered
+      if (!run || run.ordered !== ordered) {
+        flush()
+        run = { ordered, items: [] }
+      }
+      const content = inlinesToJSON(b.content)
+      run.items.push({
+        type: 'listItem',
+        content: [content.length ? { type: 'paragraph', content } : { type: 'paragraph' }]
+      })
+      continue
+    }
+    flush()
+    out.push(blockToJSON(b))
+  }
+  flush()
+  return out
+}
+
 /** ScriptDoc -> a TipTap `doc` JSON node. */
 export function docToTiptap(doc: ScriptDoc): JSONContent {
-  const content = doc.map(blockToJSON)
+  const content = blocksToJSON(doc)
   return { type: 'doc', content: content.length ? content : [{ type: 'paragraph' }] }
 }
 
@@ -96,7 +128,18 @@ function markFromJSON(m: { type?: string; attrs?: Record<string, unknown> }): Sc
     case 'scriptHighlight':
       return { type: 'highlight', value: String(m.attrs?.value ?? '') }
     default:
+      warnDropped('mark', m.type)
       return null // strike/code/etc are disabled, but ignore anything unknown
+  }
+}
+
+/**
+ * A mapping miss silently deletes content on the next save — in dev, say so
+ * loudly (audit P2): a new node/mark type must be added HERE before it ships.
+ */
+function warnDropped(what: 'mark' | 'block' | 'inline', type: string | undefined): void {
+  if (import.meta.env.DEV) {
+    console.warn(`[mapping] dropping unknown ${what} type "${type}" — add it to mapping.ts or it's data loss`)
   }
 }
 
@@ -140,6 +183,7 @@ function inlineFromJSON(node: JSONContent): ScriptInline | null {
     const marks = (node.marks ?? []).map(markFromJSON).filter((m): m is ScriptMark => m !== null)
     return marks.length ? { type: 'text', text, marks } : { type: 'text', text }
   }
+  warnDropped('inline', node.type)
   return null // hardBreak etc. are disabled
 }
 
@@ -157,22 +201,49 @@ function blockFromJSON(node: JSONContent): ScriptBlock | null {
     }
     case 'callout':
     case 'blockquote': // safety: if a blockquote slips in, treat it as a callout
-      return {
-        type: 'callout',
-        content: (node.content ?? []).map(blockFromJSON).filter((b): b is ScriptBlock => b !== null)
-      }
+      return { type: 'callout', content: blocksFromJSON(node.content) }
     case 'check': {
       const block: ScriptBlock = { type: 'check', content: inlinesFromJSON(node.content) }
       if (node.attrs?.checked) block.checked = true
       return block
     }
     default:
+      warnDropped('block', node.type)
       return null
   }
 }
 
+/**
+ * TipTap blocks → ScriptDoc, flattening bulletList/orderedList structure into
+ * flat `bullet` blocks (each listItem paragraph = one bullet; nested lists
+ * flatten into the run — v1 keeps the doc model list-depth-free on purpose).
+ */
+function blocksFromJSON(nodes: JSONContent[] | undefined): ScriptBlock[] {
+  const out: ScriptBlock[] = []
+  for (const node of nodes ?? []) {
+    if (node.type === 'bulletList' || node.type === 'orderedList') {
+      const ordered = node.type === 'orderedList'
+      for (const item of node.content ?? []) {
+        for (const child of item.content ?? []) {
+          if (child.type === 'bulletList' || child.type === 'orderedList') {
+            out.push(...blocksFromJSON([child]))
+          } else {
+            const b: ScriptBlock = { type: 'bullet', content: inlinesFromJSON(child.content) }
+            if (ordered) b.ordered = true
+            out.push(b)
+          }
+        }
+      }
+      continue
+    }
+    const b = blockFromJSON(node)
+    if (b) out.push(b)
+  }
+  return out
+}
+
 /** A TipTap `doc` JSON node -> ScriptDoc. */
 export function tiptapToDoc(json: JSONContent): ScriptDoc {
-  const blocks = (json.content ?? []).map(blockFromJSON).filter((b): b is ScriptBlock => b !== null)
+  const blocks = blocksFromJSON(json.content)
   return blocks.length ? blocks : [{ type: 'paragraph', content: [] }]
 }

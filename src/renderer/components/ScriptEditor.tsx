@@ -17,7 +17,9 @@ import { normalizeScript } from '../../shared/scriptCompile'
 import { buildExtensions } from '../editor/extensions'
 import { docToTiptap, tiptapToDoc } from '../editor/mapping'
 import { insertCueAt, type CueAttrs } from '../editor/insert'
-import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_TEXT } from '../lib/cueMeta'
+import LinkSuggest from '../editor/LinkSuggest'
+import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_TEXT, fileStem, libSlug } from '../lib/cueMeta'
+import { useStore } from '../store'
 
 /** Registration payload for a library asset not yet on the scene. */
 interface RegisterEntry {
@@ -33,6 +35,8 @@ interface TrayItem {
   ref: string
   label: string
   category: string
+  /** Audio file behind the chip (audition target); images have none. */
+  file?: string
   register?: RegisterEntry
 }
 
@@ -40,17 +44,8 @@ export interface EnsureAsset {
   (entry: RegisterEntry): void
 }
 
-function basename(file: string): string {
-  return file.split('/').pop() ?? file
-}
-
-function stem(file: string): string {
-  return basename(file).replace(/\.[^.]+$/, '')
-}
-
-function slug(file: string): string {
-  return `lib-${stem(file).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
-}
+const stem = fileStem
+const slug = libSlug
 
 function categoryRank(id: string): number {
   const i = CATEGORY_ORDER.indexOf(id)
@@ -74,15 +69,15 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
 
   for (const m of scene.music ?? []) {
     sceneFiles.add(m.file)
-    items.push({ key: `m:${m.id}`, kind: 'music', ref: m.id, label: m.label, category: IN_SCENE })
+    items.push({ key: `m:${m.id}`, kind: 'music', ref: m.id, label: m.label, category: IN_SCENE, file: m.file })
   }
   for (const s of scene.sfx ?? []) {
     sceneFiles.add(s.file)
-    items.push({ key: `s:${s.id}`, kind: 'sfx', ref: s.id, label: s.label, category: IN_SCENE })
+    items.push({ key: `s:${s.id}`, kind: 'sfx', ref: s.id, label: s.label, category: IN_SCENE, file: s.file })
   }
   for (const a of scene.ambience ?? []) {
     sceneFiles.add(a.file)
-    items.push({ key: `a:${a.file}`, kind: 'amb', ref: a.file, label: stem(a.file), category: IN_SCENE })
+    items.push({ key: `a:${a.file}`, kind: 'amb', ref: a.file, label: stem(a.file), category: IN_SCENE, file: a.file })
   }
   for (const img of scene.images ?? []) {
     items.push({
@@ -107,6 +102,7 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
         ref: a.file,
         label: display,
         category: assetPrimaryCategory(a) || 'uncategorized',
+        file: a.file,
         register: { kind: 'ambience', id: a.file, label: display, file: a.file }
       })
       continue
@@ -121,6 +117,7 @@ function buildTray(scene: Scene, library: TrayLibrary): TrayItem[] {
       ref: id,
       label,
       category: assetPrimaryCategory(a) || 'uncategorized',
+      file: a.file,
       register: { kind, id, label: display, file: a.file }
     })
   }
@@ -142,6 +139,8 @@ export default function ScriptEditor({
   onDone: () => void
 }) {
   const [query, setQuery] = useState('')
+  const previewAsset = useStore((s) => s.previewAsset)
+  const previewingFile = useStore((s) => s.previewingFile)
   const saveTimer = useRef<number | undefined>(undefined)
   // Capture the starting document once — never reset from props (would fight typing).
   const initialContent = useMemo(() => docToTiptap(normalizeScript(scene.script ?? [])), [])
@@ -279,6 +278,20 @@ export default function ScriptEditor({
           >
             ☑
           </ToolBtn>
+          <ToolBtn
+            active={editor.isActive('bulletList')}
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            title="Bullet list (or type “- ”)"
+          >
+            •≡
+          </ToolBtn>
+          <ToolBtn
+            active={editor.isActive('orderedList')}
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            title="Numbered list (or type “1. ”)"
+          >
+            1≡
+          </ToolBtn>
           <div className="mx-1 h-4 w-px bg-hearth-border" />
           <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
             ↶
@@ -330,7 +343,10 @@ export default function ScriptEditor({
         </BubbleMenu>
       )}
 
-      <EditorContent editor={editor} />
+      {/* [[ opens the same note autocomplete the notes editor has. */}
+      <LinkSuggest editor={editor}>
+        <EditorContent editor={editor} />
+      </LinkSuggest>
 
       {/* Cue tray: scene-first, full library one toggle away */}
       <div className="rounded-md border border-dashed border-hearth-border bg-hearth-panel/40 p-2">
@@ -417,6 +433,24 @@ export default function ScriptEditor({
                       {CUE_TEXT[item.kind]}
                     </span>
                     {item.label}
+                    {item.file && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          // Audition, don't insert — the chip click still places the cue.
+                          e.stopPropagation()
+                          void previewAsset(item.file!)
+                        }}
+                        title={previewingFile === item.file ? 'Stop preview' : 'Preview this sound'}
+                        className={`-mr-0.5 rounded px-0.5 transition-colors ${
+                          previewingFile === item.file
+                            ? 'text-hearth-ember'
+                            : 'text-hearth-muted/60 hover:text-hearth-ember'
+                        }`}
+                      >
+                        {previewingFile === item.file ? '⏹' : '▶'}
+                      </button>
+                    )}
                   </span>
                 ))}
               </div>

@@ -30,11 +30,21 @@ export default function NoteBody({
   /** Full-page reading typography instead of the compact panel size. */
   page?: boolean
 }) {
-  return (
-    <div className={className}>
-      {doc.map((b, i) => renderBlock(b, i, [i], page, onToggleCheck))}
-    </div>
-  )
+  return <div className={className}>{renderBlocks(doc, [], page, onToggleCheck)}</div>
+}
+
+/** Render a sibling run, numbering consecutive ordered bullets. */
+function renderBlocks(
+  blocks: ScriptBlock[],
+  path: number[],
+  page: boolean,
+  onToggleCheck?: (path: number[], checked: boolean) => void
+): ReactNode[] {
+  let ord = 0
+  return blocks.map((b, i) => {
+    ord = b.type === 'bullet' && b.ordered ? ord + 1 : 0
+    return renderBlock(b, i, [...path, i], page, onToggleCheck, ord || undefined)
+  })
 }
 
 function inlineStyle(node: Extract<ScriptInline, { type: 'text' }>): {
@@ -93,7 +103,8 @@ function renderBlock(
   key: number,
   path: number[],
   page: boolean,
-  onToggleCheck?: (path: number[], checked: boolean) => void
+  onToggleCheck?: (path: number[], checked: boolean) => void,
+  ordinal?: number
 ): ReactNode {
   if (block.type === 'callout') {
     return (
@@ -103,11 +114,21 @@ function renderBlock(
           page ? 'px-3.5 py-2 text-[14px] leading-relaxed' : 'px-2.5 py-1.5 text-[13px]'
         }`}
       >
-        {block.content.map((b, i) => renderBlock(b, i, [...path, i], page, onToggleCheck))}
+        {renderBlocks(block.content, path, page, onToggleCheck)}
       </div>
     )
   }
   const inlines = block.content.map((n, i) => renderInline(n, i))
+  if (block.type === 'bullet') {
+    return (
+      <div key={key} className={`my-1 flex items-start gap-2 ${page ? 'text-[15.5px] leading-7' : 'text-sm leading-6'}`}>
+        <span aria-hidden className="w-3.5 flex-none select-none text-right text-hearth-ember/70">
+          {ordinal ? `${ordinal}.` : '•'}
+        </span>
+        <span className="min-w-0 flex-1 text-hearth-text">{inlines}</span>
+      </div>
+    )
+  }
   if (block.type === 'check') {
     return (
       <div key={key} className={`my-1 flex items-start gap-2 ${page ? 'text-[15px]' : 'text-sm'}`}>

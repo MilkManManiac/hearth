@@ -1,7 +1,8 @@
 import { Mark, Node, mergeAttributes } from '@tiptap/core'
 import { ReactNodeViewRenderer } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { scriptHighlightColor, scriptTextColor } from '../../shared/types'
+import { scriptHighlightColor, scriptTextColor, type CueKind } from '../../shared/types'
+import { buildCue } from '../../shared/scriptCompile'
 import CheckItem from './CheckItem'
 import CueChip from './CueChip'
 import NoteLinkChip from './NoteLinkChip'
@@ -77,6 +78,36 @@ export const CueNode = Node.create({
 
   addNodeView() {
     return ReactNodeViewRenderer(CueChip)
+  },
+
+  addInputRules() {
+    // Typing the authoring syntax `{{sfx:door-creak}}` (with optional amb
+    // lifecycle options, `{{amb:rain|vol=40%|until=section}}`) converts to a
+    // chip on the closing braces — same parser as the markdown compiler, so
+    // in-app typing and scriptText files stay one language.
+    return [
+      {
+        find: /\{\{\s*(music|sfx|image|amb)\s*:\s*([^}]+?)\s*\}\}$/,
+        handler: ({ range, match, chain }) => {
+          const cue = buildCue(match[1] as CueKind, match[2].trim())
+          chain()
+            .deleteRange(range)
+            .insertContent({
+              type: 'cue',
+              attrs: {
+                kind: cue.kind,
+                ref: cue.ref,
+                label: cue.label,
+                volume: cue.volume ?? null,
+                fadeInMs: cue.fadeInMs ?? null,
+                fadeOutMs: cue.fadeOutMs ?? null,
+                until: cue.until ?? null
+              }
+            })
+            .run()
+        }
+      }
+    ]
   }
 })
 
@@ -226,8 +257,8 @@ export const CheckNode = Node.create({
   },
 
   addInputRules() {
-    // Typing "- [ ] " or "- [x] " at a paragraph start turns it into a check item.
     return [
+      // Typing "- [ ] " or "- [x] " at a paragraph start turns it into a check item.
       {
         find: /^[-*]\s\[([ xX])\]\s$/,
         handler: ({ state, range, match, chain }) => {
@@ -235,6 +266,19 @@ export const CheckNode = Node.create({
           const $from = state.selection.$from
           if ($from.parent.type.name !== 'paragraph') return
           chain().deleteRange(range).setNode('check', { checked }).run()
+        }
+      },
+      // With lists enabled, "- " converts to a bullet before "[ ]" can be
+      // typed — so "[ ] " INSIDE a fresh list item rescues the checklist flow:
+      // lift out of the list and become a check item.
+      {
+        find: /^\[([ xX])\]\s$/,
+        handler: ({ state, range, match, chain }) => {
+          const checked = match[1] !== ' '
+          const $from = state.selection.$from
+          if ($from.parent.type.name !== 'paragraph') return
+          if ($from.depth < 2 || $from.node($from.depth - 1).type.name !== 'listItem') return
+          chain().deleteRange(range).liftListItem('listItem').setNode('check', { checked }).run()
         }
       }
     ]
@@ -343,9 +387,8 @@ export function buildExtensions(opts: { cues?: boolean } = {}) {
       code: false,
       codeBlock: false,
       blockquote: false,
-      bulletList: false,
-      orderedList: false,
-      listItem: false,
+      // Lists are ON (audit P2: "a DM can't make a plain list") — they map to
+      // flat `bullet` blocks in the ScriptDoc (mapping.ts flattens/regroups).
       horizontalRule: false,
       hardBreak: false,
       heading: { levels: [1, 2, 3] },

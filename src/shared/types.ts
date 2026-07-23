@@ -305,6 +305,17 @@ export type ScriptBlock =
       checked?: boolean
       content: ScriptInline[]
     }
+  | {
+      /**
+       * One list line ("- item" / "1. item" in authoring markdown). Flat on
+       * purpose — each line is its own block (like `check`), so every doc
+       * walker's "content is inline" invariant holds. Consecutive bullets
+       * render as one list; `ordered` items number themselves by run position.
+       */
+      type: 'bullet'
+      ordered?: boolean
+      content: ScriptInline[]
+    }
 
 /** The structured read-aloud document. */
 export type ScriptDoc = ScriptBlock[]

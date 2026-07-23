@@ -207,7 +207,7 @@ export default function ScriptPanel({ scene }: { scene: Scene }) {
         </p>
       ) : (
         <div className="mx-auto max-w-[70ch] rounded-md border border-hearth-border bg-hearth-panel/60 px-8 py-7 font-display text-[18.5px] leading-[1.68] text-hearth-text shadow-card">
-          {script.map((block, i) => renderBlock(block, i, fireAt, cueCtx, [i], toggleCheck))}
+          {renderBlocks(script, fireAt, cueCtx, [], toggleCheck)}
         </div>
       )}
     </section>
@@ -317,13 +317,32 @@ function renderInline(node: ScriptInline, key: number, fireCue: (n: CueInline, i
   )
 }
 
+/**
+ * Render a sibling run, numbering consecutive ordered bullets — the flat
+ * `bullet` blocks only know their run position from here.
+ */
+function renderBlocks(
+  blocks: ScriptBlock[],
+  fireCue: (n: CueInline, idx: number) => void,
+  ctx: CueCtx,
+  path: number[],
+  onCheck: (path: number[], checked: boolean) => void
+): ReactNode[] {
+  let ord = 0
+  return blocks.map((b, i) => {
+    ord = b.type === 'bullet' && b.ordered ? ord + 1 : 0
+    return renderBlock(b, i, fireCue, ctx, [...path, i], onCheck, ord || undefined)
+  })
+}
+
 function renderBlock(
   block: ScriptBlock,
   key: number,
   fireCue: (n: CueInline, idx: number) => void,
   ctx: CueCtx,
   path: number[],
-  onCheck: (path: number[], checked: boolean) => void
+  onCheck: (path: number[], checked: boolean) => void,
+  ordinal?: number
 ): ReactNode {
   if (block.type === 'callout') {
     return (
@@ -335,11 +354,21 @@ function renderBlock(
         <span className="mb-1 block font-sans text-[10.5px] font-extrabold tracking-[0.14em] text-hearth-gold">
           🕯 DM ONLY
         </span>
-        {block.content.map((b, i) => renderBlock(b, i, fireCue, ctx, [...path, i], onCheck))}
+        {renderBlocks(block.content, fireCue, ctx, path, onCheck)}
       </div>
     )
   }
   const inlines = block.content.map((n, i) => renderInline(n, i, fireCue, ctx))
+  if (block.type === 'bullet') {
+    return (
+      <div key={key} className="mb-1.5 flex items-start gap-2.5 pl-1 last:mb-[18px]">
+        <span aria-hidden className="w-4 flex-none select-none text-right text-hearth-ember/70">
+          {ordinal ? `${ordinal}.` : '•'}
+        </span>
+        <span className="min-w-0 flex-1">{inlines}</span>
+      </div>
+    )
+  }
   if (block.type === 'check') {
     return (
       <div key={key} className="my-1 flex items-start gap-2.5 text-[16px]">

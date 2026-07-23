@@ -45,7 +45,7 @@ function parseVolume(v: string): number | undefined {
  * `{{amb:rain|vol=40%|in=3s|out=6s|until=section}}`. Unknown options are
  * ignored so a typo degrades to a plain cue instead of breaking the script.
  */
-function buildCue(kind: CueKind, raw: string): CueInline {
+export function buildCue(kind: CueKind, raw: string): CueInline {
   const [ref, ...optParts] = raw.split('|').map((s) => s.trim())
   const cue: CueInline = { type: 'cue', kind, ref, label: cueLabel(kind, ref) }
   if (kind !== 'amb') return cue
@@ -157,6 +157,9 @@ function parseInline(text: string): ScriptInline[] {
 const HEADING_RE = /^(#{1,3})\s+(.*)$/
 const QUOTE_RE = /^>\s?/
 const CHECK_RE = /^[-*]\s+\[([ xX])\]\s+(.*)$/
+// Plain list lines — CHECK_RE must be tried first ("- [ ]" is a checklist).
+const BULLET_RE = /^[-*]\s+(.*)$/
+const ORDERED_RE = /^\d+[.)]\s+(.*)$/
 
 /** Compile markdown-with-cues (the `scriptText` authoring format) into a doc. */
 export function compileScriptText(src: string): ScriptDoc {
@@ -188,6 +191,19 @@ export function compileScriptText(src: string): ScriptDoc {
       continue
     }
 
+    const bl = BULLET_RE.exec(line)
+    if (bl) {
+      blocks.push({ type: 'bullet', content: parseInline(bl[1]) })
+      i++
+      continue
+    }
+    const ol = ORDERED_RE.exec(line)
+    if (ol) {
+      blocks.push({ type: 'bullet', ordered: true, content: parseInline(ol[1]) })
+      i++
+      continue
+    }
+
     if (QUOTE_RE.test(line)) {
       const inner: string[] = []
       while (i < lines.length && QUOTE_RE.test(lines[i])) {
@@ -206,7 +222,9 @@ export function compileScriptText(src: string): ScriptDoc {
       lines[i].trim() !== '' &&
       !HEADING_RE.test(lines[i]) &&
       !QUOTE_RE.test(lines[i]) &&
-      !CHECK_RE.test(lines[i])
+      !CHECK_RE.test(lines[i]) &&
+      !BULLET_RE.test(lines[i]) &&
+      !ORDERED_RE.test(lines[i])
     ) {
       para.push(lines[i])
       i++
@@ -399,7 +417,7 @@ export function setCheckedAt(doc: ScriptDoc, path: number[], checked: boolean): 
   return walk(doc, 0)
 }
 
-const BLOCK_TYPES = new Set(['paragraph', 'heading', 'callout', 'check'])
+const BLOCK_TYPES = new Set(['paragraph', 'heading', 'callout', 'check', 'bullet'])
 
 /** True if `raw` is already the new block tree (vs. a legacy flat array). */
 function isTreeDoc(raw: unknown): raw is ScriptDoc {

@@ -1,10 +1,9 @@
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CueKind, Scene } from '../../shared/types'
-import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_TEXT, cueDisplayLabel } from '../lib/cueMeta'
+import { CUE_BADGE_CLASS, CUE_CHIP_CLASS, CUE_TEXT, cueDisplayLabel, fileStem as stem, libSlug } from '../lib/cueMeta'
+import { fuzzyScore } from '../lib/fuzzy'
 import { useStore } from '../store'
-
-const stem = (file: string) => (file.split('/').pop() ?? file).replace(/\.[^.]+$/, '')
 
 /** Same-kind retarget candidates from the scene's palettes (value = cue ref). */
 function targetOptions(scene: Scene | undefined, kind: CueKind): { value: string; display: string }[] {
@@ -18,6 +17,21 @@ function targetOptions(scene: Scene | undefined, kind: CueKind): { value: string
       return (scene.ambience ?? []).map((a) => ({ value: a.file, display: stem(a.file) }))
     case 'image':
       return (scene.images ?? []).map((img) => ({ value: img.file, display: img.caption ?? stem(img.file) }))
+  }
+}
+
+/** The audio file behind a cue ref — audition target (images resolve to none). */
+function cueFile(scene: Scene | undefined, kind: CueKind, ref: string): string | undefined {
+  if (!scene) return undefined
+  switch (kind) {
+    case 'music':
+      return (scene.music ?? []).find((m) => m.id === ref)?.file
+    case 'sfx':
+      return (scene.sfx ?? []).find((s) => s.id === ref)?.file
+    case 'amb':
+      return ref
+    case 'image':
+      return undefined
   }
 }
 
@@ -35,9 +49,59 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
   const ref = node.attrs.ref as string
   const label = cueDisplayLabel(node.attrs.label as string, ref)
   const [open, setOpen] = useState(false)
+  const [libQuery, setLibQuery] = useState('')
   const rootRef = useRef<HTMLElement | null>(null)
   const scene = useStore((s) => s.campaign.scenes.find((sc) => sc.id === s.currentSceneId))
+  const libraryAssets = useStore((s) => s.campaign.library.assets)
+  const updateScene = useStore((s) => s.updateScene)
+  const previewAsset = useStore((s) => s.previewAsset)
+  const previewingFile = useStore((s) => s.previewingFile)
   const targets = targetOptions(scene, kind)
+  const file = cueFile(scene, kind, ref)
+
+  // Full-library retarget (audit P2: scene-only options made orphaned refs a
+  // dead end): search same-kind assets; picking one self-registers to the scene.
+  const libKind = kind === 'amb' ? 'ambience' : kind
+  const libHits = useMemo(() => {
+    const q = libQuery.trim().toLowerCase()
+    if (kind === 'image' || q.length < 2) return []
+    return libraryAssets
+      .filter((a) => !a.trash && a.kind === libKind)
+      .map((a) => ({ a, score: fuzzyScore(a.name ?? stem(a.file), q) }))
+      .filter((x) => x.score > 0)
+      .sort((x, y) => y.score - x.score)
+      .slice(0, 8)
+      .map((x) => x.a)
+  }, [libQuery, libraryAssets, kind, libKind])
+
+  const retargetToLibrary = (asset: { file: string; name?: string }) => {
+    if (!scene) return
+    const display = asset.name ?? stem(asset.file)
+    if (kind === 'amb') {
+      void updateScene(scene.id, (s) =>
+        (s.ambience ?? []).some((a) => a.file === asset.file)
+          ? s
+          : { ...s, ambience: [...(s.ambience ?? []), { file: asset.file, autoplay: false }] }
+      )
+      updateAttributes({ ref: asset.file, label: display })
+    } else if (kind === 'music' || kind === 'sfx') {
+      const list = kind === 'music' ? scene.music ?? [] : scene.sfx ?? []
+      const existing = list.find((x) => x.file === asset.file)
+      if (existing) {
+        updateAttributes({ ref: existing.id, label: existing.label })
+      } else {
+        const id = libSlug(asset.file)
+        const item = { id, label: display, file: asset.file }
+        void updateScene(scene.id, (s) => {
+          const cur = kind === 'music' ? s.music ?? [] : s.sfx ?? []
+          if (cur.some((x) => x.id === id || x.file === asset.file)) return s
+          return kind === 'music' ? { ...s, music: [...cur, item] } : { ...s, sfx: [...cur, item] }
+        })
+        updateAttributes({ ref: id, label: display })
+      }
+    }
+    setLibQuery('')
+  }
 
   // Close the popover on any click outside the chip.
   useEffect(() => {
@@ -47,6 +111,11 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
     }
     document.addEventListener('pointerdown', onDown)
     return () => document.removeEventListener('pointerdown', onDown)
+  }, [open])
+
+  // A closed popover forgets its library search.
+  useEffect(() => {
+    if (!open) setLibQuery('')
   }, [open])
 
   const volume = node.attrs.volume as number | null
@@ -130,7 +199,61 @@ export default function CueChip({ node, deleteNode, selected, updateAttributes }
                 </option>
               ))}
             </select>
+            {file && (
+              <button
+                type="button"
+                onClick={() => void previewAsset(file)}
+                title={previewingFile === file ? 'Stop preview' : 'Preview this sound'}
+                className={`flex-none rounded border border-hearth-border px-1.5 py-0.5 transition-colors ${
+                  previewingFile === file
+                    ? 'border-hearth-ember text-hearth-ember'
+                    : 'text-hearth-muted hover:border-hearth-ember hover:text-hearth-ember'
+                }`}
+              >
+                {previewingFile === file ? '⏹' : '▶'}
+              </button>
+            )}
           </LifecycleField>
+          {kind !== 'image' && (
+            <div className="flex flex-col gap-1">
+              <input
+                value={libQuery}
+                onChange={(e) => setLibQuery(e.target.value)}
+                placeholder="…or search the whole library"
+                title="Retarget to ANY library sound — picking one adds it to the scene automatically"
+                className="w-full rounded border border-hearth-border bg-hearth-bg px-1.5 py-0.5 placeholder:text-hearth-muted/60 focus:border-hearth-ember/60 focus:outline-none"
+              />
+              {libHits.length > 0 && (
+                <div className="max-h-36 overflow-y-auto rounded border border-hearth-border bg-hearth-bg">
+                  {libHits.map((a) => (
+                    <div
+                      key={a.file}
+                      className="flex w-full items-center gap-1 px-1.5 py-1 text-left hover:bg-hearth-ember/10"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => retargetToLibrary(a)}
+                        title="Retarget to this sound (adds it to the scene)"
+                        className="min-w-0 flex-1 truncate text-left text-hearth-text hover:text-hearth-ember"
+                      >
+                        {a.name ?? stem(a.file)}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void previewAsset(a.file)}
+                        title={previewingFile === a.file ? 'Stop preview' : 'Preview'}
+                        className={`flex-none px-1 ${
+                          previewingFile === a.file ? 'text-hearth-ember' : 'text-hearth-muted/60 hover:text-hearth-ember'
+                        }`}
+                      >
+                        {previewingFile === a.file ? '⏹' : '▶'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {kind === 'amb' && (
             <>
           <LifecycleField label="Fades up to" hint="% of full volume — pre-mix beds against each other">

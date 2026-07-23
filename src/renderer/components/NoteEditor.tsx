@@ -94,6 +94,20 @@ export default function NoteEditor({
           >
             ☑
           </ToolBtn>
+          <ToolBtn
+            active={editor.isActive('bulletList')}
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            title="Bullet list (or type “- ”)"
+          >
+            •≡
+          </ToolBtn>
+          <ToolBtn
+            active={editor.isActive('orderedList')}
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}
+            title="Numbered list (or type “1. ”)"
+          >
+            1≡
+          </ToolBtn>
           <div className="mx-1 h-4 w-px bg-hearth-border" />
           <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
             ↶

@@ -47,3 +47,17 @@ const ICON_PREFIX = /^(?:▶|🔊|🖼|〜)\s*/u
 export function cueDisplayLabel(label: string | undefined, ref: string): string {
   return (label ?? ref).replace(ICON_PREFIX, '') || ref
 }
+
+/** "music/Fireside Tales.mp3" → "Fireside Tales". */
+export function fileStem(file: string): string {
+  return (file.split('/').pop() ?? file).replace(/\.[^.]+$/, '')
+}
+
+/**
+ * Deterministic cue id for a library file registered onto a scene by the
+ * editor ("lib-fireside-tales") — tray drops and popover retargets must agree
+ * so the same file never lands under two ids.
+ */
+export function libSlug(file: string): string {
+  return `lib-${fileStem(file).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`
+}
