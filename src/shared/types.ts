@@ -816,5 +816,8 @@ export interface CampaignState {
   errors: string[]
 }
 
-export const DEFAULT_CROSSFADE_MS = 2500
+// 4s (was 2.5s) at Wes's request 2026-07-23: "extend the fade in/out so it
+// feels more natural" — one breath out, one breath in. Scenes can still
+// override per-transition (transition.crossfadeMs) and tracks per-cue.
+export const DEFAULT_CROSSFADE_MS = 4000
 export const DUCK_LINEAR = 0.4 // ~ -8 dB

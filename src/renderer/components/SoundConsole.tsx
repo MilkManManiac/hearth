@@ -216,7 +216,9 @@ function QuickFire() {
   const status = useStore((s) => s.status)
   const fireFavorite = useStore((s) => s.fireFavorite)
   const [q, setQ] = useState('')
-  const [vibe, setVibe] = useState<string | null>(null)
+  // Multi-select: a table moment is several vibes at once — "campfire" =
+  // chill music + fire + forest. Union of everything picked.
+  const [vibes, setVibes] = useState<Set<string>>(new Set())
   const [open, setOpen] = useState(false)
   const [sel, setSel] = useState(0)
   const wrapRef = useRef<HTMLDivElement | null>(null)
@@ -228,7 +230,7 @@ function QuickFire() {
   // Vibe chips: every mood/category actually present on non-trash assets,
   // busiest first — the browse surface IS the categorization, so sorting the
   // library directly improves this menu.
-  const vibes = useMemo(() => {
+  const vibeChips = useMemo(() => {
     const counts = new Map<string, number>()
     for (const a of assets) {
       if (a.trash) continue
@@ -257,9 +259,13 @@ function QuickFire() {
       scored.sort((x, y) => y.s - x.s)
       return scored.map((x) => x.a)
     }
-    if (vibe) {
+    if (vibes.size > 0) {
       return live
-        .filter((a) => (a.moods ?? []).includes(vibe) || assetCategories(a).includes(vibe))
+        .filter(
+          (a) =>
+            (a.moods ?? []).some((m) => vibes.has(m)) ||
+            assetCategories(a).some((c) => vibes.has(c))
+        )
         .sort(
           (a, b) =>
             VIBE_KIND_ORDER[a.kind] - VIBE_KIND_ORDER[b.kind] ||
@@ -268,7 +274,7 @@ function QuickFire() {
         )
     }
     return []
-  }, [assets, query, vibe])
+  }, [assets, query, vibes])
 
   const shown = results.slice(0, VIBE_RESULT_CAP)
 
@@ -295,7 +301,7 @@ function QuickFire() {
     }
   }, [open])
 
-  useEffect(() => setSel(0), [query, vibe])
+  useEffect(() => setSel(0), [query, vibes])
 
   const fire = (a: LibraryAsset) => {
     fireFavorite(a.file)
@@ -352,45 +358,56 @@ function QuickFire() {
             onPointerDown={(e) => e.stopPropagation()}
             className="z-50 flex max-h-80 w-[26rem] flex-col overflow-y-auto rounded-md border border-hearth-border bg-hearth-panel2 p-2 shadow-2xl"
           >
-            {query.length < 2 && !vibe && (
+            {query.length < 2 && (
               <>
-                <div className="px-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
-                  Browse a vibe
+                <div className="flex items-center gap-2 px-1 pb-1.5">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+                    Pick vibes (stack as many as fit the moment)
+                  </span>
+                  {vibes.size > 0 && (
+                    <button
+                      onClick={() => setVibes(new Set())}
+                      className="text-[10px] text-hearth-muted hover:text-hearth-text"
+                    >
+                      ✕ clear
+                    </button>
+                  )}
                 </div>
-                <div className="flex flex-wrap gap-1.5 px-1 pb-1">
-                  {vibes.length === 0 && (
+                <div className="flex flex-wrap gap-1.5 px-1 pb-1.5">
+                  {vibeChips.length === 0 && (
                     <span className="text-xs text-hearth-muted">
                       No moods/categories tagged yet — sort sounds in 📚 Library and they show up
                       here.
                     </span>
                   )}
-                  {vibes.map(([v, n]) => (
-                    <button
-                      key={v}
-                      onClick={() => setVibe(v)}
-                      className="rounded-full border border-hearth-border bg-hearth-panel px-2 py-0.5 text-xs text-hearth-muted transition-colors hover:border-hearth-ember/60 hover:text-hearth-text"
-                    >
-                      {v} <span className="text-hearth-muted/60">{n}</span>
-                    </button>
-                  ))}
+                  {vibeChips.map(([v, n]) => {
+                    const on = vibes.has(v)
+                    return (
+                      <button
+                        key={v}
+                        onClick={() =>
+                          setVibes((prev) => {
+                            const next = new Set(prev)
+                            if (next.has(v)) next.delete(v)
+                            else next.add(v)
+                            return next
+                          })
+                        }
+                        className={`rounded-full border px-2 py-0.5 text-xs transition-colors ${
+                          on
+                            ? 'border-hearth-gold bg-hearth-gold/15 text-hearth-gold'
+                            : 'border-hearth-border bg-hearth-panel text-hearth-muted hover:border-hearth-ember/60 hover:text-hearth-text'
+                        }`}
+                      >
+                        {v} <span className={on ? 'text-hearth-gold/60' : 'text-hearth-muted/60'}>{n}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               </>
             )}
-            {(query.length >= 2 || vibe) && (
+            {(query.length >= 2 || vibes.size > 0) && (
               <>
-                {vibe && query.length < 2 && (
-                  <div className="flex items-center gap-2 px-1 pb-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-hearth-gold">
-                      {vibe}
-                    </span>
-                    <button
-                      onClick={() => setVibe(null)}
-                      className="text-[10px] text-hearth-muted hover:text-hearth-text"
-                    >
-                      ✕ all vibes
-                    </button>
-                  </div>
-                )}
                 {shown.length === 0 && (
                   <div className="px-1 py-2 text-xs text-hearth-muted">
                     No match — try another word, or tag more sounds in 📚 Library.
