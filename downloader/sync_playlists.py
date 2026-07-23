@@ -61,6 +61,35 @@ FOLDERS = {"music": MUSIC, "ambience": CAMPAIGN / "ambience", "sfx": CAMPAIGN / 
 CONFIG = Path(__file__).with_name("spotify_sync.json")
 PREFIX = "dnd hearth"  # case-insensitive substring that marks a Hearth playlist
 
+# Playlist vibe words → the shared mood vocabulary (LIBRARY_MOODS in
+# src/shared/types.ts). Written onto NEW assets as `moods` so the 🎧 Review
+# queue opens with a meaningful pre-checked guess — Wes still confirms by ear.
+MOOD_MAP = {
+    "boss": ["epic", "tense"], "combat": ["epic", "tense"], "battle": ["epic"],
+    "intense": ["tense"], "suspense": ["tense"], "tension": ["tense"],
+    "chase": ["tense"], "danger": ["tense"], "pursuit": ["tense"],
+    "ethereal": ["hopeful", "mysterious"], "angelic": ["hopeful"], "sacred": ["hopeful"],
+    "chill": ["calm"], "calm": ["calm"], "peaceful": ["calm"], "downtime": ["calm"],
+    "sad": ["somber"], "somber": ["somber"], "melancholy": ["somber"], "grief": ["somber"],
+    "scary": ["eerie", "dark"], "eerie": ["eerie"], "horror": ["dark"],
+    "creepy": ["eerie"], "dread": ["dark"], "unsettling": ["eerie"],
+    "adventure": ["heroic", "hopeful"], "exploration": ["mysterious"],
+    "wonder": ["hopeful"], "journey": ["heroic"], "travel": ["heroic"],
+    "mystery": ["mysterious"], "mysterious": ["mysterious"],
+    "epic": ["epic"], "heroic": ["heroic"], "romance": ["hopeful"],
+    "festive": ["festive"], "tavern": ["festive"], "playful": ["playful"],
+    "triumphant": ["triumphant"], "victory": ["triumphant"],
+}
+
+
+def suggest_moods(words):
+    out = []
+    for w in words:
+        for m in MOOD_MAP.get(w, []):
+            if m not in out:
+                out.append(m)
+    return out
+
 def P(url, pid, name, cat, cats, tags, kind="music"):
     """One curated playlist row."""
     return {"url": url, "id": pid, "name": name, "kind": kind,
@@ -458,6 +487,9 @@ def main():
                      "name": title,
                      "description": f"{', '.join(artists)} — from the “{pname}” playlist.",
                      "source": "spotify", "license": "private"}
+                moods = suggest_moods([cat, *row["categories"], *row["tags"]])
+                if moods:
+                    a["moods"] = moods
                 assets_by_file[rel] = a
                 lib["assets"].append(a)
                 added[kind] = added.get(kind, 0) + 1

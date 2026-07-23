@@ -103,6 +103,8 @@ interface ActiveMusic {
   gain: GainNode
   /** Loudness-normalization multiplier baked into gain; live volume edits re-apply it. */
   norm: number
+  /** Current playing level (authored volume × norm) — what a seek's crossfade lands on. */
+  target: number
   /** ctx.currentTime when the source started (for progress). */
   startedAt: number
   duration: number
@@ -111,6 +113,10 @@ interface ActiveMusic {
   fadeOutSec: number | null
   /** Auto-advance timer (playlist mode), cleared when the track is superseded. */
   endTimer: number | null
+  /** Playlist auto-advance callback + the fade-out length its timer is scheduled by
+   *  — kept so a seek can reschedule the advance from the new position. */
+  onEnding: (() => void) | null
+  endFadeSec: number
 }
 
 export interface MusicProgress {
@@ -144,6 +150,11 @@ export interface EngineStatus {
   ambienceFiles: string[]
   /** Ids of SFX currently sustained as a loop. */
   loopingSfxIds: string[]
+  /**
+   * One-shot SFX still sounding and long enough (≥2.5s) to be worth a kill
+   * switch — the 8-second dragon roar, not every 0.3s sword clink.
+   */
+  oneShotSfx: { id: string; label: string }[]
   masterVolume: number
   musicVolume: number
   ambienceVolume: number
@@ -192,8 +203,15 @@ export class AudioEngine {
   private cacheBytes = new Map<string, number>()
   private cacheTotal = 0
   private cacheSeq = 0
-  /** In-flight one-shot SFX (non-looping), so stopAll can silence them too. */
-  private activeOneShots = new Set<{ source: AudioBufferSourceNode; gain: GainNode }>
+  /** In-flight one-shot SFX (non-looping), so stopAll can silence them too.
+   *  `listed` = long enough to surface in the NOW row with a kill switch. */
+  private activeOneShots = new Set<{
+    id: string
+    label: string
+    listed: boolean
+    source: AudioBufferSourceNode
+    gain: GainNode
+  }>
   private activeMusic: ActiveMusic | null = null
   private activeAmbience: ActiveAmbience[] = []
   /** Sustained looping SFX, keyed by sfx id (tap to start, tap to stop). */
@@ -445,12 +463,72 @@ export class AudioEngine {
       source,
       gain,
       norm,
+      target,
       startedAt: t,
       duration: buffer.duration,
       loop,
       fadeOutSec: track.fadeOutMs !== undefined ? Math.max(track.fadeOutMs, 1) / 1000 : null,
-      endTimer
+      endTimer,
+      onEnding: (!loop && opts?.onEnding) || null,
+      endFadeSec: Math.max(track.fadeOutMs ?? crossfadeMs, 1) / 1000
     }
+    this.emit()
+  }
+
+  /**
+   * Jump the playing track to `seconds`, blended: a second source of the same
+   * buffer starts at the target spot and the two positions equal-power
+   * crossfade — the DM's "skip to the good part" move, no hard cut.
+   */
+  seekMusic(seconds: number, crossfadeMs = 1200): void {
+    const m = this.activeMusic
+    const buffer = m?.source.buffer
+    if (!m || !buffer) return
+    const offset = Math.min(Math.max(seconds, 0), Math.max(buffer.duration - 0.05, 0))
+    const fadeSec = Math.max(crossfadeMs, 1) / 1000
+    const t = this.now
+
+    const gain = this.ctx.createGain()
+    this.fadeParam(gain.gain, 0, m.target, t, fadeSec)
+    const source = this.ctx.createBufferSource()
+    source.buffer = buffer
+    source.loop = m.loop
+    source.connect(gain)
+    gain.connect(this.musicDuck)
+    source.start(t, offset)
+
+    // Retire the old position (also clears its auto-advance timer).
+    this.fadeOutAndStop(m, fadeSec)
+
+    // Playlist auto-advance reschedules from the new position.
+    let endTimer: number | null = null
+    const onEnding = m.onEnding
+    if (!m.loop && onEnding) {
+      const delayMs = Math.max((buffer.duration - m.endFadeSec - offset) * 1000, 0)
+      const trackId = m.trackId
+      const seq = this.musicIntent
+      endTimer = window.setTimeout(() => {
+        if (this.activeMusic?.trackId === trackId && seq === this.musicIntent) onEnding()
+      }, delayMs)
+    }
+
+    // Natural-end cleanup for the new source (same contract as switchMusic).
+    if (!m.loop) {
+      source.onended = () => {
+        if (this.activeMusic?.source === source) {
+          this.activeMusic = null
+          try {
+            source.disconnect()
+            gain.disconnect()
+          } catch {
+            /* ignore */
+          }
+          this.emit()
+        }
+      }
+    }
+
+    this.activeMusic = { ...m, source, gain, startedAt: t - offset, endTimer }
     this.emit()
   }
 
@@ -622,7 +700,13 @@ export class AudioEngine {
     const duck = sfx.duckMusic !== false
     if (duck) this.duckDown()
     source.start()
-    const entry = { source, gain }
+    const entry = {
+      id: sfx.id,
+      label: sfx.label ?? sfx.file,
+      listed: buffer.duration >= 2.5,
+      source,
+      gain
+    }
     this.activeOneShots.add(entry)
     source.onended = () => {
       this.activeOneShots.delete(entry)
@@ -633,6 +717,28 @@ export class AudioEngine {
         /* ignore */
       }
       if (duck) this.duckUp()
+      if (entry.listed) this.emit()
+    }
+    if (entry.listed) this.emit()
+  }
+
+  /** Cut a one-shot SFX early (every in-flight instance of the id, quick fade). */
+  stopSfx(id: string, fadeSec = 0.15): void {
+    for (const o of [...this.activeOneShots]) {
+      if (o.id !== id) continue
+      const t = this.now
+      const g = o.gain.gain
+      g.cancelScheduledValues(t)
+      g.setValueAtTime(g.value, t)
+      g.linearRampToValueAtTime(0, t + fadeSec)
+      // stop() fires onended → duck-release, cleanup, and the status emit.
+      window.setTimeout(() => {
+        try {
+          o.source.stop()
+        } catch {
+          /* already ended */
+        }
+      }, fadeSec * 1000 + 40)
     }
   }
 
@@ -718,7 +824,10 @@ export class AudioEngine {
   /** Live-adjust the currently-playing music track's own volume. */
   setActiveMusicVolume(v: number): void {
     const m = this.activeMusic
-    if (m) m.gain.gain.setTargetAtTime(v * m.norm, this.now, 0.02)
+    if (m) {
+      m.target = v * m.norm // a later seek's crossfade lands on the live level
+      m.gain.gain.setTargetAtTime(v * m.norm, this.now, 0.02)
+    }
   }
 
   /** Live-toggle whether the current track loops. */
@@ -767,6 +876,9 @@ export class AudioEngine {
       activeMusicId: this.activeMusic?.trackId ?? null,
       ambienceFiles: this.activeAmbience.map((a) => a.file),
       loopingSfxIds: [...this.activeSfxLoops.keys()],
+      oneShotSfx: [...this.activeOneShots]
+        .filter((o) => o.listed)
+        .map((o) => ({ id: o.id, label: o.label })),
       masterVolume: this.masterVolume,
       musicVolume: this.musicVolume,
       ambienceVolume: this.ambienceVolume,

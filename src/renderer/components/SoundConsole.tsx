@@ -444,26 +444,44 @@ function fmtTime(s: number): string {
 
 /**
  * Live position of the playing music track (elapsed / bar / total), polled off
- * the engine — display only; seeking would need engine changes (frozen core).
+ * the engine. Click anywhere on the bar to JUMP there — not a hard cut: the
+ * engine blends old and new position with a ~1.2s equal-power crossfade.
  */
 function MusicScrub() {
   const [p, setP] = useState(() => engine.musicProgress())
+  const barRef = useRef<HTMLSpanElement | null>(null)
   useEffect(() => {
     const t = setInterval(() => setP(engine.musicProgress()), 500)
     return () => clearInterval(t)
   }, [])
   if (!p) return null
   const pct = Math.min(100, (p.elapsed / p.duration) * 100)
+  const seekTo = (e: React.PointerEvent) => {
+    const r = barRef.current?.getBoundingClientRect()
+    if (!r || r.width === 0) return
+    const ratio = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1)
+    engine.seekMusic(ratio * p.duration)
+  }
   return (
     <span
       className="flex items-center gap-1.5 text-[10px] tabular-nums text-hearth-muted"
-      title="Track position"
+      title="Click to jump — blends to the new spot with a slow crossfade"
     >
       <span>{fmtTime(p.elapsed)}</span>
-      <span className="relative h-1 w-28 overflow-hidden rounded-full bg-hearth-border">
+      <span
+        ref={barRef}
+        onPointerDown={seekTo}
+        className="group/scrub relative h-3 w-36 cursor-pointer"
+      >
+        <span className="absolute inset-x-0 top-1 h-1 overflow-hidden rounded-full bg-hearth-border">
+          <span
+            className="absolute inset-y-0 left-0 rounded-full bg-hearth-ember"
+            style={{ width: `${pct}%` }}
+          />
+        </span>
         <span
-          className="absolute inset-y-0 left-0 rounded-full bg-hearth-ember"
-          style={{ width: `${pct}%` }}
+          className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-hearth-ember opacity-0 shadow-ember transition-opacity group-hover/scrub:opacity-100"
+          style={{ left: `${pct}%` }}
         />
       </span>
       <span>{fmtTime(p.duration)}</span>
@@ -680,7 +698,10 @@ export default function SoundConsole() {
   // Run-screen redesign: the armed scene's palette lives in the right rail's
   // 🎚 tab now — this console only shows what's SOUNDING (+ playlists/staples).
   const hasNow =
-    !!status.activeMusicId || status.ambienceFiles.length > 0 || status.loopingSfxIds.length > 0
+    !!status.activeMusicId ||
+    status.ambienceFiles.length > 0 ||
+    status.loopingSfxIds.length > 0 ||
+    status.oneShotSfx.length > 0
   // Any library at all keeps the console alive — the 🔥 Vibe box must be
   // reachable even in silence (that's exactly when you need a sound fast).
   if (!hasNow && presets.length === 0 && staples.length === 0 && assets.length === 0) return null
@@ -720,7 +741,10 @@ export default function SoundConsole() {
   // visible at a glance and one click brings the console back.
   if (!consoleOpen) {
     const audible =
-      (status.activeMusicId ? 1 : 0) + status.ambienceFiles.length + status.loopingSfxIds.length
+      (status.activeMusicId ? 1 : 0) +
+      status.ambienceFiles.length +
+      status.loopingSfxIds.length +
+      status.oneShotSfx.length
     return (
       <button
         onClick={toggleConsole}
@@ -787,6 +811,22 @@ export default function SoundConsole() {
               onStop={() => engine.stopAmbienceLayer(file)}
               stopTitle="Fade this bed out"
             />
+          ))}
+          {status.oneShotSfx.map((s, i) => (
+            <span
+              key={`${s.id}:${i}`}
+              className="flex items-center gap-1.5 rounded-full border border-hearth-gold/60 bg-hearth-gold/10 py-1 pl-2.5 pr-1 text-sm text-hearth-gold"
+            >
+              <KindBadge kind="sfx" />
+              <span className="max-w-[10rem] truncate">{s.label}</span>
+              <button
+                onClick={() => engine.stopSfx(s.id)}
+                title="Cut this sound now"
+                className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] leading-none opacity-60 hover:bg-black/30 hover:opacity-100"
+              >
+                ✕
+              </button>
+            </span>
           ))}
           {status.loopingSfxIds.map((id) => (
             <NowChip

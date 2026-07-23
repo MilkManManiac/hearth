@@ -15,6 +15,7 @@ import { useStore } from '../store'
 import DangerButton from './DangerButton'
 import PreviewScrubber from './PreviewScrubber'
 import GrowArea from './GrowArea'
+import ReviewQueue from './ReviewQueue'
 
 const KIND_LABELS: Record<AssetKind, string> = {
   music: 'Music',
@@ -50,6 +51,7 @@ export default function LibraryPanel() {
   const [kind, setKind] = useState<AssetKind | 'all'>('all')
   const [category, setCategory] = useState<string | 'all'>('all')
   const [heardFilter, setHeardFilter] = useState<'all' | 'heard' | 'unheard'>('all')
+  const [reviewing, setReviewing] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const favorites = useFavorites()
@@ -75,15 +77,15 @@ export default function LibraryPanel() {
     if (open) setKind(libraryKind)
   }, [open, libraryKind])
 
-  // Close on Escape.
+  // Close on Escape — unless the review overlay is up (it owns Esc then).
   useEffect(() => {
-    if (!open) return
+    if (!open || reviewing) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, close])
+  }, [open, close, reviewing])
 
   // Categories present in the library (all of an asset's categories), ordered.
   const categories = useMemo(() => {
@@ -205,6 +207,18 @@ export default function LibraryPanel() {
           <h2 className="text-lg font-semibold text-hearth-text">Asset Library</h2>
           <span className="text-xs text-hearth-muted">{assets.length} assets</span>
           <div className="ml-auto flex items-center gap-2">
+            {(() => {
+              const unheard = assets.filter((a) => !a.trash && !a.heard).length
+              return unheard > 0 ? (
+                <button
+                  onClick={() => setReviewing(true)}
+                  className="rounded-full border border-hearth-gold/60 bg-hearth-gold/10 px-2.5 py-1 text-xs text-hearth-gold transition-colors hover:bg-hearth-gold/20"
+                  title="Listen through the unheard pile one sound at a time — confirm a vibe for each"
+                >
+                  🎧 Review {unheard}
+                </button>
+              ) : null
+            })()}
             <button
               onClick={() => importAssets('sfx')}
               className="rounded border border-hearth-border bg-hearth-panel2 px-2 py-1 text-xs text-hearth-muted hover:text-hearth-text"
@@ -371,6 +385,7 @@ export default function LibraryPanel() {
           )}
         </div>
       </div>
+      {reviewing && <ReviewQueue onClose={() => setReviewing(false)} />}
     </div>
   )
 }
