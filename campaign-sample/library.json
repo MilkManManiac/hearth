@@ -12,7 +12,12 @@
         "wander"
       ],
       "source": "OpenGameArt / Geomancer",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm",
+        "mysterious",
+        "heroic"
+      ]
     },
     {
       "file": "music/market.mp3",
@@ -26,7 +31,11 @@
         "held-breath"
       ],
       "source": "OpenGameArt / Geomancer",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm",
+        "eerie"
+      ]
     },
     {
       "file": "music/battle.mp3",
@@ -41,7 +50,11 @@
       ],
       "source": "OpenGameArt / Wolfgang_",
       "license": "CC0",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "ambience/forest.mp3",
@@ -55,7 +68,10 @@
         "calm"
       ],
       "source": "OpenGameArt / TinyWorlds",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/dungeon.ogg",
@@ -70,7 +86,10 @@
         "underground"
       ],
       "source": "OpenGameArt",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "sfx/sword-clash.ogg",
@@ -262,7 +281,11 @@
         "urgent"
       ],
       "source": "OpenGameArt / RandomMind",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/market-day.mp3",
@@ -292,7 +315,10 @@
         "inn"
       ],
       "source": "OpenGameArt / RandomMind",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/old-tower-inn.mp3",
@@ -307,7 +333,10 @@
         "rest"
       ],
       "source": "OpenGameArt / RandomMind",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/rejoicing.mp3",
@@ -322,7 +351,11 @@
         "folk"
       ],
       "source": "OpenGameArt / RandomMind",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "triumphant",
+        "festive"
+      ]
     },
     {
       "file": "music/harvest-season.mp3",
@@ -337,7 +370,11 @@
         "travel"
       ],
       "source": "OpenGameArt / RandomMind",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "heroic"
+      ]
     },
     {
       "file": "music/minstrel-dance.mp3",
@@ -352,7 +389,10 @@
         "lively"
       ],
       "source": "OpenGameArt / RandomMind",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/horror-atmosphere.ogg",
@@ -367,7 +407,11 @@
         "dread"
       ],
       "source": "OpenGameArt / SubspaceAudio (Juhani Junkala)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "ambience/rain-storm.ogg",
@@ -412,7 +456,10 @@
         "echo"
       ],
       "source": "OpenGameArt / JaggedStone",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "sfx/door-open.ogg",
@@ -623,7 +670,11 @@
         "rock"
       ],
       "source": "OpenGameArt / Cleyton Kauffman",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/battle-theme-a.mp3",
@@ -637,7 +688,11 @@
         "strings"
       ],
       "source": "OpenGameArt / cynicmusic",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/boss-epic-battle.wav",
@@ -651,7 +706,11 @@
         "climax"
       ],
       "source": "OpenGameArt / Juhani Junkala (SubspaceAudio)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/tension-pursuit.wav",
@@ -665,7 +724,10 @@
         "loop"
       ],
       "source": "OpenGameArt / Emma_MA",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mystery-exploration.mp3",
@@ -678,7 +740,10 @@
         "curious"
       ],
       "source": "OpenGameArt / PolygonDan",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/forgotten-tomb.mp3",
@@ -692,7 +757,11 @@
         "dungeon"
       ],
       "source": "OpenGameArt / kindland",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "dark"
+      ]
     },
     {
       "file": "music/somber-what-is-left.mp3",
@@ -706,7 +775,10 @@
         "piano"
       ],
       "source": "OpenGameArt / SeKa",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/somber-vocal-hymn.ogg",
@@ -721,7 +793,10 @@
       ],
       "source": "OpenGameArt / Magdalen Kadel",
       "license": "CC0",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/travel-onward.ogg",
@@ -734,7 +809,12 @@
         "adventure"
       ],
       "source": "OpenGameArt / Écrivain",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic",
+        "mysterious",
+        "hopeful"
+      ]
     },
     {
       "file": "music/pirate-tune.ogg",
@@ -763,7 +843,11 @@
         "uplift"
       ],
       "source": "OpenGameArt / CodeManu",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "triumphant",
+        "heroic"
+      ]
     },
     {
       "file": "music/victory-fanfare.mp3",
@@ -776,7 +860,12 @@
         "rpg"
       ],
       "source": "OpenGameArt / cynicmusic",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "triumphant",
+        "heroic",
+        "festive"
+      ]
     },
     {
       "file": "music/town-peaceful.mp3",
@@ -790,7 +879,10 @@
         "calm"
       ],
       "source": "OpenGameArt / cynicmusic",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "music/cave-exploration.ogg",
@@ -804,7 +896,12 @@
         "ambient"
       ],
       "source": "OpenGameArt / Brandon Morris",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "dark",
+        "calm"
+      ]
     },
     {
       "file": "music/horror-oldschool.ogg",
@@ -819,7 +916,11 @@
       ],
       "source": "OpenGameArt / EmoPreben",
       "license": "CC0",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "sfx/deep-monster-roar.wav",
@@ -943,7 +1044,11 @@
         "loop"
       ],
       "source": "OpenGameArt / qubodup",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "sfx/leaves-rustle.mp3",
@@ -986,7 +1091,10 @@
         "wet"
       ],
       "source": "OpenGameArt / qubodup",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "sfx/explosion-dull.mp3",
@@ -1127,7 +1235,11 @@
         "night"
       ],
       "source": "OpenGameArt / haeldb",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "music/requiem-choral.ogg",
@@ -1142,7 +1254,11 @@
         "death"
       ],
       "source": "OpenGameArt / ceninan",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "somber",
+        "hopeful"
+      ]
     },
     {
       "file": "music/desert-journey.ogg",
@@ -1156,7 +1272,10 @@
         "wander"
       ],
       "source": "OpenGameArt / yd",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic"
+      ]
     },
     {
       "file": "ambience/evil-temple.ogg",
@@ -1171,7 +1290,10 @@
         "loop"
       ],
       "source": "OpenGameArt / haeldb",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/frozen-peaks.ogg",
@@ -1186,7 +1308,10 @@
         "winter"
       ],
       "source": "OpenGameArt / tinyworlds",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic"
+      ]
     },
     {
       "file": "music/peaceful-meadow.ogg",
@@ -1201,7 +1326,12 @@
         "travel"
       ],
       "source": "OpenGameArt / haeldb",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "calm",
+        "heroic"
+      ]
     },
     {
       "file": "music/anticipation.ogg",
@@ -1216,7 +1346,11 @@
       ],
       "source": "OpenGameArt / yd",
       "license": "CC0",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "tense",
+        "dark"
+      ]
     },
     {
       "file": "music/ruined-town.ogg",
@@ -1230,7 +1364,11 @@
         "exploration"
       ],
       "source": "OpenGameArt / haeldb",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "somber",
+        "mysterious"
+      ]
     },
     {
       "file": "music/tragic-ambient.ogg",
@@ -1244,7 +1382,11 @@
         "melancholy"
       ],
       "source": "OpenGameArt / haeldb",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "somber",
+        "calm"
+      ]
     },
     {
       "file": "music/chase.ogg",
@@ -1259,7 +1401,10 @@
         "escape"
       ],
       "source": "OpenGameArt / haeldb",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/hearth-warmth.ogg",
@@ -1274,7 +1419,11 @@
         "rest"
       ],
       "source": "OpenGameArt / jordan4ibanez",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive",
+        "calm"
+      ]
     },
     {
       "file": "music/story-time.ogg",
@@ -1288,7 +1437,11 @@
         "rest"
       ],
       "source": "OpenGameArt / haeldb",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive",
+        "calm"
+      ]
     },
     {
       "file": "music/nature-awakens.ogg",
@@ -1302,7 +1455,12 @@
         "travel"
       ],
       "source": "OpenGameArt / arthur",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "calm",
+        "heroic"
+      ]
     },
     {
       "file": "ambience/fap-rain-light.ogg",
@@ -1381,7 +1539,10 @@
         "horror"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/fap-cave-creepy.ogg",
@@ -1394,7 +1555,11 @@
         "eerie"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "ambience/fap-cave-drips.ogg",
@@ -1407,7 +1572,10 @@
         "water"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/fap-cave-wind.ogg",
@@ -1419,7 +1587,10 @@
         "dungeon"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/fap-lake-shore.ogg",
@@ -1444,7 +1615,10 @@
         "calm"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/fap-waves-beach.ogg",
@@ -1470,7 +1644,10 @@
         "travel"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic"
+      ]
     },
     {
       "file": "ambience/fap-crowd.ogg",
@@ -1483,7 +1660,10 @@
         "tavern"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "ambience/fap-forest-birds.ogg",
@@ -1547,7 +1727,10 @@
         "dungeon"
       ],
       "source": "itch.io / kmontesdev — Fantasy Ambient Pack",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/fap-village.ogg",
@@ -1906,7 +2089,10 @@
         "loop"
       ],
       "source": "itch.io / Nox_Sound - Essentials Series",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/nox-cave-deep.ogg",
@@ -1920,7 +2106,10 @@
         "loop"
       ],
       "source": "itch.io / Nox_Sound - Essentials Series",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/nox-cave-drips.ogg",
@@ -1934,7 +2123,10 @@
         "loop"
       ],
       "source": "itch.io / Nox_Sound - Essentials Series",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/nox-cicadas.ogg",
@@ -2035,7 +2227,10 @@
         "loop"
       ],
       "source": "itch.io / Nox_Sound - Essentials Series",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-rain-strong.ogg",
@@ -2090,7 +2285,10 @@
         "loop"
       ],
       "source": "itch.io / Nox_Sound - Essentials Series",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-waterfall-calm.ogg",
@@ -2103,7 +2301,10 @@
         "loop"
       ],
       "source": "itch.io / Nox_Sound - Essentials Series",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-waterfall.ogg",
@@ -2131,7 +2332,10 @@
         "loop"
       ],
       "source": "itch.io / Nox_Sound - Essentials Series",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-wind-forest.ogg",
@@ -35598,7 +35802,11 @@
       ],
       "name": "Epic Cinematic Background Music 1 A Major",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-epic-cinematic-background-music-2-a-major-85.mp3",
@@ -35613,7 +35821,11 @@
       ],
       "name": "Epic Cinematic Background Music 2 A Major",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-halloween-creepy-whistle-gp-ensemble-b-minor-65-4-4-4-4.mp3",
@@ -35629,7 +35841,11 @@
       "name": "Halloween Creepy Whistle Gp Ensemble B Minor 65 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-fl-morricone-small-tavern-band-g-major-133-4-4-orchestrated.mp3",
@@ -35645,7 +35861,10 @@
       "name": "Fl Morricone Small Tavern Band G Major 133 4 4 Orchestrated",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "sfx/noxx-voice-male-v1-throat-cleaning-mono-04.ogg",
@@ -35693,7 +35912,10 @@
       ],
       "name": "New Age Ambient Calm G",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-new-age-creepy-eerie-c-major.mp3",
@@ -35707,7 +35929,11 @@
       ],
       "name": "New Age Creepy Eerie C#",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-techno-colosseum-142.mp3",
@@ -35734,7 +35960,11 @@
       "name": "Piano Spiegel",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "category": "exploration"
+      "category": "exploration",
+      "moods": [
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-happy-barefoot-dance-gp-ab-major-135-4-4.mp3",
@@ -35749,7 +35979,10 @@
       "name": "Happy Barefoot Dance Gp Ab Major 135",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-trap-f-minor-futuristic.mp3",
@@ -35790,7 +36023,10 @@
       ],
       "name": "More Happy String & Woodswinds C Major 152 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-mysterious-moody-piano-sneaky-d-minor-65-4-4.mp3",
@@ -35806,7 +36042,10 @@
       "name": "Mysterious Moody Piano Sneaky D# Minor 65",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-morricone-small-tavern-band-g-major-133-4-4.mp3",
@@ -35821,7 +36060,10 @@
       "name": "Morricone Small Tavern Band G Major 133",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-mystery-techno-piano-advertise-1-eb-minor-4-4.mp3",
@@ -35837,7 +36079,10 @@
       "name": "Mystery Techno Piano Advertise 1 Eb Minor",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-lullaby-gp-bd-minor-60-3-4.mp3",
@@ -35849,7 +36094,10 @@
       ],
       "name": "Lullaby Gp Bd Minor 60",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-synthwave-hope-space-danger-adventure-gp-a-minor-75-4-4.mp3",
@@ -35865,7 +36113,12 @@
       ],
       "name": "Synthwave Hope Space Danger Adventure Gp A Minor 75",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense",
+        "heroic",
+        "hopeful"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-lullaby-2-soft-piano-solo-a-major-142-3-4.mp3",
@@ -35880,7 +36133,10 @@
       ],
       "name": "Lullaby 2 Soft Piano Solo A Major 142",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-the-foot-of-a-towering-mountain-christmas.mp3",
@@ -35895,7 +36151,10 @@
       ],
       "name": "The Foot Of A Towering Mountain Christmas",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-108-bpm-jazz-wierd-lost-music.mp3",
@@ -35910,7 +36169,10 @@
       ],
       "name": "108 Bpm Jazz Wierd Lost Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-2-introduction-epic-orchestra-vocal-eb-minor.mp3",
@@ -35924,7 +36186,11 @@
       ],
       "name": "2 Introduction Epic Orchestra Vocal Eb",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-8-bit-castlevania-ice-f-minor-120-4-4.mp3",
@@ -36005,7 +36271,13 @@
       ],
       "name": "Attack On Titan Adventure Riser Danger D# Minor 100",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense",
+        "heroic",
+        "hopeful"
+      ]
     },
     {
       "file": "sfx/noxx-voice-male-v2-throat-cleaning-mono-01.ogg",
@@ -36059,7 +36331,11 @@
       ],
       "name": "Attack On Titan Intense Tension Riser A Minor 100",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-avatar-happy-teaser-75.mp3",
@@ -36072,7 +36348,10 @@
       ],
       "name": "Avatar Happy Teaser",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-brass-growing-magic-hope-riser-c-major-97-4-4.mp3",
@@ -36088,7 +36367,11 @@
       ],
       "name": "Brass Growing Magic Hope Riser C Major 97",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense",
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-chase-intense-suspense-200.mp3",
@@ -36102,7 +36385,10 @@
       "name": "Chase Intense Suspense",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-12.mp3",
@@ -36113,7 +36399,10 @@
       ],
       "name": "Christmas",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-4-gp-d-minor-90-4-4.mp3",
@@ -36125,7 +36414,10 @@
       ],
       "name": "Christmas 4 Gp D# Minor 90",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-5.mp3",
@@ -36136,7 +36428,10 @@
       ],
       "name": "Christmas",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "sfx/noxx-voice-male-v2-throat-cleaning-mono-02.ogg",
@@ -36171,7 +36466,10 @@
       ],
       "name": "Christmas 4 Voval Woman Gp Bb Major 85",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-6.mp3",
@@ -36182,7 +36480,10 @@
       ],
       "name": "Christmas",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-7.mp3",
@@ -36193,7 +36494,10 @@
       ],
       "name": "Christmas",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-9-no-vocals.mp3",
@@ -36205,7 +36509,10 @@
       ],
       "name": "Christmas 9 No Vocals",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-bells-gp-g-major-90-4-4.mp3",
@@ -36218,7 +36525,10 @@
       ],
       "name": "Christmas Bells Gp G Major 90",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-9.mp3",
@@ -36229,7 +36539,10 @@
       ],
       "name": "Christmas",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-happy-2-gp-g-major-95-4-4.mp3",
@@ -36242,7 +36555,10 @@
       ],
       "name": "Christmas Happy 2 Gp G Major 95",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-magic-bb-major-80-4-4.mp3",
@@ -36255,7 +36571,11 @@
       ],
       "name": "Christmas Magic Bb Major 80",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive",
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-christmas-power-eb-major-95-4-4.mp3",
@@ -36268,7 +36588,10 @@
       ],
       "name": "Christmas Power Eb Major 95",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "sfx/noxx-voice-male-v2-throat-cleaning-mono-03.ogg",
@@ -36314,7 +36637,10 @@
       ],
       "name": "Christmas Vocal 3 Gp Ab Major 90",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-creepy-tension-cinematic-gp-e-minor-105-4-4.mp3",
@@ -36328,7 +36654,12 @@
       ],
       "name": "Creepy Tension Cinematic Gp E Minor 105",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark",
+        "eerie",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-creepy-tension-cinematic-gp-f-minor-85-4-4.mp3",
@@ -36342,7 +36673,12 @@
       ],
       "name": "Creepy Tension Cinematic Gp F# Minor 85",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark",
+        "eerie",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-cruelty-squad-game-music-gp-b-major-60-4-4.mp3",
@@ -36389,7 +36725,10 @@
       ],
       "name": "Cyber Empty Synthwave Hope Space Danger Gp D Minor 85",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-cruelty-squad-game-music-gp-e-major-85-4-4.mp3",
@@ -36485,7 +36824,11 @@
       "name": "Eerie Castle Creepy Cold A Minor 55",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-cinematic-thriller-d-miner-100-3-4.mp3",
@@ -36499,7 +36842,11 @@
       ],
       "name": "Epic Cinematic Thriller D Miner 100",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-edm-drum-and-bass-gp-ab-major-130-4-4.mp3",
@@ -36528,7 +36875,11 @@
       ],
       "name": "Epic Cinematic Thriller Gp Ab Minor 85",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-cinematic-thriller-gp-c-minor-80-3-4.mp3",
@@ -36542,7 +36893,11 @@
       ],
       "name": "Epic Cinematic Thriller Gp C# Minor 80",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-happy-music-cinematic-magical-3.mp3",
@@ -36558,7 +36913,12 @@
       ],
       "name": "Epic Orchestra Happy Music Cinematic Magical",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense",
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-music-cinematic-magical-1.mp3",
@@ -36573,7 +36933,12 @@
       ],
       "name": "Epic Orchestra Music Cinematic Magical",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense",
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-1-100.mp3",
@@ -36585,7 +36950,11 @@
       ],
       "name": "Epic Orchestra 1",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-hopeful-inspiring-classical-db-major-152-3-4.mp3",
@@ -36601,7 +36970,11 @@
       ],
       "name": "Epic Orchestra Hopeful Inspiring Classical Db Major 152",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-music-cinematic-magical-growing-3.mp3",
@@ -36617,7 +36990,12 @@
       ],
       "name": "Epic Orchestra Music Cinematic Magical Growing",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense",
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-music-cinematic-magical-waking-up-happy-fun-2.mp3",
@@ -36635,7 +37013,12 @@
       ],
       "name": "Epic Orchestra Music Cinematic Magical Waking Up Happy Fun",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense",
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-music-inspiring-dreaming-1.mp3",
@@ -36650,7 +37033,11 @@
       ],
       "name": "Epic Orchestra Music Inspiring Dreaming",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-epic-orchestra-music-lord-of-the-rings-vocal-women-strong-drums-adventure.mp3",
@@ -36671,7 +37058,13 @@
       ],
       "name": "Epic Orchestra Music Lord Of The Rings Vocal Women Strong Drums Adventure",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense",
+        "heroic",
+        "hopeful"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-fantasywave-7th-chords-strong-inspiring-corparate-feeling.mp3",
@@ -36766,7 +37159,10 @@
       ],
       "name": "Fantasywave Chromatic Deep Zombish Lost",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-fantasywave-intermediate-mixed-chord-gp-ensemble-e-major-70-4-4-2.mp3",
@@ -36813,7 +37209,10 @@
       "name": "Flutes Pipes Mystery Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-flutes-pipes-mystery-music-2.mp3",
@@ -36828,7 +37227,10 @@
       "name": "Flutes Pipes Mystery Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-flutes-pipes-mystery-music-3.mp3",
@@ -36843,7 +37245,10 @@
       "name": "Flutes Pipes Mystery Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-guitar-falling-decreasing-music-1.mp3",
@@ -36906,7 +37311,10 @@
       ],
       "name": "Guitar Western Intense Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-guitar-western-intense-music-2.mp3",
@@ -36920,7 +37328,10 @@
       ],
       "name": "Guitar Western Intense Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-guitar-western-music-1.mp3",
@@ -36946,7 +37357,10 @@
       ],
       "name": "Halloween Gp Ensemble D Major 65",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-halloween-gp-ensemble-b-minor-65-4-4-4-4.mp3",
@@ -36959,7 +37373,10 @@
       ],
       "name": "Halloween Gp Ensemble B Minor 65 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-halloween-gp-ensemble-db-major-80-4-4-4-4.mp3",
@@ -36972,7 +37389,10 @@
       ],
       "name": "Halloween Gp Ensemble Db Major 80 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-halloween-gp-ensemble-d-major-70-4-4.mp3",
@@ -36985,7 +37405,10 @@
       ],
       "name": "Halloween Gp Ensemble D Major 70",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-happy-barefoot-2-dance-gp-ab-major-110-4-4.mp3",
@@ -37000,7 +37423,10 @@
       "name": "Happy Barefoot 2 Dance Gp Ab Major 110",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-happy-jazz-upbeat-fight-hope.mp3",
@@ -37016,7 +37442,10 @@
       "name": "Happy Jazz Upbeat Fight Hope",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-happy-dream-waltz-f-major-150-3-4.mp3",
@@ -37031,7 +37460,10 @@
       "name": "Happy Dream Waltz F Major 150",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-happy-piano-music-1.mp3",
@@ -37045,7 +37477,10 @@
       "name": "Happy Piano Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-happy-lullaby-acoustic-c-major-160-3-4.mp3",
@@ -37059,7 +37494,10 @@
       ],
       "name": "Happy Lullaby Acoustic C Major 160",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-happy-piano-music-2.mp3",
@@ -37073,7 +37511,10 @@
       "name": "Happy Piano Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-heavy-drums-constant-2-music.mp3",
@@ -37210,7 +37651,10 @@
       ],
       "name": "Horror Ambience D Minor 70",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-horror-ambiences-2-d-minor-70-4-4.mp3",
@@ -37223,7 +37667,10 @@
       ],
       "name": "Horror Ambiences 2 D Minor 70",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-horror-intense-stalker-strings-c-minor-60-12-8.mp3",
@@ -37238,7 +37685,11 @@
       ],
       "name": "Horror Intense Stalker Strings C# Minor 60",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-horror-walking-b-minor-100-4-4.mp3",
@@ -37252,7 +37703,10 @@
       "name": "Horror Walking B Minor 100",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-intense-walking-strings-woodwinds-a-minor-133-4-4-1.mp3",
@@ -37267,7 +37721,10 @@
       ],
       "name": "Intense Walking Strings & Woodwinds A Minor 133 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-horror-walking-g-minor-110-4-4.mp3",
@@ -37280,7 +37737,10 @@
       ],
       "name": "Horror Walking G# Minor 110",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-hurry-shanties-d-major-180-6-8.mp3",
@@ -37308,7 +37768,10 @@
       ],
       "name": "Intense Walking Strings & Woodwinds A Minor 133 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-intense-walking-strings-woodwinds-a-minor-133-4-4-3.mp3",
@@ -37323,7 +37786,10 @@
       ],
       "name": "Intense Walking Strings & Woodwinds A Minor 133 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-interstellar-gp-ensemble-a-major-105-3-4-1.mp3",
@@ -37402,7 +37868,11 @@
       ],
       "name": "Introduction Epic Orchestra Vocal Eb",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-jazz-down-1.mp3",
@@ -37414,7 +37884,10 @@
       ],
       "name": "Jazz Down",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-jazz-japan-happy-video-game-music.mp3",
@@ -37431,7 +37904,10 @@
       "name": "Jazz Japan Happy Video Game Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-interstellar-gp-ensemble-e-minor-115-3-4-2.mp3",
@@ -37457,7 +37933,10 @@
       "name": "Jazz Monster D Minor 133",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-jungle-lullaby-gp-a-minor-80-3-4.mp3",
@@ -37470,7 +37949,10 @@
       ],
       "name": "Jungle Lullaby Gp A Minor 80",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-jungle-intense-suspense-horror-200.mp3",
@@ -37484,7 +37966,11 @@
       ],
       "name": "Jungle Intense Suspense Horror",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "dark",
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-jungle-lullaby-weary-a-minor.mp3",
@@ -37497,7 +37983,10 @@
       ],
       "name": "Jungle Lullaby Weary A",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-junlge-pirates-cartoon-2-c-major-160-3-4.mp3",
@@ -37578,7 +38067,10 @@
       "name": "Lalala Funny Happy Upbeat F Major 152",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-lalala-funny-happy-upbeat-f-major-160-3-4.mp3",
@@ -37594,7 +38086,10 @@
       "name": "Lalala Funny Happy Upbeat F Major 160",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-arabic-guitar-music-1.mp3",
@@ -37608,7 +38103,10 @@
       "name": "Magic Arabic Guitar Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-lullaby-2-gp-a-major-75-3-4.mp3",
@@ -37620,7 +38118,10 @@
       ],
       "name": "Lullaby 2 Gp A Major 75",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-arabic-guitar-music-3.mp3",
@@ -37634,7 +38135,10 @@
       "name": "Magic Arabic Guitar Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-arabic-guitar-music-2.mp3",
@@ -37648,7 +38152,10 @@
       "name": "Magic Arabic Guitar Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-happy-cartoon-calm-flute-wonderland-music-2.mp3",
@@ -37666,7 +38173,12 @@
       "name": "Magic Happy Cartoon Calm Flute Wonderland Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-happy-cartoon-calm-flute-wonderland-music-3.mp3",
@@ -37684,7 +38196,12 @@
       "name": "Magic Happy Cartoon Calm Flute Wonderland Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-happy-cartoon-calm-flute-wonderland-music-5.mp3",
@@ -37701,7 +38218,12 @@
       ],
       "name": "Magic Happy Cartoon Calm Flute Wonderland Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-happy-cartoon-calm-flute-wonderland-music-4.mp3",
@@ -37718,7 +38240,12 @@
       ],
       "name": "Magic Happy Cartoon Calm Flute Wonderland Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-happy-cartoon-calm-flute-wonderland-music-6.mp3",
@@ -37735,7 +38262,12 @@
       ],
       "name": "Magic Happy Cartoon Calm Flute Wonderland Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-happy-cartoon-wonderland-music-1.mp3",
@@ -37750,7 +38282,11 @@
       ],
       "name": "Magic Happy Cartoon Wonderland Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive",
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-magic-tingle-heaven-music.mp3",
@@ -37764,7 +38300,10 @@
       "name": "Magic Tingle Heaven Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-mario-pop-c-major-140-4-4.mp3",
@@ -37791,7 +38330,10 @@
       "name": "Monster Jazz 1 Happyish",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-modern-cinematic-c-minor-100.mp3",
@@ -37816,7 +38358,10 @@
       ],
       "name": "More Happy 1 C Major 161",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-monsters-in-hotell-jazz-d-minor-150-3-4.mp3",
@@ -37831,7 +38376,10 @@
       "name": "Monsters In Hotell Jazz D Minor 150",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-meditation-gp-ensemble-a-minor-30-4-4.mp3",
@@ -37843,7 +38391,10 @@
       ],
       "name": "Meditation Gp Ensemble A Minor 30",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-string-woodswinds-c-major-152-4-4-3.mp3",
@@ -37858,7 +38409,10 @@
       ],
       "name": "More Happy String & Woodswinds C Major 152 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-string-woodswinds-c-major-152-4-4-2.mp3",
@@ -37873,7 +38427,10 @@
       ],
       "name": "More Happy String & Woodswinds C Major 152 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-string-woodswinds-c-major-152-4-4-4.mp3",
@@ -37888,7 +38445,10 @@
       ],
       "name": "More Happy String & Woodswinds C Major 152 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-string-woodswinds-c-major-152-4-4-5.mp3",
@@ -37903,7 +38463,10 @@
       ],
       "name": "More Happy String & Woodswinds C Major 152 4 4",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-strings-woodwinds-2-c-major-152-4-4.mp3",
@@ -37918,7 +38481,10 @@
       ],
       "name": "More Happy Strings & Woodwinds 2 C Major 152",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-strings-woodwinds-3-c-major-152-4-4.mp3",
@@ -37933,7 +38499,10 @@
       ],
       "name": "More Happy Strings & Woodwinds 3 C Major 152",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-strings-woodwinds-c-major-152-4-4.mp3",
@@ -37948,7 +38517,10 @@
       ],
       "name": "More Happy Strings & Woodwinds C Major 152",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-strings-woodwings-2-c-major-78-4-4.mp3",
@@ -37963,7 +38535,10 @@
       ],
       "name": "More Happy Strings & Woodwings 2 C Major 78",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-strings-woodwings-c-major-152-4-4.mp3",
@@ -37978,7 +38553,10 @@
       ],
       "name": "More Happy Strings & Woodwings C Major 152",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-more-happy-strings-woodwings-3-c-major-152-4-4.mp3",
@@ -37993,7 +38571,10 @@
       ],
       "name": "More Happy Strings & Woodwings 3 C Major 152",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-morricone-small-tavern-band-g-major-78-4-4.mp3",
@@ -38007,7 +38588,10 @@
       ],
       "name": "Morricone Small Tavern Band G Major 78",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody-2-e-minor-60-4-4.mp3",
@@ -38021,7 +38605,10 @@
       ],
       "name": "Mysterious Piano & Moody 2 E Minor 60",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody-3-e-minor-70-4-4.mp3",
@@ -38035,7 +38622,10 @@
       ],
       "name": "Mysterious Piano & Moody 3 E Minor 70",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-mysterious-piano-moody.mp3",
@@ -38048,7 +38638,10 @@
       ],
       "name": "Mysterious Piano & Moody",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-mystery-cartoon-piano-eb-minor-4-4.mp3",
@@ -38062,7 +38655,10 @@
       ],
       "name": "Mystery Cartoon Piano Eb Minor",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-never-gonna-give-up-string-choir-db-major-120-4-4-2.mp3",
@@ -38092,7 +38688,11 @@
       "name": "Mystery Eerie Magic",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious",
+        "eerie"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-never-gonna-give-up-string-choir-db-major-120-4-4.mp3",
@@ -38152,7 +38752,10 @@
       "name": "Old Age Spanish Ship Sneaking Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-old-age-spanish-ship-sneaking-music-2.mp3",
@@ -38169,7 +38772,10 @@
       "name": "Old Age Spanish Ship Sneaking Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-old-age-spanish-ship-sneaking-music-3.mp3",
@@ -38186,7 +38792,10 @@
       "name": "Old Age Spanish Ship Sneaking Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-old-age-spanish-ship-sneaking-music-4.mp3",
@@ -38203,7 +38812,10 @@
       "name": "Old Age Spanish Ship Sneaking Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-old-age-spanish-ship-sneaking-music-5.mp3",
@@ -38220,7 +38832,10 @@
       "name": "Old Age Spanish Ship Sneaking Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-old-age-spanish-ship-sneaking-music-6.mp3",
@@ -38237,7 +38852,10 @@
       "name": "Old Age Spanish Ship Sneaking Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-piano-funny-happy-upbeat-f-major-160-3-4.mp3",
@@ -38253,7 +38871,10 @@
       "name": "Piano Funny Happy Upbeat F Major 160",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-reggae-sunny-beach-ab-major-60-4-4.mp3",
@@ -38308,7 +38929,10 @@
       ],
       "name": "S4 Happy Jumping Music A Minor 132",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-sad-dre-piano-2-solo-a-minor-95-4-4.mp3",
@@ -38323,7 +38947,10 @@
       ],
       "name": "Sad Dre Piano 2 Solo A Minor 95",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-sad-dre-piano-solo-a-minor-95-4-4.mp3",
@@ -38338,7 +38965,10 @@
       ],
       "name": "Sad Dre Piano Solo A Minor 95",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-running-interstellar-115.mp3",
@@ -38363,7 +38993,11 @@
       "name": "Scary Jazz Gp Eb Major 60",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-sands-of-time-110.mp3",
@@ -38419,7 +39053,11 @@
       ],
       "name": "Space Calm Nature Epic Orchestra Gb Major",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "calm",
+        "epic"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-space-calm-nature-wake-up-epic-orchestra-gb-major-50.mp3",
@@ -38437,7 +39075,11 @@
       "name": "Space Calm Nature Wake Up Epic Orchestra Gb Major",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "calm",
+        "epic"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-space-confusion-160.mp3",
@@ -38479,7 +39121,10 @@
       "name": "Space Odyssey Epic Orchestra C Minor 35",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "epic"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-space-confusion-3-160.mp3",
@@ -38521,7 +39166,10 @@
       "name": "Space Odyssey Epic Orchestra Eb Minor 35",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "epic"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-sumerian-2-c-major-65-4-4.mp3",
@@ -38548,7 +39196,10 @@
       "name": "Star Danger Strings & Woodwinds C Majoyr 15",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-tavern-happy-intense-band-160.mp3",
@@ -38562,7 +39213,11 @@
       ],
       "name": "Tavern Happy Intense Band",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "tense",
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-sumerian-c-major-65-4-4.mp3",
@@ -38690,7 +39345,10 @@
       ],
       "name": "Valleyfall 8 Magic",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-video-game-terraria-8-bit-pixel-f-major-175.mp3",
@@ -38746,7 +39404,10 @@
       "name": "Wood Interstellar Mystery",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
       "license": "UNKNOWN — do not redistribute",
-      "trash": true
+      "trash": true,
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-wood-interstellar-mystery-95.mp3",
@@ -38759,7 +39420,10 @@
       ],
       "name": "Wood Interstellar Mystery",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-world-jungle-swamp-cartoon-music-5.mp3",
@@ -38864,7 +39528,10 @@
       ],
       "name": "World Jungle Swamp Happysh Music",
       "source": "Oliver Siimon — music pack 1 (no license file; private demo use only)",
-      "license": "UNKNOWN — do not redistribute"
+      "license": "UNKNOWN — do not redistribute",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/mp1-oliver-siimon-music-space-orchestra-eb-minor-60-4.mp3",
@@ -38930,7 +39597,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/nox-cave-deep-loop.ogg",
@@ -38949,7 +39619,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "ambience/nox-cave-drips-loop.ogg",
@@ -38987,7 +39660,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic"
+      ]
     },
     {
       "file": "ambience/nox-campfire-medium-loop.ogg",
@@ -39005,7 +39681,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic"
+      ]
     },
     {
       "file": "ambience/nox-fire-big-loop.ogg",
@@ -39042,7 +39721,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "ambience/nox-night-crickets-loop.ogg",
@@ -39061,7 +39743,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic"
+      ]
     },
     {
       "file": "ambience/nox-cicadas-loop.ogg",
@@ -39098,7 +39783,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-rain-strong-loop.ogg",
@@ -39151,7 +39839,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-stream-big-loop.ogg",
@@ -39186,7 +39877,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-waterfall-strong-loop.ogg",
@@ -39357,7 +40051,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "calm"
+      ]
     },
     {
       "file": "ambience/nox-wind-forest-loop.ogg",
@@ -39396,7 +40093,10 @@
         "loop"
       ],
       "source": "nox-sound (itch.io, lowpass edit)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "ambience/oga-dungeon-ambient-loop.ogg",
@@ -39414,7 +40114,11 @@
         "loop"
       ],
       "source": "opengameart",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "calm"
+      ]
     },
     {
       "file": "ambience/oga-drips-basement-loop.ogg",
@@ -39490,7 +40194,11 @@
         "loop"
       ],
       "source": "opengameart",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious"
+      ]
     },
     {
       "file": "ambience/oga-cerhern-horror-drone.mp3",
@@ -39509,7 +40217,11 @@
         "long"
       ],
       "source": "opengameart",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "tense"
+      ]
     },
     {
       "file": "ambience/oga-eerie-atmosphere-1.ogg",
@@ -39528,7 +40240,12 @@
         "loop"
       ],
       "source": "opengameart",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "eerie"
+      ]
     },
     {
       "file": "ambience/oga-eerie-atmosphere-2.ogg",
@@ -39547,7 +40264,12 @@
         "loop"
       ],
       "source": "opengameart",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "eerie"
+      ]
     },
     {
       "file": "ambience/oga-eerie-atmosphere-3.ogg",
@@ -39566,7 +40288,12 @@
         "loop"
       ],
       "source": "opengameart",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "eerie"
+      ]
     },
     {
       "file": "ambience/oga-eerie-atmosphere-4.ogg",
@@ -39585,7 +40312,12 @@
         "loop"
       ],
       "source": "opengameart",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "eerie"
+      ]
     },
     {
       "file": "ambience/oga-cult-chanting-bed.ogg",
@@ -39605,7 +40337,11 @@
         "loop"
       ],
       "source": "opengameart (concatenated clips)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious"
+      ]
     },
     {
       "file": "ambience/oga-ethereal-chant-bed.ogg",
@@ -39625,7 +40361,11 @@
         "loop"
       ],
       "source": "opengameart (concatenated clips)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "hopeful"
+      ]
     },
     {
       "file": "music/blacis-celestial-gardens.mp3",
@@ -39644,7 +40384,13 @@
         "dawn"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "triumphant",
+        "mysterious",
+        "hopeful",
+        "calm"
+      ]
     },
     {
       "file": "music/blacis-celestial-grotto.ogg",
@@ -39662,7 +40408,13 @@
         "calm"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "triumphant",
+        "mysterious",
+        "hopeful",
+        "calm"
+      ]
     },
     {
       "file": "music/blacis-sky-gardens.mp3",
@@ -39679,7 +40431,12 @@
         "wonder"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "triumphant",
+        "hopeful"
+      ]
     },
     {
       "file": "music/blacis-dungeonwave.mp3",
@@ -39697,7 +40454,11 @@
         "crawl"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "dark"
+      ]
     },
     {
       "file": "music/blacis-dungeonwave-depths.mp3",
@@ -39715,7 +40476,11 @@
         "underdark"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "dark"
+      ]
     },
     {
       "file": "music/blacis-eerie-castle.mp3",
@@ -39733,7 +40498,12 @@
         "haunted"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "eerie"
+      ]
     },
     {
       "file": "music/blacis-creepy-eerie-ambient.mp3",
@@ -39750,7 +40520,13 @@
         "unease"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "eerie",
+        "calm"
+      ]
     },
     {
       "file": "music/blacis-horror-ambience-1.mp3",
@@ -39767,7 +40543,12 @@
         "dread"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "tense",
+        "calm"
+      ]
     },
     {
       "file": "music/blacis-horror-ambience-2.mp3",
@@ -39784,7 +40565,12 @@
         "dread"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "dark",
+        "tense",
+        "calm"
+      ]
     },
     {
       "file": "music/blacis-stalker-strings.mp3",
@@ -39802,7 +40588,11 @@
         "pursuit"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "tense",
+        "dark"
+      ]
     },
     {
       "file": "music/blacis-horror-walking.mp3",
@@ -39819,7 +40609,11 @@
         "suspense"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "tense",
+        "dark"
+      ]
     },
     {
       "file": "music/blacis-creepy-tension.mp3",
@@ -39836,7 +40630,12 @@
         "creepy"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "tense",
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "music/blacis-cinematic-thriller.mp3",
@@ -39852,7 +40651,10 @@
         "urgent"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/blacis-mystery-flutes-1.mp3",
@@ -39869,7 +40671,10 @@
         "fey"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/blacis-sneaky-piano.mp3",
@@ -39887,7 +40692,11 @@
         "heist"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "tense"
+      ]
     },
     {
       "file": "music/blacis-mystery-eerie-magic.mp3",
@@ -39905,7 +40714,12 @@
         "wonder"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "eerie",
+        "hopeful"
+      ]
     },
     {
       "file": "music/blacis-sad-piano.mp3",
@@ -39922,7 +40736,10 @@
         "loss"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/blacis-heavenly-choir.mp3",
@@ -39940,7 +40757,12 @@
         "radiant"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "triumphant",
+        "mysterious",
+        "hopeful"
+      ]
     },
     {
       "file": "music/blacis-magic-tingle-heaven.mp3",
@@ -39958,7 +40780,12 @@
         "blessing"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "triumphant",
+        "hopeful"
+      ]
     },
     {
       "file": "music/blacis-hopeful-dawn.mp3",
@@ -39977,7 +40804,11 @@
         "renewal"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "triumphant",
+        "mysterious"
+      ]
     },
     {
       "file": "music/blacis-tavern-band.mp3",
@@ -39994,7 +40825,10 @@
         "lively"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/blacis-tavern-lively.mp3",
@@ -40011,7 +40845,10 @@
         "band"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/blacis-sea-shanties.mp3",
@@ -40029,7 +40866,10 @@
         "folk"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "festive"
+      ]
     },
     {
       "file": "music/blacis-war-drums-1.mp3",
@@ -40047,7 +40887,11 @@
         "battle"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/blacis-epic-adventure-vocal.mp3",
@@ -40065,7 +40909,14 @@
         "adventure"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "epic",
+        "tense",
+        "triumphant",
+        "heroic",
+        "hopeful"
+      ]
     },
     {
       "file": "music/blacis-sumerian-ritual-1.mp3",
@@ -40083,7 +40934,11 @@
         "cult"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "dark"
+      ]
     },
     {
       "file": "music/blacis-meditation.mp3",
@@ -40101,7 +40956,12 @@
         "trance"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "somber",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/blacis-sands-of-time.mp3",
@@ -40118,7 +40978,11 @@
         "journey"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "heroic",
+        "mysterious"
+      ]
     },
     {
       "file": "music/blacis-firefly-fete.mp3",
@@ -40136,7 +41000,11 @@
         "night"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "playful"
+      ]
     },
     {
       "file": "music/blacis-void-pads.mp3",
@@ -40155,7 +41023,11 @@
         "slow"
       ],
       "source": "blacis (itch.io)",
-      "license": "CC0"
+      "license": "CC0",
+      "moods": [
+        "mysterious",
+        "dark"
+      ]
     },
     {
       "file": "music/km-ossuary-rest.mp3",
@@ -40173,7 +41045,10 @@
         "death"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/km-ossuary-air.mp3",
@@ -40191,7 +41066,11 @@
         "sacred"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "somber",
+        "hopeful"
+      ]
     },
     {
       "file": "music/km-crypto.mp3",
@@ -40207,7 +41086,10 @@
         "curious"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/km-the-dread.mp3",
@@ -40224,7 +41106,11 @@
         "looming"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark",
+        "tense"
+      ]
     },
     {
       "file": "music/km-gathering-darkness.mp3",
@@ -40242,7 +41128,11 @@
         "menace"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "tense",
+        "epic"
+      ]
     },
     {
       "file": "music/km-penumbra.mp3",
@@ -40259,7 +41149,12 @@
         "shadow"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/km-shadowlands-horizon.mp3",
@@ -40277,7 +41172,11 @@
         "void"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark",
+        "mysterious"
+      ]
     },
     {
       "file": "music/km-shadowlands-breath.mp3",
@@ -40295,7 +41194,11 @@
         "void"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark",
+        "mysterious"
+      ]
     },
     {
       "file": "music/km-lightless-dawn.mp3",
@@ -40313,7 +41216,12 @@
         "underdark"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark",
+        "mysterious",
+        "calm"
+      ]
     },
     {
       "file": "music/km-long-note-two.mp3",
@@ -40329,7 +41237,10 @@
         "unease"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "tense"
+      ]
     },
     {
       "file": "music/km-come-play-with-me.mp3",
@@ -40346,7 +41257,11 @@
         "music-box"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark",
+        "eerie"
+      ]
     },
     {
       "file": "music/km-anguish.mp3",
@@ -40362,7 +41277,10 @@
         "strings"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/km-floating-cities.mp3",
@@ -40378,7 +41296,10 @@
         "reflective"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "somber"
+      ]
     },
     {
       "file": "music/km-heart-of-nowhere.mp3",
@@ -40395,7 +41316,11 @@
         "desolate"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "somber",
+        "mysterious"
+      ]
     },
     {
       "file": "music/km-immersed.mp3",
@@ -40413,7 +41338,10 @@
         "floating"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/km-deep-haze.mp3",
@@ -40431,7 +41359,10 @@
         "slow"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/km-agnus-dei.mp3",
@@ -40450,7 +41381,12 @@
         "dawn"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "triumphant",
+        "somber",
+        "hopeful"
+      ]
     },
     {
       "file": "music/km-virtutes-instrumenti.mp3",
@@ -40468,7 +41404,12 @@
         "holy"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "triumphant",
+        "mysterious",
+        "hopeful"
+      ]
     },
     {
       "file": "music/km-angel-share.mp3",
@@ -40486,7 +41427,12 @@
         "rest"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "somber",
+        "triumphant",
+        "calm"
+      ]
     },
     {
       "file": "music/km-oppressive-gloom.mp3",
@@ -40504,7 +41450,10 @@
         "oppressive"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark"
+      ]
     },
     {
       "file": "music/km-chee-zee-cave.mp3",
@@ -40522,7 +41471,10 @@
         "strange"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "mysterious"
+      ]
     },
     {
       "file": "music/km-dark-fog.mp3",
@@ -40540,7 +41492,12 @@
         "confrontation"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "epic",
+        "tense",
+        "dark"
+      ]
     },
     {
       "file": "music/km-giant-wyrm.mp3",
@@ -40558,7 +41515,11 @@
         "battle"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/km-curse-of-the-scarab.mp3",
@@ -40576,7 +41537,11 @@
         "battle"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "epic",
+        "tense"
+      ]
     },
     {
       "file": "music/km-ritual.mp3",
@@ -40594,7 +41559,11 @@
         "cult"
       ],
       "source": "incompetech (Kevin MacLeod)",
-      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0"
+      "license": "CC BY 4.0 — credit Kevin MacLeod (incompetech.com), Licensed under Creative Commons: By Attribution 4.0",
+      "moods": [
+        "dark",
+        "mysterious"
+      ]
     },
     {
       "file": "sfx/oga-magic-cast-1.ogg",
