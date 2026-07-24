@@ -9,7 +9,7 @@ import {
   LIBRARY_MOODS
 } from '../../shared/types'
 import { fuzzyScore } from '../lib/fuzzy'
-import { toggleFavorite, useFavorites, useRecents } from '../lib/prefs'
+import { takeLegacyFavorites, useRecents } from '../lib/prefs'
 import { basename } from '../../shared/paths'
 import { useStore } from '../store'
 import DangerButton from './DangerButton'
@@ -54,9 +54,18 @@ export default function LibraryPanel() {
   const [reviewing, setReviewing] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-  const favorites = useFavorites()
+  // Favorites live in library.json now (favorite: true) — per-campaign, and
+  // legacy localStorage stars migrate in on first open (see prefs.ts).
+  const favorites = useMemo(() => assets.filter((a) => a.favorite).map((a) => a.file), [assets])
   const favoriteSet = useMemo(() => new Set(favorites), [favorites])
   const recents = useRecents()
+  const updateLibraryAssetsAction = useStore((s) => s.updateLibraryAssets)
+  useEffect(() => {
+    if (assets.length === 0) return
+    const byFile = new Set(assets.map((a) => a.file))
+    const legacy = takeLegacyFavorites((f) => byFile.has(f))
+    if (legacy.length > 0) void updateLibraryAssetsAction(legacy, { favorite: true })
+  }, [assets, updateLibraryAssetsAction])
 
   // New filter/search → collapse the big groups again.
   useEffect(() => {
@@ -620,7 +629,7 @@ function AssetRow({
           🎧
         </button>
         <button
-          onClick={() => toggleFavorite(asset.file)}
+          onClick={() => void updateLibraryAsset(asset.file, { favorite: !fav })}
           title={fav ? 'Remove from favorites' : 'Add to favorites'}
           className={`flex-none px-1 text-base leading-none transition-colors ${
             fav ? 'text-hearth-ember' : 'text-hearth-muted/40 hover:text-hearth-ember'

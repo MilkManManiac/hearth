@@ -1118,6 +1118,10 @@ export class CampaignManager {
       if (patch.trash) asset.trash = true
       else delete asset.trash
     }
+    if (patch.favorite !== undefined) {
+      if (patch.favorite) asset.favorite = true
+      else delete asset.favorite
+    }
   }
 
   /**

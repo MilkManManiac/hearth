@@ -1,8 +1,12 @@
 /**
- * Tiny localStorage-backed prefs: favorited + recently fired library assets.
- * Values are arrays of asset `file` paths (campaign-relative) — the stable id
- * shared by library.json and scene items. Deliberately not part of the Zustand
- * store or campaign JSON; this is per-machine DM convenience only.
+ * Tiny localStorage-backed prefs: recently fired library assets. Values are
+ * arrays of asset `file` paths (campaign-relative) — the stable id shared by
+ * library.json and scene items. Deliberately not part of the Zustand store or
+ * campaign JSON; this is per-machine DM convenience only.
+ *
+ * Favorites USED to live here too — they're now `favorite: true` in
+ * library.json (per-campaign, greppable by authoring sessions); the legacy
+ * key sticks around only for the one-time migration below.
  */
 import { useSyncExternalStore } from 'react'
 
@@ -19,7 +23,6 @@ function read(key: string): string[] {
   }
 }
 
-let favorites = read(FAVORITES_KEY)
 let recents = read(RECENTS_KEY)
 const listeners = new Set<() => void>()
 
@@ -37,21 +40,26 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener)
 }
 
-/** Reactive list of favorited asset files. */
-export function useFavorites(): string[] {
-  return useSyncExternalStore(subscribe, () => favorites)
-}
-
 /** Reactive list of recently fired asset files, most recent first. */
 export function useRecents(): string[] {
   return useSyncExternalStore(subscribe, () => recents)
 }
 
-export function toggleFavorite(file: string): void {
-  favorites = favorites.includes(file)
-    ? favorites.filter((f) => f !== file)
-    : [...favorites, file]
-  write(FAVORITES_KEY, favorites)
+/**
+ * One-time migration: pull the legacy localStorage favorites that exist in
+ * the CURRENT library (multi-campaign machines keep the rest for whichever
+ * campaign owns them). Caller patches them into library.json; entries handed
+ * out are removed from the key so this never double-fires.
+ */
+export function takeLegacyFavorites(inLibrary: (file: string) => boolean): string[] {
+  const all = read(FAVORITES_KEY)
+  if (all.length === 0) return []
+  const mine = all.filter(inLibrary)
+  if (mine.length === 0) return []
+  const rest = all.filter((f) => !inLibrary(f))
+  if (rest.length > 0) write(FAVORITES_KEY, rest)
+  else localStorage.removeItem(FAVORITES_KEY)
+  return mine
 }
 
 /** Record an asset fired during play. Deduped, most-recent-first, capped. */

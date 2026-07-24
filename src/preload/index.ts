@@ -21,7 +21,7 @@ export type { DiscordChannelInfo, DiscordGuildInfo, DiscordStatus }
 export type LibraryAssetPatch = Partial<
   Pick<
     LibraryAsset,
-    'name' | 'category' | 'tags' | 'moods' | 'heard' | 'license' | 'source' | 'trash' | 'description'
+    'name' | 'category' | 'tags' | 'moods' | 'heard' | 'license' | 'source' | 'trash' | 'favorite' | 'description'
   >
 >
 

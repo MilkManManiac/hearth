@@ -47,6 +47,12 @@ export interface LibraryAsset {
    * trash" in the Library, pending real deletion. A soft-delete staging flag.
    */
   trash?: boolean
+  /**
+   * ★ staple. Lives in library.json (not renderer localStorage) so favorites
+   * travel with the campaign AND Claude scene-authoring sessions can grep
+   * them. Legacy localStorage favorites migrate in on first load.
+   */
+  favorite?: boolean
   source?: string
   license?: string
 }

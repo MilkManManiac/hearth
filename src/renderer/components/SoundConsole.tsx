@@ -10,7 +10,7 @@ import {
 } from '../../shared/types'
 import { fuzzyScore } from '../lib/fuzzy'
 import { isTypingTarget } from '../lib/keys'
-import { pushRecent, useFavorites } from '../lib/prefs'
+import { pushRecent } from '../lib/prefs'
 import { engine, useStore } from '../store'
 import DangerButton from './DangerButton'
 import { VolumeFader } from './Mixer'
@@ -681,7 +681,6 @@ export default function SoundConsole() {
   const deletePlaylistPreset = useStore((s) => s.deletePlaylistPreset)
   const activePresetId = useStore((s) => s.activePresetId)
   const buildMode = !runMode
-  const favorites = useFavorites()
   const [staplesOpen, setStaplesOpen] = useState(localStorage.getItem('hearth:staplesOpen') !== '0')
   const [consoleOpen, setConsoleOpen] = useState(localStorage.getItem('hearth:consoleOpen') !== '0')
   const toggleConsole = (): void => {
@@ -693,9 +692,8 @@ export default function SoundConsole() {
   // Staples cluster by kind (music → beds → sfx), alphabetical within — the
   // badges then read as group headers instead of confetti.
   const KIND_ORDER: Record<AssetKind, number> = { music: 0, ambience: 1, sfx: 2 }
-  const staples = favorites
-    .map((file) => assets.find((a) => a.file === file))
-    .filter((a): a is NonNullable<typeof a> => !!a && !a.trash)
+  const staples = assets
+    .filter((a) => a.favorite && !a.trash)
     .sort(
       (a, b) =>
         KIND_ORDER[a.kind] - KIND_ORDER[b.kind] ||
