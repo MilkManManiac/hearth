@@ -213,10 +213,10 @@ export default function ScriptEditor({
     if (scope === 'scene') {
       // Group the scene's own cues by kind — small list, easy to scan.
       const KINDS: { kind: CueKind; icon: string; label: string }[] = [
-        { kind: 'music', icon: '♪', label: 'Music' },
-        { kind: 'sfx', icon: '🔊', label: 'Sound effects' },
-        { kind: 'amb', icon: '〜', label: 'Ambience beds' },
-        { kind: 'image', icon: '🖼', label: 'Images' }
+        { kind: 'music', icon: CUE_TEXT.music, label: 'Music' },
+        { kind: 'sfx', icon: CUE_TEXT.sfx, label: 'Sound effects' },
+        { kind: 'amb', icon: CUE_TEXT.amb, label: 'Ambience beds' },
+        { kind: 'image', icon: CUE_TEXT.image, label: 'Images' }
       ]
       const own = tray.filter((t) => t.category === IN_SCENE && matches(t))
       return KINDS.map(({ kind, icon, label }) => ({

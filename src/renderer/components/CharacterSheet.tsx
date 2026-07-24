@@ -702,6 +702,16 @@ function ScoresDialog({
   const spent = ABILITY_KEYS.reduce((n, k) => n + (PB_COST[draft[k]] ?? 0), 0)
   const used = Object.values(assign).filter(Boolean)
   const arrayDone = used.length === 6
+  // Background bonus overlay (2024): +2/+1 or +1/+1/+1 — both are "3 points,
+  // max +2 per ability". Applied on top of the base at Apply time so the
+  // array/point-buy values stay clean.
+  const [bonus, setBonus] = useState<Partial<Record<AbilityKey, number>>>({})
+  const bonusSpent = ABILITY_KEYS.reduce((n, k) => n + (bonus[k] ?? 0), 0)
+  const withBonus = (base: AbilityScores): AbilityScores => {
+    const out = { ...base }
+    for (const k of ABILITY_KEYS) out[k] = Math.min(20, out[k] + (bonus[k] ?? 0))
+    return out
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
@@ -751,7 +761,7 @@ function ScoresDialog({
             </div>
             <button
               onClick={() => {
-                onApply(assign as AbilityScores)
+                onApply(withBonus(assign as AbilityScores))
                 onClose()
               }}
               disabled={!arrayDone}
@@ -790,7 +800,7 @@ function ScoresDialog({
             </div>
             <button
               onClick={() => {
-                onApply(draft)
+                onApply(withBonus(draft))
                 onClose()
               }}
               disabled={spent > 27}
@@ -800,9 +810,42 @@ function ScoresDialog({
             </button>
           </>
         )}
-        <p className="mt-2 text-[10px] text-hearth-muted/70">
-          2024 rules: afterwards add your background's +2/+1 (or +1/+1/+1) directly in the grid.
-        </p>
+        <div className="mt-3 border-t border-hearth-border pt-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-hearth-muted">
+            Background bonus — +2/+1 or +1/+1/+1{' '}
+            <span className={bonusSpent === 3 ? 'text-emerald-300' : 'text-hearth-muted/70'}>({bonusSpent}/3)</span>
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {ABILITY_KEYS.map((k) => {
+              const v = bonus[k] ?? 0
+              return (
+                <button
+                  key={k}
+                  title="Click +1, right-click −1 (max +2 per ability)"
+                  onClick={() => {
+                    if (bonusSpent >= 3 || v >= 2) return
+                    setBonus((b) => ({ ...b, [k]: v + 1 }))
+                  }}
+                  onContextMenu={(e) => {
+                    e.preventDefault()
+                    if (v > 0) setBonus((b) => ({ ...b, [k]: v - 1 }))
+                  }}
+                  className={`rounded border px-2 py-1 text-xs ${
+                    v > 0
+                      ? 'border-hearth-ember bg-hearth-ember/15 text-hearth-ember'
+                      : 'border-hearth-border bg-hearth-panel2 text-hearth-muted hover:text-hearth-text'
+                  }`}
+                >
+                  {ABILITY_LABEL[k]}
+                  {v > 0 ? ` +${v}` : ''}
+                </button>
+              )
+            })}
+          </div>
+          <p className="mt-1.5 text-[10px] text-hearth-muted/70">
+            Added on top when you hit Apply — leave at 0/3 if the sheet already includes it.
+          </p>
+        </div>
       </div>
     </div>
   )

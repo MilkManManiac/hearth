@@ -6,6 +6,7 @@ import { promises as fs } from 'fs'
 import type { CampaignMap, Character, PartyStash, RollEvent } from '../shared/types'
 import type { CoinKey } from '../shared/inventory'
 import { sanitizePlayerMap } from '../shared/mapView'
+import { isInside } from './paths'
 
 // ONESTOP-PLAN C5 — the player portal: Hearth hosts a small HTTP server so
 // each PLAYER opens their character in any browser (phone/laptop) — build,
@@ -469,7 +470,7 @@ export class PlayerPortal {
         const rel = decodeURIComponent(url.slice('/asset/'.length))
         const root = path.resolve(this.deps.campaignDir())
         const abs = path.resolve(root, rel)
-        if (!abs.startsWith(root + path.sep)) return this.text(res, 'Forbidden', 403)
+        if (!isInside(root, abs)) return this.text(res, 'Forbidden', 403)
         const ext = path.extname(abs).toLowerCase()
         if (!IMAGE_EXTS.has(ext)) return this.text(res, 'Forbidden', 403)
         try {
@@ -488,7 +489,7 @@ export class PlayerPortal {
       if (hb) {
         const hbRoot = path.resolve(this.deps.campaignDir(), 'homebrew')
         const hbAbs = path.resolve(hbRoot, hb[1])
-        if (!hbAbs.startsWith(hbRoot + path.sep)) return this.text(res, 'Forbidden', 403)
+        if (!isInside(hbRoot, hbAbs)) return this.text(res, 'Forbidden', 403)
         try {
           const data = await fs.readFile(hbAbs)
           res.writeHead(200, { 'Content-Type': 'application/json' })
@@ -502,7 +503,7 @@ export class PlayerPortal {
       const rel = url === '/' ? 'player.html' : url.replace(/^\/+/, '')
       const root = path.resolve(this.deps.rendererDir)
       const abs = path.resolve(root, rel)
-      if (!abs.startsWith(root + path.sep)) return this.text(res, 'Forbidden', 403)
+      if (!isInside(root, abs)) return this.text(res, 'Forbidden', 403)
       try {
         const data = await fs.readFile(abs)
         res.writeHead(200, { 'Content-Type': MIME[path.extname(abs).toLowerCase()] ?? 'application/octet-stream' })

@@ -2,6 +2,7 @@ import { app, BrowserWindow, protocol, ipcMain, shell } from 'electron'
 import * as path from 'path'
 import { readFile } from 'fs/promises'
 import { CampaignManager } from './campaign'
+import { isInside } from './paths'
 import { DiscordBridge } from './discord'
 import { PlayerPortal } from './playerServer'
 import { WindowManager, type WindowRole } from './windows'
@@ -203,7 +204,7 @@ function registerAssetProtocol(): void {
       sub = rel
     }
     const resolved = path.resolve(root, sub)
-    if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+    if (!isInside(root, resolved, true)) {
       return new Response('Forbidden', { status: 403, headers: CORS })
     }
     try {

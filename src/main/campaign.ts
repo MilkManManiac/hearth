@@ -3,6 +3,7 @@ import { promises as fs } from 'fs'
 import * as fsSync from 'fs'
 import * as path from 'path'
 import chokidar, { type FSWatcher } from 'chokidar'
+import { isInside } from './paths'
 import type {
   AssetKind,
   CampaignNote,
@@ -346,7 +347,7 @@ export class CampaignManager {
     void _sourceFile
     const dest = path.join(this.campaignPath, rel)
     const root = path.resolve(this.campaignPath)
-    if (!path.resolve(dest).startsWith(root + path.sep)) throw new Error('bad map path')
+    if (!isInside(root, dest)) throw new Error('bad map path')
     await writeJsonAtomic(dest, rest)
     this.markWrite()
     return this.load()
@@ -636,7 +637,7 @@ export class CampaignManager {
     void _sourceFile
     const dest = path.join(this.campaignPath, rel)
     const root = path.resolve(this.campaignPath)
-    if (!path.resolve(dest).startsWith(root + path.sep)) throw new Error('bad character path')
+    if (!isInside(root, dest)) throw new Error('bad character path')
     await writeJsonAtomic(dest, rest)
     this.markWrite()
     return this.load()
@@ -828,7 +829,7 @@ export class CampaignManager {
     const missing: string[] = []
     for (const rel of files) {
       const abs = path.resolve(root, rel)
-      if (!abs.startsWith(root + path.sep)) {
+      if (!isInside(root, abs)) {
         missing.push(rel)
         continue
       }
@@ -865,7 +866,7 @@ export class CampaignManager {
     void scriptText
     const dest = path.join(this.campaignPath, rel)
     const root = path.resolve(this.campaignPath)
-    if (!path.resolve(dest).startsWith(root + path.sep)) {
+    if (!isInside(root, dest)) {
       throw new Error('refusing to write outside campaign folder')
     }
     await writeJsonAtomic(dest, rest)
@@ -925,7 +926,7 @@ export class CampaignManager {
     if (!scene?._sourceFile) throw new Error(`scene "${sceneId}" not found`)
     const abs = path.join(this.campaignPath, scene._sourceFile)
     const root = path.resolve(this.campaignPath)
-    if (!path.resolve(abs).startsWith(root + path.sep)) {
+    if (!isInside(root, abs)) {
       throw new Error('refusing to delete outside campaign folder')
     }
     await shell.trashItem(abs)
@@ -946,7 +947,7 @@ export class CampaignManager {
     rest.updatedAt = new Date().toISOString()
     const dest = path.join(this.campaignPath, rel)
     const root = path.resolve(this.campaignPath)
-    if (!path.resolve(dest).startsWith(root + path.sep)) {
+    if (!isInside(root, dest)) {
       throw new Error('refusing to write outside campaign folder')
     }
     await writeJsonAtomic(dest, rest)
@@ -990,7 +991,7 @@ export class CampaignManager {
     if (!note?._sourceFile) throw new Error(`note "${noteId}" not found`)
     const abs = path.join(this.campaignPath, note._sourceFile)
     const root = path.resolve(this.campaignPath)
-    if (!path.resolve(abs).startsWith(root + path.sep)) {
+    if (!isInside(root, abs)) {
       throw new Error('refusing to delete outside campaign folder')
     }
     await shell.trashItem(abs)
@@ -1245,7 +1246,7 @@ export class CampaignManager {
     }
     const abs = path.resolve(this.campaignPath, file)
     const root = path.resolve(this.campaignPath)
-    if (!abs.startsWith(root + path.sep)) throw new Error('refusing to delete outside campaign folder')
+    if (!isInside(root, abs)) throw new Error('refusing to delete outside campaign folder')
     if (fsSync.existsSync(abs)) await shell.trashItem(abs)
     const lib = await this.loadLibrary([])
     lib.assets = lib.assets.filter((a) => a.file !== file)
@@ -1328,7 +1329,7 @@ export class CampaignManager {
     if (!this.triageRoot) throw new Error('no triage session in progress')
     const root = path.resolve(this.triageRoot)
     const src = path.resolve(root, req.rel)
-    if (!src.startsWith(root + path.sep)) throw new Error('candidate outside the drop folder')
+    if (!isInside(root, src)) throw new Error('candidate outside the drop folder')
     const ext = path.extname(req.rel).toLowerCase()
     const stem = slugify(req.name.trim() || path.basename(req.rel, path.extname(req.rel)))
     // "Never again": a previously-deleted sound is refused by name — renaming
